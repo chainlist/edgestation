@@ -1,38 +1,69 @@
 //! The Windows side: the global media transport controls, the sessions that apps publish for their
 //! media keys.
 
-use std::sync::{Mutex, PoisonError};
-use std::time::{Instant, SystemTime, UNIX_EPOCH};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use base64::Engine;
 use base64::engine::general_purpose::STANDARD;
 use windows::Media::Control::{
-    GlobalSystemMediaTransportControlsSession as Session,
+    GlobalSystemMediaTransportControlsSession as WinSession,
     GlobalSystemMediaTransportControlsSessionManager as Manager,
     GlobalSystemMediaTransportControlsSessionMediaProperties as Properties,
     GlobalSystemMediaTransportControlsSessionPlaybackStatus as Status,
     GlobalSystemMediaTransportControlsSessionTimelineProperties as Timeline,
 };
 use windows::Storage::Streams::DataReader;
+use windows::core::HSTRING;
 
-use super::art;
-use super::progress::Progress;
-use super::{Action, Controls, MediaInfo};
+use super::{Action, Controls, MediaInfo, Session};
 
 /// Windows times are in ticks of 100 ns.
 const TICKS_PER_SECOND: f64 = 10_000_000.0;
 /// The ticks from 1601-01-01, the start of Windows dates, to the Unix epoch.
 const UNIX_EPOCH_TICKS: i64 = 116_444_736_000_000_000;
 
-static PROGRESS: Mutex<Progress> = Mutex::new(Progress::new());
-
-pub fn read() -> Result<Option<MediaInfo>, String> {
-    read_current().map_err(|error| error.to_string())
+/// A session of the list, with its id and its app id.
+struct Listed {
+    id: String,
+    app: String,
+    session: WinSession,
 }
 
-pub fn control(action: Action) -> Result<bool, String> {
+pub fn read() -> Result<Option<MediaInfo>, String> {
     let request = || {
-        let Some(session) = current()? else { return Ok(false) };
+        let manager = manager()?;
+        let mut listed = list(&manager)?;
+        let Some(index) = current(&manager, &listed)? else { return Ok(None) };
+        info(listed.swap_remove(index), true).map(Some)
+    };
+    request().map_err(|error: windows::core::Error| error.to_string())
+}
+
+pub fn read_all() -> Result<Vec<MediaInfo>, String> {
+    let request = || {
+        let manager = manager()?;
+        let listed = list(&manager)?;
+        let current = current(&manager, &listed)?;
+        // A session can close during the read. Then it is not in the list.
+        Ok(listed
+            .into_iter()
+            .enumerate()
+            .filter_map(|(index, each)| info(each, Some(index) == current).ok())
+            .collect())
+    };
+    request().map_err(|error: windows::core::Error| error.to_string())
+}
+
+pub fn control(action: Action, id: Option<&str>) -> Result<bool, String> {
+    let request = || {
+        let manager = manager()?;
+        let session = match id {
+            None => manager.GetCurrentSession().ok(),
+            Some(id) => {
+                list(&manager)?.into_iter().find(|each| each.id == id).map(|each| each.session)
+            }
+        };
+        let Some(session) = session else { return Ok(false) };
         match action {
             Action::Play => session.TryPlayAsync()?,
             Action::Pause => session.TryPauseAsync()?,
@@ -44,48 +75,88 @@ pub fn control(action: Action) -> Result<bool, String> {
     request().map_err(|error: windows::core::Error| error.to_string())
 }
 
-fn current() -> windows::core::Result<Option<Session>> {
-    let manager = Manager::RequestAsync()?.join()?;
-    Ok(manager.GetCurrentSession().ok())
+fn manager() -> windows::core::Result<Manager> {
+    Manager::RequestAsync()?.join()
 }
 
-fn read_current() -> windows::core::Result<Option<MediaInfo>> {
-    let Some(session) = current()? else { return Ok(None) };
+/// All sessions with their ids, in the order of Windows.
+fn list(manager: &Manager) -> windows::core::Result<Vec<Listed>> {
+    let sessions: Vec<WinSession> = manager.GetSessions()?.into_iter().collect();
+    let apps = sessions
+        .iter()
+        .map(|session| Ok(session.SourceAppUserModelId()?.to_string()))
+        .collect::<windows::core::Result<Vec<_>>>()?;
+    let ids = ids(&apps);
+    Ok(ids
+        .into_iter()
+        .zip(apps)
+        .zip(sessions)
+        .map(|((id, app), session)| Listed { id, app, session })
+        .collect())
+}
+
+/// The id of each session: its app id. All WebView2 apps have the same app id
+/// (`msedgewebview2.exe`), so the second session of an app gets `#2` after it, the third `#3`.
+fn ids(apps: &[String]) -> Vec<String> {
+    let mut ids = Vec::with_capacity(apps.len());
+    for (index, app) in apps.iter().enumerate() {
+        let before = apps[..index].iter().filter(|other| *other == app).count();
+        ids.push(if before == 0 { app.clone() } else { format!("{app}#{}", before + 1) });
+    }
+    ids
+}
+
+/// The index of the current session in `listed`. Windows gives a new object for the current
+/// session, wich is not equal to the one in the list. Thus the host compares the app ids, and for
+/// more sessions of one app, the track and the playback status too.
+fn current(manager: &Manager, listed: &[Listed]) -> windows::core::Result<Option<usize>> {
+    let Ok(session) = manager.GetCurrentSession() else { return Ok(None) };
+    let app = session.SourceAppUserModelId()?.to_string();
+    let same_app: Vec<usize> =
+        (0..listed.len()).filter(|&index| listed[index].app == app).collect();
+    if same_app.len() < 2 {
+        return Ok(same_app.first().copied());
+    }
+    let state = track_state(&session)?;
+    let same_state = same_app
+        .iter()
+        .copied()
+        .find(|&index| track_state(&listed[index].session).is_ok_and(|other| other == state));
+    Ok(same_state.or(same_app.first().copied()))
+}
+
+/// The title, the artist and the playback status of a session.
+fn track_state(session: &WinSession) -> windows::core::Result<(HSTRING, HSTRING, Status)> {
+    let properties = session.TryGetMediaPropertiesAsync()?.join()?;
+    Ok((properties.Title()?, properties.Artist()?, session.GetPlaybackInfo()?.PlaybackStatus()?))
+}
+
+fn info(listed: Listed, current: bool) -> windows::core::Result<MediaInfo> {
+    let Listed { id, app, session } = listed;
     let properties = session.TryGetMediaPropertiesAsync()?.join()?;
     let playback = session.GetPlaybackInfo()?;
     let controls = playback.Controls()?;
     let playing = playback.PlaybackStatus()? == Status::Playing;
     // Apps set this only when they play faster or slower than normal.
     let rate = playback.PlaybackRate().and_then(|rate| rate.Value()).unwrap_or(1.0);
-    let reported = timeline(&session.GetTimelineProperties()?, playing, rate)?;
-
-    let app = session.SourceAppUserModelId()?.to_string();
-    let title = properties.Title()?.to_string();
-    let artist = properties.Artist()?.to_string();
-    let album = properties.AlbumTitle()?.to_string();
-    let track = format!("{app}\n{title}\n{artist}\n{album}");
-    let (position, duration) = PROGRESS
-        .lock()
-        .unwrap_or_else(PoisonError::into_inner)
-        .update(Instant::now(), &track, reported, playing, rate)
-        .unzip();
-    let art = art::id(track, || thumbnail(&properties));
-    Ok(Some(MediaInfo {
+    let found = Session {
+        id,
+        current,
         app,
-        title,
-        artist,
-        album,
+        title: properties.Title()?.to_string(),
+        artist: properties.Artist()?.to_string(),
+        album: properties.AlbumTitle()?.to_string(),
         playing,
-        position,
-        duration,
-        art,
+        rate,
+        timeline: timeline(&session.GetTimelineProperties()?, playing, rate)?,
         can: Controls {
             play: controls.IsPlayEnabled()?,
             pause: controls.IsPauseEnabled()?,
             next: controls.IsNextEnabled()?,
             previous: controls.IsPreviousEnabled()?,
         },
-    }))
+    };
+    Ok(found.info(|| thumbnail(&properties)))
 }
 
 /// The position and the length in seconds, as the app reports them. `None` if the timeline is
@@ -127,4 +198,30 @@ fn thumbnail(properties: &Properties) -> Option<String> {
     let mime = stream.ContentType().map(|mime| mime.to_string()).unwrap_or_default();
     let mime = if mime.is_empty() { "image/png".into() } else { mime };
     Some(format!("data:{mime};base64,{}", STANDARD.encode(bytes)))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn numbers_the_sessions_of_one_app() {
+        let apps =
+            ["msedgewebview2.exe", "Spotify.exe", "msedgewebview2.exe", "msedgewebview2.exe"];
+        let apps: Vec<String> = apps.into_iter().map(String::from).collect();
+        assert_eq!(
+            ids(&apps),
+            ["msedgewebview2.exe", "Spotify.exe", "msedgewebview2.exe#2", "msedgewebview2.exe#3"]
+        );
+    }
+
+    /// Reads the real sessions. Run it with `--ignored --nocapture` while something plays.
+    #[test]
+    #[ignore]
+    fn reads_the_sessions() {
+        for info in read_all().unwrap() {
+            println!("{}", serde_json::to_string(&info).unwrap());
+        }
+        println!("current: {}", serde_json::to_string(&read().unwrap()).unwrap());
+    }
 }

@@ -75,6 +75,7 @@ pub fn run() {
             identify::identify_screens,
             identify::identify_release,
             media::media_info,
+            media::media_sessions,
             media::media_art,
             media::media_control,
             monitors::monitor_names,

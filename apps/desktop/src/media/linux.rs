@@ -3,7 +3,7 @@
 
 use std::collections::HashMap;
 use std::sync::{Mutex, OnceLock, PoisonError};
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 use base64::Engine;
 use base64::engine::general_purpose::STANDARD;
@@ -12,13 +12,14 @@ use tauri_plugin_http::reqwest::Client;
 use zbus::blocking::Connection;
 use zbus::zvariant::{OwnedValue, Value};
 
-use super::progress::Progress;
-use super::{Action, Controls, MediaInfo, art};
+use super::{Action, Controls, MediaInfo, Session};
 use crate::os::linux::dbus::{self, Bus};
 
 const PREFIX: &str = "org.mpris.MediaPlayer2.";
 /// The playerctl daemon. It follows the player that the user used last.
 const PLAYERCTLD: &str = "org.mpris.MediaPlayer2.playerctld";
+/// The interface of playerctld. Its `PlayerNames` lists the players, the one it follows first.
+const PLAYERCTLD_INTERFACE: &str = "com.github.altdesktop.playerctld";
 const PATH: &str = "/org/mpris/MediaPlayer2";
 const ROOT: &str = "org.mpris.MediaPlayer2";
 const PLAYER: &str = "org.mpris.MediaPlayer2.Player";
@@ -26,8 +27,6 @@ const PLAYER: &str = "org.mpris.MediaPlayer2.Player";
 const MICROSECONDS: f64 = 1_000_000.0;
 /// The largest art that the host loads, in bytes.
 const MAX_ART: usize = 10 << 20;
-
-static PROGRESS: Mutex<Progress> = Mutex::new(Progress::new());
 
 type Properties = HashMap<String, OwnedValue>;
 
@@ -52,46 +51,39 @@ struct Player {
 
 pub fn read() -> Result<Option<MediaInfo>, String> {
     let found = dbus::with(Bus::Session, |bus| {
-        let Some((name, properties)) = current(bus)? else {
-            return Ok(None);
-        };
-        let root = dbus::properties(bus, &name, PATH, ROOT).unwrap_or_default();
-        Ok(Some((app_name(&name, &root), parse(&properties))))
+        let mut players = players(bus)?;
+        let Some(index) = current(bus, &players) else { return Ok(None) };
+        let (name, properties) = players.swap_remove(index);
+        Ok(Some(session(bus, name, &properties, true)))
     });
-    let Some((app, player)) = found.map_err(|error| error.to_string())? else {
-        return Ok(None);
-    };
-    let playing = player.status == "Playing";
-    let track = format!("{app}\n{}\n{}\n{}", player.title, player.artist, player.album);
-    let (position, duration) = PROGRESS
-        .lock()
-        .unwrap_or_else(PoisonError::into_inner)
-        .update(Instant::now(), &track, timeline(&player), playing, player.rate)
-        .unzip();
-    let art = art::id(track, || player.art_url.as_deref().and_then(load_art));
-    Ok(Some(MediaInfo {
-        app,
-        title: player.title,
-        artist: player.artist,
-        album: player.album,
-        playing,
-        position,
-        duration,
-        art,
-        can: Controls {
-            play: player.can_play,
-            pause: player.can_pause,
-            next: player.can_next,
-            previous: player.can_previous,
-        },
-    }))
+    Ok(found.map_err(|error| error.to_string())?.map(info))
 }
 
-pub fn control(action: Action) -> Result<bool, String> {
+pub fn read_all() -> Result<Vec<MediaInfo>, String> {
+    let found = dbus::with(Bus::Session, |bus| {
+        let players = players(bus)?;
+        let current = current(bus, &players);
+        Ok(players
+            .into_iter()
+            .enumerate()
+            .map(|(index, (name, properties))| {
+                session(bus, name, &properties, Some(index) == current)
+            })
+            .collect::<Vec<_>>())
+    });
+    // The art can come from the web, so the host loads it after the bus calls.
+    Ok(found.map_err(|error| error.to_string())?.into_iter().map(info).collect())
+}
+
+pub fn control(action: Action, id: Option<&str>) -> Result<bool, String> {
     let request = |bus: &Connection| {
-        let Some((name, properties)) = current(bus)? else {
-            return Ok(false);
+        let mut players = players(bus)?;
+        let index = match id {
+            None => current(bus, &players),
+            Some(id) => players.iter().position(|(name, _)| name == id),
         };
+        let Some(index) = index else { return Ok(false) };
+        let (name, properties) = players.swap_remove(index);
         let player = parse(&properties);
         let (allowed, method) = match action {
             Action::Play => (player.can_play, "Play"),
@@ -107,10 +99,10 @@ pub fn control(action: Action) -> Result<bool, String> {
     dbus::with(Bus::Session, request).map_err(|error| error.to_string())
 }
 
-/// The current player and its properties: the first player that plays, else the player that
-/// playerctld follows, else the first paused player. A stopped player does not count.
-fn current(bus: &Connection) -> zbus::Result<Option<(String, Properties)>> {
-    let names: Vec<String> = dbus::call(
+/// The players that play or are paused, by bus name, with their properties. A stopped player
+/// does not count, and a player that does not answer does not count. Playerctld is not a player.
+fn players(bus: &Connection) -> zbus::Result<Vec<(String, Properties)>> {
+    let mut names: Vec<String> = dbus::call(
         bus,
         "org.freedesktop.DBus",
         "/org/freedesktop/DBus",
@@ -118,28 +110,65 @@ fn current(bus: &Connection) -> zbus::Result<Option<(String, Properties)>> {
         "ListNames",
         &(),
     )?;
-    let mut players: Vec<&String> =
-        names.iter().filter(|name| name.starts_with(PREFIX) && *name != PLAYERCTLD).collect();
-    players.sort();
-    let mut paused = None;
-    for name in players {
-        // A player that does not answer does not count.
-        let Ok(properties) = dbus::properties(bus, name, PATH, PLAYER) else {
-            continue;
-        };
-        match text(get(&properties, "PlaybackStatus")).as_deref() {
-            Some("Playing") => return Ok(Some((name.clone(), properties))),
-            Some("Paused") if paused.is_none() => paused = Some((name.clone(), properties)),
-            _ => {}
-        }
-    }
-    if names.iter().any(|name| name == PLAYERCTLD)
-        && let Ok(properties) = dbus::properties(bus, PLAYERCTLD, PATH, PLAYER)
-        && text(get(&properties, "PlaybackStatus")).as_deref() == Some("Paused")
+    names.retain(|name| name.starts_with(PREFIX) && name != PLAYERCTLD);
+    names.sort();
+    Ok(names
+        .into_iter()
+        .filter_map(|name| {
+            let properties = dbus::properties(bus, &name, PATH, PLAYER).ok()?;
+            let status = text(get(&properties, "PlaybackStatus"));
+            matches!(status.as_deref(), Some("Playing" | "Paused")).then_some((name, properties))
+        })
+        .collect())
+}
+
+/// The index of the current player in `players`: the first player that plays, else the player
+/// that playerctld follows, else the first paused player.
+fn current(bus: &Connection, players: &[(String, Properties)]) -> Option<usize> {
+    let status = |properties: &Properties| text(get(properties, "PlaybackStatus"));
+    if let Some(index) =
+        players.iter().position(|(_, properties)| status(properties).as_deref() == Some("Playing"))
     {
-        return Ok(Some((PLAYERCTLD.to_owned(), properties)));
+        return Some(index);
     }
-    Ok(paused)
+    let followed = dbus::properties(bus, PLAYERCTLD, PATH, PLAYERCTLD_INTERFACE)
+        .ok()
+        .and_then(|properties| texts(get(&properties, "PlayerNames")).into_iter().next());
+    let followed = followed.and_then(|name| players.iter().position(|(each, _)| *each == name));
+    followed.or((!players.is_empty()).then_some(0))
+}
+
+/// The session of player `name`, and the address of its art.
+fn session(
+    bus: &Connection,
+    name: String,
+    properties: &Properties,
+    current: bool,
+) -> (Session, Option<String>) {
+    let root = dbus::properties(bus, &name, PATH, ROOT).unwrap_or_default();
+    let player = parse(properties);
+    let session = Session {
+        app: app_name(&name, &root),
+        id: name,
+        current,
+        playing: player.status == "Playing",
+        rate: player.rate,
+        timeline: timeline(&player),
+        can: Controls {
+            play: player.can_play,
+            pause: player.can_pause,
+            next: player.can_next,
+            previous: player.can_previous,
+        },
+        title: player.title,
+        artist: player.artist,
+        album: player.album,
+    };
+    (session, player.art_url)
+}
+
+fn info((session, art_url): (Session, Option<String>)) -> MediaInfo {
+    session.info(|| art_url.as_deref().and_then(load_art))
 }
 
 /// The name of the app of player `bus_name`: its desktop entry, for example `spotify`. A player
@@ -390,12 +419,16 @@ mod tests {
         assert_eq!(image_type(b""), "image/png");
     }
 
-    /// Reads the real player. Run it with `--ignored --nocapture` while something plays.
+    /// Reads the real players. Run it with `--ignored --nocapture` while something plays.
     #[test]
     #[ignore]
-    fn reads_the_current_player() {
+    fn reads_the_players() {
+        for info in read_all().unwrap() {
+            println!("{}", serde_json::to_string_pretty(&info).unwrap());
+        }
         let info = read().unwrap().expect("no player");
-        println!("{}", serde_json::to_string_pretty(&info).unwrap());
-        println!("art: {:?}", art::current().map(|url| url[..40.min(url.len())].to_owned()));
+        println!("current: {}", serde_json::to_string_pretty(&info).unwrap());
+        let art = super::super::art::get(None);
+        println!("art: {:?}", art.map(|url| url[..40.min(url.len())].to_owned()));
     }
 }

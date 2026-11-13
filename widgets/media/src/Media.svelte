@@ -9,28 +9,59 @@
 	// svelte-ignore state_referenced_locally
 	const { api } = props;
 
-	/** The current session. `undefined` until the first read, `null` if nothing plays. */
-	let now = $state.raw<MediaInfo | null>();
+	/** All sessions. `undefined` until the first read. */
+	let sessions = $state.raw<MediaInfo[]>();
+	/**
+	 * The session that the user stepped to. While it is set, the widget shows it, not the current
+	 * session. It clears when the session becomes current or closes.
+	 */
+	let chosen = $state<string | null>(null);
+	/** The shown session. `undefined` until the first read, `null` if nothing plays. */
+	const now = $derived(
+		sessions &&
+			(sessions.find((session) => session.id === chosen) ??
+				sessions.find((session) => session.current) ??
+				sessions[0] ??
+				null)
+	);
+	const playing = $derived(!!now?.playing);
+	const index = $derived(sessions && now ? sessions.indexOf(now) : 0);
 	let art = $state.raw<string | null>(null);
 	let shownArt: number | null = null;
-	const playing = $derived(!!now?.playing);
+
+	// The art is large, so get it only when it changes.
+	async function loadArt() {
+		const shown = now;
+		const artId = shown?.art ?? null;
+		if (artId === shownArt) return;
+		shownArt = artId;
+		const url = shown && artId != null ? await api.media.art(shown.id) : null;
+		// A step to an other session during the wait can have loaded newer art.
+		if (shownArt === artId) art = url;
+	}
 
 	const refresh = api.guard(async () => {
-		now = await api.media.current();
-		// The art is large, so get it only when it changes.
-		const artId = now?.art ?? null;
-		if (artId !== shownArt) {
-			shownArt = artId;
-			art = artId == null ? null : await api.media.art();
-		}
+		const read = await api.media.sessions();
+		const kept = read.find((session) => session.id === chosen);
+		if (!kept || kept.current) chosen = null;
+		sessions = read;
+		await loadArt();
 	});
 	api.every(1000, refresh);
 	refresh();
 
+	const step = api.guard(async () => {
+		if (!sessions?.length) return;
+		const next = sessions[(index + 1) % sessions.length];
+		chosen = next.current ? null : next.id;
+		await loadArt();
+	});
+
 	// Apps need a short time to aply a command. Look again soon, not at the next tick.
 	let cancelSoon: (() => void) | undefined;
 	const send = api.guard(async (action: MediaAction) => {
-		await api.media.control(action);
+		if (!now) return;
+		await api.media.control(action, now.id);
 		cancelSoon?.();
 		cancelSoon = api.after(300, refresh);
 	});
@@ -39,7 +70,7 @@
 <!-- `el` is the size container, so its padding cannot use cqh or cqw. Put the layout in it. -->
 {#if now !== undefined}
 	<div class="body" class:idle={!now}>
-		<Cover {art} />
+		<Cover {art} count={sessions?.length ?? 0} {index} onstep={step} />
 		<div class="info">
 			<p class="title">{now ? now.title || 'Unknown title' : 'Nothing playing'}</p>
 			{#if now?.artist}<p class="artist">{now.artist}</p>{/if}

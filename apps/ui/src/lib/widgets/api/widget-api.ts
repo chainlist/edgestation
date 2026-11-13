@@ -27,8 +27,9 @@ import { interval, timeout, type Pause } from './timers';
 
 const media: MediaApi = Object.freeze({
 	current: () => invoke<MediaInfo | null>('media_info'),
-	art: () => invoke<string | null>('media_art'),
-	control: (action: MediaAction) => invoke<boolean>('media_control', { action })
+	sessions: () => invoke<MediaInfo[]>('media_sessions'),
+	art: (id?: string) => invoke<string | null>('media_art', { id }),
+	control: (action: MediaAction, id?: string) => invoke<boolean>('media_control', { action, id })
 });
 
 const apps: AppsApi = Object.freeze({
