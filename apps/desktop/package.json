@@ -1,0 +1,11 @@
+{
+	"name": "@edgestation/desktop",
+	"version": "0.7.0",
+	"private": true,
+	"scripts": {
+		"tauri": "tauri"
+	},
+	"devDependencies": {
+		"@tauri-apps/cli": "2.12.4"
+	}
+}

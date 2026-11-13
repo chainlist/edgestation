@@ -1,0 +1,7 @@
+{
+	"$schema": "../gen/schemas/desktop-schema.json",
+	"identifier": "identify",
+	"description": "Permissions of the identify boxes: reading the theme, as every page does",
+	"windows": ["identify-*"],
+	"permissions": ["core:default", "store:default"]
+}

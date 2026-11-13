@@ -1,0 +1,29 @@
+{
+	"$schema": "../../packages/sdk/manifest.schema.json",
+	"name": "URL",
+	"version": "1.0.0",
+	"description": "Any web page: set its address in the widget's settings. Sign-ins last across restarts. Once you follow a link, a Home button in its corner takes it back to that page. It takes the touches on its area, so swipe pages from outside it.",
+	"author": "EdgeStation",
+	"main": "dist/main.js",
+	"icon": "icon.svg",
+	"size": { "w": 1, "h": 1 },
+	"permissions": ["webview"],
+	"settings": [
+		{
+			"key": "url",
+			"label": "URL",
+			"type": "text",
+			"placeholder": "https://example.com"
+		},
+		{
+			"key": "layout",
+			"label": "Layout",
+			"type": "select",
+			"default": "desktop",
+			"options": [
+				{ "value": "desktop", "label": "Desktop" },
+				{ "value": "mobile", "label": "Mobile (for narrow cells)" }
+			]
+		}
+	]
+}

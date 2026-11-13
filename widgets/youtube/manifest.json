@@ -1,0 +1,23 @@
+{
+	"$schema": "../../packages/sdk/manifest.schema.json",
+	"name": "YouTube",
+	"version": "1.0.0",
+	"description": "YouTube, opening on your Subscriptions. Sign in once inside it. It takes the touches on its area, so swipe pages from outside it.",
+	"author": "EdgeStation",
+	"main": "dist/main.js",
+	"icon": "icon.svg",
+	"size": { "w": 3, "h": 2 },
+	"permissions": ["webview"],
+	"settings": [
+		{
+			"key": "layout",
+			"label": "Layout",
+			"type": "select",
+			"default": "desktop",
+			"options": [
+				{ "value": "desktop", "label": "Desktop" },
+				{ "value": "mobile", "label": "Mobile (for narrow cells)" }
+			]
+		}
+	]
+}

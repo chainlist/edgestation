@@ -1,0 +1,41 @@
+name: UI check
+
+# Type-checks and tests the UI of the app (apps/ui) when it changes, or what it builds on: the SDK,
+# whose types it uses, and the lockfile. The Rust code has its own check (desktop-check.yml).
+on:
+  pull_request:
+    paths: ['apps/ui/**', 'packages/sdk/**', 'pnpm-lock.yaml', '.github/workflows/ui-check.yml']
+  push:
+    branches: [main]
+    paths: ['apps/ui/**', 'packages/sdk/**', 'pnpm-lock.yaml', '.github/workflows/ui-check.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A newer push to the same branch replaces the run in progress.
+concurrency:
+  group: ui-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/ui
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12
+      # Nothing from this cache gets into an installer or a package. The release builds do not
+      # use it.
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      # The UI and the workspace packages that it uses, which is the SDK.
+      - run: pnpm install --frozen-lockfile --filter @edgestation/ui...
+      - run: pnpm check
+      - run: pnpm test

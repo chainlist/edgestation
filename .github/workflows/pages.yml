@@ -1,0 +1,64 @@
+name: Website
+
+# Builds the website and deploys it to GitHub Pages. A push to main that changes the site deploys
+# it, except the merge of a release PR. That merge moves the download links of the site to the new
+# version (apps/web/src/lib/downloads.ts), but the installers of that version do not exist yet. So
+# release.yml calls this workflow after desktop-release.yml attaches them to the release.
+on:
+  push:
+    branches: [main]
+    paths: ['apps/web/**', 'pnpm-lock.yaml', '.github/workflows/pages.yml']
+  workflow_call:
+    inputs:
+      after-release:
+        description: Deploy the release commit, because its installers are attached now.
+        type: boolean
+        default: false
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Only one deployment runs at a time. A newer push waits for the current one and does not cancel it.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    # release-please merges a release PR as "chore(main): release <version>". A run that release.yml
+    # calls has the same push event and commit message, so it says so with after-release. When
+    # build does not run, deploy does not run either.
+    if: >-
+      inputs.after-release ||
+      !startsWith(github.event.head_commit.message, 'chore(main): release ')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --filter @edgestation/web
+      - run: pnpm --filter @edgestation/web build
+        env:
+          # The site of a project is at https://<owner>.github.io/<repository>/.
+          BASE_PATH: /${{ github.event.repository.name }}
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: apps/web/build
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

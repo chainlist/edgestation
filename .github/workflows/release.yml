@@ -1,0 +1,103 @@
+name: Release
+
+# release-please keeps a release PR open on main. It makes the PR from the feat: and fix: commits
+# since the last release. A merge of the PR increases the version of the app and the SDK, and
+# updates CHANGELOG.md. It also adds the tag v<version> and creates the GitHub release. Then the SDK
+# goes to npm as a staged package. It becomes public when a maintaner approves it in the Staged
+# Packages tab on npmjs.com, or with npm stage approve. Then desktop-release.yml builds the
+# installers of the desktop app and attaches them to the release. Last, pages.yml deploys the
+# website, whose download links now find the installers.
+on:
+  push:
+    branches: [main]
+  # A manual run publishes a release that exists already, for example after a cancelled run. A
+  # re-run of the push run cannot do it, because release-please then finds no new release.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag of the release to publish, e.g. v0.7.0
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  release-please:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - id: release
+        uses: googleapis/release-please-action@v4
+
+  # A tag from the workflow token does not start other workflows, so the publish runs here. GitHub
+  # skips a job when a job that it needs is skipped, unless the condition has a status function.
+  # A manual run skips release-please, so the conditions start with !cancelled().
+  publish-sdk:
+    needs: release-please
+    if: ${{ !cancelled() && (inputs.tag || needs.release-please.outputs.release_created == 'true') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # npm trusted publishing gives a temporary publish credential in exchange for this OIDC token.
+      id-token: write
+    steps:
+      # A push run has no tag input and checks out the release commit.
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.tag }}
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12
+      # Node 24 contains npm 11. npm stage publish needs npm 11.15 or later. Do not use a
+      # dependency cache, so that files from other workflows cannot get into the package.
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - run: pnpm install --frozen-lockfile --filter @edgestation/sdk
+      - run: pnpm --filter @edgestation/sdk check
+      - run: pnpm --filter @edgestation/sdk test
+      # pnpm pack builds the package and applies publishConfig (the dist exports). npm stages that
+      # tarball with no changes, through trusted publishing. The trusted publisher permits only
+      # npm stage publish, not npm publish.
+      - run: pnpm pack --pack-destination "$RUNNER_TEMP"
+        working-directory: packages/sdk
+      - run: npm stage publish "$RUNNER_TEMP"/edgestation-sdk-*.tgz
+
+  # This job calls the workflow for the same reason. A release from the workflow token does not
+  # start the workflows that listen for releases.
+  publish-desktop:
+    needs: release-please
+    if: ${{ !cancelled() && (inputs.tag || needs.release-please.outputs.release_created == 'true') }}
+    permissions:
+      contents: write
+    uses: ./.github/workflows/desktop-release.yml
+    with:
+      tag: ${{ inputs.tag || needs.release-please.outputs.tag_name }}
+    # This gives the updater signing key (TAURI_SIGNING_PRIVATE_KEY) and its password.
+    secrets: inherit
+
+  # The download links of the website name the files of its version, so the site of a new version
+  # deploys only once the installers are attached (pages.yml skips the push of the release
+  # commit). If an installer fails to build, the site stays on the previous release, whose links
+  # still work. After a fix, re-run the failed jobs of this run, or run the Website workflow. The
+  # skip rule also looks at the skipped release-please of a manual run, so the condtion names
+  # publish-desktop.
+  publish-site:
+    needs: publish-desktop
+    if: ${{ !cancelled() && needs.publish-desktop.result == 'success' }}
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/pages.yml
+    with:
+      after-release: true

@@ -1,0 +1,17 @@
+/* The look of the overlay scrollbars (see scrollbars.ts), in the theme colors. The app pages and
+   the shadow root of each widget load it. They are thin at rest and full width on hover or drag. */
+.os-theme-edgestation {
+	box-sizing: border-box;
+	--os-size: 10px;
+	--os-padding-perpendicular: 2px;
+	--os-padding-axis: 2px;
+	--os-track-border-radius: 10px;
+	--os-handle-border-radius: 10px;
+	--os-handle-interactive-area-offset: 4px;
+	--os-handle-perpendicular-size: 50%;
+	--os-handle-perpendicular-size-hover: 100%;
+	--os-handle-perpendicular-size-active: 100%;
+	--os-handle-bg: color-mix(in oklab, var(--foreground) 25%, transparent);
+	--os-handle-bg-hover: color-mix(in oklab, var(--foreground) 40%, transparent);
+	--os-handle-bg-active: color-mix(in oklab, var(--foreground) 55%, transparent);
+}

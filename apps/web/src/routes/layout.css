@@ -1,0 +1,51 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/red-hat-display';
+
+/* The accent of the app (apps/ui/src/routes/layout.css): blue, hue 260. The surfaces are a deep
+   navy, not the near black of the app, so the site is less dark. */
+:root {
+	--background: oklch(0.195 0.05 268);
+	--foreground: oklch(0.985 0 0);
+	--card: oklch(0.24 0.055 268);
+	--muted: oklch(0.3 0.055 268);
+	--muted-foreground: oklch(0.76 0.03 266);
+	--primary: oklch(0.72 0.17 260);
+	--primary-foreground: oklch(0.2 0.04 260);
+	--border: oklch(1 0 0 / 10%);
+	--ring: oklch(0.65 0.085 260);
+}
+
+@theme inline {
+	--font-sans: 'Red Hat Display Variable', sans-serif;
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
+	--color-card: var(--card);
+	--color-muted: var(--muted);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-primary: var(--primary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-border: var(--border);
+	--color-ring: var(--ring);
+}
+
+@layer base {
+	* {
+		@apply border-border outline-ring/60;
+	}
+	html {
+		@apply scroll-smooth font-sans antialiased;
+		scroll-padding-top: 5rem;
+	}
+	body {
+		@apply bg-background text-foreground;
+		/* Soft glows of blue, violet and teal down the page, as in the backgrounds of the app. The
+		   positions are percents of the page, so each section gets its own tint. */
+		background-image:
+			radial-gradient(80rem 55rem at 0% 6%, oklch(0.55 0.2 265 / 0.32), transparent 70%),
+			radial-gradient(70rem 55rem at 100% 20%, oklch(0.52 0.22 300 / 0.26), transparent 70%),
+			radial-gradient(75rem 60rem at 0% 42%, oklch(0.6 0.12 195 / 0.2), transparent 70%),
+			radial-gradient(70rem 55rem at 100% 64%, oklch(0.55 0.2 265 / 0.28), transparent 70%),
+			radial-gradient(80rem 55rem at 15% 90%, oklch(0.52 0.22 300 / 0.22), transparent 70%);
+		background-repeat: no-repeat;
+	}
+}

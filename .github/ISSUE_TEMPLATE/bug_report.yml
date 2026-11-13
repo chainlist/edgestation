@@ -1,0 +1,76 @@
+name: Bug report
+description: Something in EdgeStation does not work as it should.
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. A problem with a widget from the marketplace belongs in that widget's own repository: its page in **Settings → Widgets → Browse** links to it.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What you did, what you saw, and what you expected to see.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: The steps that make the problem occur again, if you know them.
+      placeholder: |
+        1. Open Settings → Pages
+        2. Add the Mixer widget to the Home page
+        3. ...
+
+  - type: input
+    id: version
+    attributes:
+      label: EdgeStation version
+      description: '**Settings → General** shows it under Updates.'
+      placeholder: '0.6.0'
+    validations:
+      required: true
+
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version
+      description: Press Win+R and run `winver` to see it.
+      placeholder: Windows 11 24H2 (build 26100)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: display
+    attributes:
+      label: Display
+      description: The display that EdgeStation shows its pages on.
+      options:
+        - Corsair Xeneon Edge
+        - Another monitor
+        - No secondary display
+    validations:
+      required: true
+
+  - type: input
+    id: display-details
+    attributes:
+      label: Display details
+      description: For another monitor, its resolution and orientation, and if it has touch.
+      placeholder: 1920 × 480, landscape, touch
+
+  - type: input
+    id: widget
+    attributes:
+      label: Widget
+      description: The widget with the problem, if there is one. Say if it is built in, from the marketplace, or your own.
+      placeholder: Mixer (built in)
+
+  - type: textarea
+    id: media
+    attributes:
+      label: Screenshots or video
+      description: Drag files here. A photo of the Edge can also help.

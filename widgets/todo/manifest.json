@@ -1,0 +1,10 @@
+{
+	"$schema": "../../packages/sdk/manifest.schema.json",
+	"name": "To-do",
+	"version": "1.0.0",
+	"description": "A to-do list: tap a task to check it off. Each copy keeps its own list.",
+	"author": "EdgeStation",
+	"main": "dist/main.js",
+	"icon": "icon.svg",
+	"size": { "w": 2, "h": 2 }
+}

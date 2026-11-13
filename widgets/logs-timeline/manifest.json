@@ -1,0 +1,23 @@
+{
+	"$schema": "../../packages/sdk/manifest.schema.json",
+	"name": "Logs timeline",
+	"version": "1.0.0",
+	"description": "A log of your day: type what you are doing and it joins a timeline at the current time. Tap an entry to edit or delete it, and browse earlier days at the top.",
+	"author": "EdgeStation",
+	"main": "dist/main.js",
+	"icon": "icon.svg",
+	"size": { "w": 2, "h": 2 },
+	"settings": [
+		{
+			"key": "hours",
+			"label": "Time format",
+			"type": "select",
+			"default": "auto",
+			"options": [
+				{ "value": "auto", "label": "Automatic" },
+				{ "value": "12", "label": "12-hour (AM/PM)" },
+				{ "value": "24", "label": "24-hour" }
+			]
+		}
+	]
+}

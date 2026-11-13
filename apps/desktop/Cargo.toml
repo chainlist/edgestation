@@ -1,0 +1,99 @@
+[package]
+name = "edgestation"
+version = "0.7.0"
+description = "Widget dashboard for a secondary display, made for the Corsair Xeneon Edge"
+license = "GPL-3.0-or-later"
+edition = "2024"
+rust-version = "1.90"
+
+[lib]
+name = "edgestation_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.7.4", features = [] }
+
+[dependencies]
+# `unstable` gives child web views in the Edge window, for `api.webview`.
+tauri = { version = "2.12.5", features = ["tray-icon", "unstable"] }
+tauri-plugin-store = "2"
+tauri-plugin-opener = "2"
+# Page shortcuts. The Edge window registers them from its settings.
+tauri-plugin-global-shortcut = "2"
+# Open at startup. Settings > Display turns it on and off.
+tauri-plugin-autostart = "2"
+# `api.fetch` sends the widget requests from Rust, so CORS does not apply.
+tauri-plugin-http = "2"
+# Installs newer releases once at launch, and from Settings > General.
+tauri-plugin-updater = "2"
+# Only one EdgeStation runs. A second launch opens the settings, which is the way in where the
+# tray icon gets no clicks (Linux).
+tauri-plugin-single-instance = "2"
+serde_json = "1.0"
+percent-encoding = "2"
+serde = { version = "1.0", features = ["derive"] }
+sysinfo = { version = "0.38", default-features = false, features = ["system", "network"] }
+nvml-wrapper = "0.13"
+base64 = "0.23"
+# App icons for the launcher widget. Tauri already brings this crate into the tree.
+png = "0.18"
+# Unpacks marketplace widgets, with read suport only. The updater already brings this crate in.
+zip = { version = "9", default-features = false, features = ["deflate-flate2-zlib-rs"] }
+# Fetches a few marketplace manifests at a time. Tauri already brings this crate into the tree.
+futures-util = "0.3"
+
+# These crates give the Wi-Fi network name to the system sampler and the media sessions to the
+# media widget. They give window events to the full-screen freeze, and process CPU times and
+# names to the top programs. They give rounded corners to the identify boxes and the Start menu
+# apps to the launcher widget. The audio mixer gets the devices, sessions and thier volumes.
+[target."cfg(windows)".dependencies]
+# Full-screen events of widget web views. Keep the version that Tauri uses.
+webview2-com = "0.39"
+# The code from the `interface` macro names this crate. The audio code uses that macro for the
+# undocumented `IPolicyConfig`.
+windows-core = "0.62"
+windows = { version = "0.62", features = [
+  "Wdk_System_SystemInformation",
+  "Win32_Foundation",
+  "Win32_Graphics_Dwm",
+  "Win32_Graphics_Gdi",
+  "Win32_Media_Audio",
+  "Win32_Media_Audio_Endpoints",
+  "Win32_Devices_FunctionDiscovery",
+  "Win32_System_Com",
+  "Win32_System_Com_StructuredStorage",
+  "Win32_System_Variant",
+  "Win32_System_Registry",
+  "Win32_Storage_FileSystem",
+  "Win32_System_Threading",
+  "Win32_Networking_NetworkListManager",
+  "Win32_NetworkManagement_IpHelper",
+  "Win32_NetworkManagement_Ndis",
+  "Win32_UI_Accessibility",
+  "Win32_UI_Shell",
+  "Win32_UI_Shell_Common",
+  "Win32_UI_Shell_PropertiesSystem",
+  "Win32_UI_WindowsAndMessaging",
+  "Media_Control",
+  "Storage_Streams",
+] }
+
+# The same features on Linux, for X11 desktops: NetworkManager and MPRIS over D-Bus, PulseAudio
+# (also served by PipeWire), the desktop entries of the app menu, and X11 window events.
+# Tauri already brings gtk, webkit2gtk, zbus and x11rb into the tree. Keep its versions, so the
+# types of `with_webview` match.
+[target.'cfg(target_os = "linux")'.dependencies]
+gtk = "0.18"
+gdkx11 = "0.18"
+webkit2gtk = { version = "2.0", features = ["v2_40"] }
+zbus = "5"
+x11rb = { version = "0.13", features = ["randr", "shape"] }
+libpulse-binding = "2"
+freedesktop-icons = "0.4"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true

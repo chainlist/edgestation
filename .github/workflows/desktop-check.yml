@@ -1,0 +1,66 @@
+name: Desktop check
+
+# Lints and tests the Rust code of the desktop app on Windows and on Linux. Each platform compiles
+# only its own side of the code, so a change made on one platform can break the other one. This
+# finds it on the pull request, not at the next release.
+on:
+  pull_request:
+    paths: ['apps/desktop/**', '.github/workflows/desktop-check.yml']
+  push:
+    branches: [main]
+    paths: ['apps/desktop/**', '.github/workflows/desktop-check.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A newer push to the same branch replaces the run in progress.
+concurrency:
+  group: desktop-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    strategy:
+      fail-fast: false
+      matrix:
+        # The same runners as the release build (desktop-release.yml).
+        os: [windows-latest, ubuntu-22.04]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: apps/desktop
+    steps:
+      - uses: actions/checkout@v5
+      # Platform code goes in the windows and linux files of each module (see Platforms in
+      # ARCHITECTURE.md). Only the lines that pick those files name a platform, and lib.rs and
+      # os/mod.rs. One runner is enough for this.
+      - name: Platform code stays in platform files
+        if: runner.os == 'Linux'
+        run: |
+          found=$(grep -rnE 'cfg(_attr)?!?\(.*\b(windows|target_os)\b' src --include='*.rs' \
+            | grep -v 'windows_subsystem' \
+            | grep -vE 'cfg_attr\((windows|target_os = "linux"), path = ' \
+            | grep -vE '^src/(lib|os/mod)\.rs:' || true)
+          if [ -n "$found" ]; then
+            echo "Platform cfg outside a platform selector:"
+            echo "$found"
+            exit 1
+          fi
+      # The same packages as the release build: WebKitGTK, the app indicator and PulseAudio.
+      - if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libxdo-dev libpulse-dev \
+            libayatana-appindicator3-dev librsvg2-dev
+      - run: rustup component add clippy
+      # The Tauri context embeds the built UI. These checks do not need it, so an empty folder
+      # stands in for it.
+      - run: mkdir -p ../ui/build
+      # Nothing from this cache gets into an installer. The release build does not use it.
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/desktop
+      - run: cargo clippy --all-targets --locked -- -D warnings
+      - run: cargo test --locked

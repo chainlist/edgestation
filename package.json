@@ -1,0 +1,26 @@
+{
+	"name": "edgestation",
+	"version": "0.7.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"tauri": "pnpm --filter @edgestation/desktop tauri",
+		"build:widgets": "pnpm --filter \"@edgestation/widget-*\" build",
+		"notices": "node scripts/notices/generate.mjs",
+		"check": "pnpm -r check && svelte-check --tsconfig widgets/tsconfig.json",
+		"test": "pnpm -r test",
+		"lint": "prettier --check .",
+		"format": "prettier --write ."
+	},
+	"devDependencies": {
+		"@edgestation/sdk": "workspace:*",
+		"@sveltejs/vite-plugin-svelte": "^7.2.0",
+		"prettier": "^3.8.3",
+		"prettier-plugin-svelte": "^4.1.0",
+		"prettier-plugin-tailwindcss": "^0.8.0",
+		"svelte": "^5.57.2",
+		"svelte-check": "^4.6.0",
+		"typescript": "^6.0.3",
+		"vite": "^8.3.0"
+	}
+}

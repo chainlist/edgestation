@@ -1,0 +1,45 @@
+{
+	"$schema": "../../packages/sdk/manifest.schema.json",
+	"name": "Launcher",
+	"version": "1.0.0",
+	"description": "Keys that open apps, like a Stream Deck. Tap an empty key to pick an app from the Start menu; hold a key to change or remove it.",
+	"author": "EdgeStation",
+	"main": "dist/main.js",
+	"icon": "icon.svg",
+	"size": { "w": 2, "h": 1 },
+	"permissions": ["apps"],
+	"settings": [
+		{
+			"key": "rows",
+			"label": "Rows of keys",
+			"type": "select",
+			"default": "2",
+			"options": [
+				{ "value": "1", "label": "1" },
+				{ "value": "2", "label": "2" },
+				{ "value": "3", "label": "3" },
+				{ "value": "4", "label": "4" }
+			]
+		},
+		{
+			"key": "labels",
+			"label": "App names",
+			"type": "select",
+			"default": "show",
+			"options": [
+				{ "value": "show", "label": "Under the icons" },
+				{ "value": "hide", "label": "Hidden" }
+			]
+		},
+		{
+			"key": "editing",
+			"label": "Editing on the Edge",
+			"type": "select",
+			"default": "on",
+			"options": [
+				{ "value": "on", "label": "Tap an empty key, hold a key" },
+				{ "value": "locked", "label": "Locked" }
+			]
+		}
+	]
+}

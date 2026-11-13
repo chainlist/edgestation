@@ -1,0 +1,38 @@
+{
+	"$schema": "../../packages/sdk/manifest.schema.json",
+	"name": "Mixer",
+	"version": "1.0.0",
+	"description": "Volume faders with level meters, or mute buttons only: every channel, or one per placement (the master, the microphone, an app such as Discord). Tap an icon or a button to mute it, the output's name to switch device, and the mic button to mute your microphone in every app. The Output devices channel shows a button for each output device and lights the active one.",
+	"author": "EdgeStation",
+	"main": "dist/main.js",
+	"icon": "icon.svg",
+	"size": { "w": 3, "h": 1 },
+	"permissions": ["audio"],
+	"settings": [
+		{
+			"key": "channel",
+			"label": "Channel",
+			"type": "select",
+			"default": "all",
+			"options": [
+				{ "value": "all", "label": "All" },
+				{ "value": "output", "label": "Master" },
+				{ "value": "input", "label": "Microphone" },
+				{ "value": "system", "label": "System sounds" },
+				{ "value": "outputs", "label": "Output devices" }
+			],
+			"source": "audioApps"
+		},
+		{
+			"key": "display",
+			"label": "Show",
+			"type": "select",
+			"default": "faders",
+			"options": [
+				{ "value": "faders", "label": "Faders and meters" },
+				{ "value": "buttons", "label": "Mute buttons only" }
+			],
+			"unless": { "channel": "outputs" }
+		}
+	]
+}

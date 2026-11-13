@@ -1,0 +1,135 @@
+name: Desktop release
+
+# Builds the installers of the desktop app and attaches them to a GitHub release. It also attaches
+# latest.json, which the updater of the app reads (updater-manifest). The repository secrets
+# TAURI_SIGNING_PRIVATE_KEY and TAURI_SIGNING_PRIVATE_KEY_PASSWORD hold the key from
+# `pnpm tauri signer generate`. release.yml calls this workflow after release-please creates a
+# release. Run it by hand to build the installers of an earlier release again. The new files
+# replace the attached ones.
+on:
+  workflow_call:
+    inputs:
+      tag:
+        description: Tag of the release to attach the installers to, e.g. v0.1.2
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag of the release to attach the installers to, e.g. v0.1.2
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        # Windows and Linux build at this time. macOS is ready. Uncomment its entries to build it.
+        # `assets` are the installers and their updater signatures to upload. The paths are
+        # relative to the bundle folder of the target. Another platform also needs its entries in
+        # latest.json, and its target in TARGETS of scripts/notices/generate.mjs.
+        include:
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            assets: msi/*.msi msi/*.msi.sig nsis/*-setup.exe nsis/*-setup.exe.sig
+          # - os: macos-latest
+          #   target: aarch64-apple-darwin
+          #   assets: dmg/*.dmg
+          # - os: macos-latest
+          #   target: x86_64-apple-darwin
+          #   assets: dmg/*.dmg
+          # Use Ubuntu 22.04, not latest. An AppImage runs only on systems with the glibc that
+          # built it or a newer glibc.
+          - os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            assets: >-
+              deb/*.deb deb/*.deb.sig rpm/*.rpm rpm/*.rpm.sig
+              appimage/*.AppImage appimage/*.AppImage.sig
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ inputs.tag }}
+      # Tauri needs these packages on Linux: WebKitGTK for the web views and an app indicator for
+      # the tray. The audio API needs PulseAudio, which PipeWire also serves.
+      - if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libxdo-dev libpulse-dev \
+            libayatana-appindicator3-dev librsvg2-dev patchelf
+      - run: rustup target add ${{ matrix.target }}
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12
+      # Do not use a dependency cache, so that files from other workflows cannot get into the
+      # installers.
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+      - run: pnpm install --frozen-lockfile
+      # beforeBuildCommand (tauri.conf.json) builds the UI and the built-in widgets first. The key
+      # signs each installer, and the updater checks the signature with plugins.updater.pubkey.
+      # Only this build signs the installers (tauri.updater.conf.json), so a local build needs no
+      # key. The config is a file, not inline JSON, becuase pnpm runs scripts through cmd on
+      # Windows. Cmd can change the quotes.
+      - run: pnpm tauri build --target ${{ matrix.target }} --config tauri.updater.conf.json
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+      - working-directory: apps/desktop/target/${{ matrix.target }}/release/bundle
+        run: gh release upload "$TAG" ${{ matrix.assets }} --clobber
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ inputs.tag }}
+
+  # The updater of the app reads latest.json from the latest release (plugins.updater.endpoints).
+  # The file gives the version, and for each type of install the installer and its signature. An
+  # app that came from the MSI updates from the MSI. An app from the setup.exe updates from it.
+  # On Linux, an AppImage updates from the AppImage, and the .deb and .rpm from their package.
+  updater-manifest:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - run: |
+          gh release download "$TAG" --pattern '*.sig' --dir sigs
+          cd sigs
+          nsis=$(echo *-setup.exe.sig)
+          msi=$(echo *.msi.sig)
+          appimage=$(echo *.AppImage.sig)
+          deb=$(echo *.deb.sig)
+          rpm=$(echo *.rpm.sig)
+          jq -n --arg version "${TAG#v}" \
+            --arg base "https://github.com/$GH_REPO/releases/download/$TAG" \
+            --arg nsis "${nsis%.sig}" --arg nsis_sig "$(cat "$nsis")" \
+            --arg msi "${msi%.sig}" --arg msi_sig "$(cat "$msi")" \
+            --arg appimage "${appimage%.sig}" --arg appimage_sig "$(cat "$appimage")" \
+            --arg deb "${deb%.sig}" --arg deb_sig "$(cat "$deb")" \
+            --arg rpm "${rpm%.sig}" --arg rpm_sig "$(cat "$rpm")" \
+            '{
+              version: $version,
+              platforms: {
+                "windows-x86_64-nsis": { url: "\($base)/\($nsis)", signature: $nsis_sig },
+                "windows-x86_64-msi": { url: "\($base)/\($msi)", signature: $msi_sig },
+                "linux-x86_64-appimage": { url: "\($base)/\($appimage)", signature: $appimage_sig },
+                "linux-x86_64-deb": { url: "\($base)/\($deb)", signature: $deb_sig },
+                "linux-x86_64-rpm": { url: "\($base)/\($rpm)", signature: $rpm_sig }
+              }
+            }' > ../latest.json
+          cat ../latest.json
+          gh release upload "$TAG" ../latest.json --clobber
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ inputs.tag }}

@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="text-scale" content="scale" />
+		<script>
+			// The saved theme comes over IPC after the first paint. Start in the last mode that
+			// `applyTheme` applied, so the page does not show light while it loads.
+			{
+				const mode = localStorage.getItem('theme-mode') === 'light' ? 'light' : 'dark';
+				document.documentElement.classList.toggle('dark', mode === 'dark');
+				document.documentElement.style.colorScheme = mode;
+			}
+		</script>
+		%sveltekit.head%
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<div style="display: contents">%sveltekit.body%</div>
+	</body>
+</html>

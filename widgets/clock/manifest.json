@@ -1,0 +1,39 @@
+{
+	"$schema": "../../packages/sdk/manifest.schema.json",
+	"name": "Clock",
+	"version": "1.0.0",
+	"description": "Current time and date.",
+	"author": "EdgeStation",
+	"main": "dist/main.js",
+	"icon": "icon.svg",
+	"size": { "w": 2, "h": 1 },
+	"settings": [
+		{
+			"key": "hours",
+			"label": "Time format",
+			"type": "select",
+			"default": "auto",
+			"options": [
+				{ "value": "auto", "label": "Automatic" },
+				{ "value": "12", "label": "12-hour (AM/PM)" },
+				{ "value": "24", "label": "24-hour" }
+			]
+		},
+		{
+			"key": "date",
+			"label": "Date",
+			"type": "select",
+			"default": "long",
+			"options": [
+				{ "value": "long", "label": "Weekday, day and month" },
+				{ "value": "full", "label": "Weekday, day, month and year" },
+				{ "value": "short", "label": "Short weekday, day and month" },
+				{ "value": "dayMonth", "label": "Day and month" },
+				{ "value": "weekday", "label": "Weekday only" },
+				{ "value": "numeric", "label": "Numeric" },
+				{ "value": "iso", "label": "ISO (YYYY-MM-DD)" },
+				{ "value": "none", "label": "None" }
+			]
+		}
+	]
+}

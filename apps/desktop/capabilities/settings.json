@@ -1,0 +1,14 @@
+{
+	"$schema": "../gen/schemas/desktop-schema.json",
+	"identifier": "settings",
+	"description": "Permissions of the settings window alone: its own title bar (move, minimize, maximize and close), turning Open at startup on and off, and Check for updates",
+	"windows": ["settings"],
+	"permissions": [
+		"core:window:allow-start-dragging",
+		"core:window:allow-minimize",
+		"core:window:allow-toggle-maximize",
+		"core:window:allow-close",
+		"autostart:default",
+		"updater:default"
+	]
+}

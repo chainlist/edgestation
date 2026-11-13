@@ -1,0 +1,9 @@
+{
+	"name": "@edgestation/widget-launcher",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"build": "vite build -c ../vite.config.ts",
+		"dev": "vite build -c ../vite.config.ts --watch"
+	}
+}

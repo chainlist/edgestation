@@ -1,0 +1,65 @@
+{
+	"$schema": "../../packages/sdk/manifest.schema.json",
+	"name": "Performance",
+	"version": "1.0.0",
+	"description": "One machine metric per placement: CPU or GPU load, GPU temperature, internet usage, Wi-Fi network or machine name.",
+	"author": "EdgeStation",
+	"main": "dist/main.js",
+	"icon": "icon.svg",
+	"size": { "w": 1, "h": 1 },
+	"permissions": ["system"],
+	"settings": [
+		{
+			"key": "metric",
+			"label": "Metric",
+			"type": "select",
+			"default": "cpuLoad",
+			"options": [
+				{ "value": "cpuLoad", "label": "CPU load" },
+				{ "value": "gpuLoad", "label": "GPU load" },
+				{ "value": "gpuTemp", "label": "GPU temperature" },
+				{ "value": "net", "label": "Internet usage" },
+				{ "value": "wifi", "label": "Wi-Fi network" },
+				{ "value": "hostname", "label": "Machine name" }
+			]
+		},
+		{
+			"key": "top",
+			"label": "Top programs",
+			"type": "select",
+			"default": "0",
+			"when": { "metric": "cpuLoad" },
+			"options": [
+				{ "value": "0", "label": "Off" },
+				{ "value": "1", "label": "Top 1" },
+				{ "value": "2", "label": "Top 2" },
+				{ "value": "3", "label": "Top 3" }
+			]
+		},
+		{
+			"key": "direction",
+			"label": "Direction",
+			"type": "select",
+			"default": "both",
+			"when": { "metric": "net" },
+			"options": [
+				{ "value": "down", "label": "Download" },
+				{ "value": "up", "label": "Upload" },
+				{ "value": "both", "label": "Download and upload" }
+			]
+		},
+		{
+			"key": "period",
+			"label": "Show",
+			"type": "select",
+			"default": "now",
+			"when": { "metric": "net" },
+			"options": [
+				{ "value": "now", "label": "Instant" },
+				{ "value": "avg1m", "label": "Average over 1 min" },
+				{ "value": "avg5m", "label": "Average over 5 min" },
+				{ "value": "avg15m", "label": "Average over 15 min" }
+			]
+		}
+	]
+}

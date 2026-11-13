@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+<title>EdgeStation, Close-up</title>
+<defs><linearGradient id="app-front" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6FA9FF"/><stop offset="1" stop-color="#2B5CE4"/></linearGradient></defs>
+<g transform="translate(0 3)">
+<polygon points="0,62 24,56 24,164 0,158" fill="#2B5CE4"/>
+<polygon points="232,56 256,62 256,158 232,164" fill="#2B5CE4"/>
+<rect x="32" y="36" width="192" height="148" rx="22" fill="url(#app-front)"/>
+<rect x="46" y="50" width="74" height="120" rx="8" fill="#DCEBFF"/>
+<rect x="125" y="50" width="85" height="58" rx="8" fill="#B9D7FF"/>
+<rect x="125" y="113" width="40" height="57" rx="8" fill="#8DBEFF"/>
+<rect x="170" y="113" width="40" height="57" rx="8" fill="#B9D7FF"/>
+<rect x="94" y="200" width="24" height="12" rx="6" fill="#3D7AF7"/>
+<rect x="128" y="200" width="12" height="12" rx="6" fill="#8DBEFF"/>
+<rect x="150" y="200" width="12" height="12" rx="6" fill="#8DBEFF"/>
+</g>
+</svg>

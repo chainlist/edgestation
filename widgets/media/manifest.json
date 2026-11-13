@@ -1,0 +1,11 @@
+{
+	"$schema": "../../packages/sdk/manifest.schema.json",
+	"name": "Media",
+	"version": "1.0.0",
+	"description": "What is playing (Spotify, YouTube, ...) with its album art, progress and play, pause and skip buttons.",
+	"author": "EdgeStation",
+	"main": "dist/main.js",
+	"icon": "icon.svg",
+	"size": { "w": 2, "h": 1 },
+	"permissions": ["media"]
+}

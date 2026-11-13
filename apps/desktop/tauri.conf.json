@@ -1,0 +1,68 @@
+{
+  "$schema": "./node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "EdgeStation",
+  "version": "0.7.0",
+  "identifier": "com.edgestation.dashboard",
+  "build": {
+    "frontendDist": "../ui/build",
+    "devUrl": "http://localhost:1420",
+    "beforeDevCommand": "pnpm --parallel --filter @edgestation/ui --filter @edgestation/widget-* dev",
+    "beforeBuildCommand": "pnpm --filter @edgestation/ui --filter @edgestation/widget-* build"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "edge",
+        "url": "/edge",
+        "title": "EdgeStation",
+        "width": 1280,
+        "height": 360,
+        "center": true,
+        "decorations": false,
+        "skipTaskbar": true,
+        "focusable": false,
+        "dragDropEnabled": false,
+        "visible": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "resources": {
+      "../../widgets/": "widgets/",
+      "../../LICENSE": "LICENSE.txt",
+      "../../THIRD-PARTY-NOTICES.txt": "THIRD-PARTY-NOTICES.txt"
+    },
+    "linux": {
+      "deb": {
+        "depends": [
+          "libpulse0"
+        ]
+      },
+      "rpm": {
+        "depends": [
+          "libpulse.so.0()(64bit)"
+        ]
+      }
+    },
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDdBRUJEMEE5Q0JGMDk1QjgKUldTNGxmRExxZERyZW4wRmZqc2ZPdHB5cHVKR2VUQ2F0bjhDU3pyNUdNYWI0UFhTNTRpaVplc2kK",
+      "endpoints": [
+        "https://github.com/chainlist/edgestation/releases/latest/download/latest.json"
+      ]
+    }
+  }
+}
