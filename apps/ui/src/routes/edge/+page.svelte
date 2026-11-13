@@ -2,6 +2,7 @@
 	import Snowflake from '@lucide/svelte/icons/snowflake';
 	import EdgeBackground from '#lib/components/edge/EdgeBackground.svelte';
 	import PageCarousel from '#lib/components/edge/PageCarousel.svelte';
+	import UpdatePrompt from '#lib/components/edge/UpdatePrompt.svelte';
 	import { resolveShortcuts, type ShortcutAction } from '#lib/shortcuts/actions.ts';
 	import {
 		backgroundBlur,
@@ -146,4 +147,5 @@
 			<Snowflake class="size-5" />Paused
 		</div>
 	{/if}
+	<UpdatePrompt />
 </main>

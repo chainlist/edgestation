@@ -146,9 +146,10 @@
 		<div class="flex gap-3 rounded-2xl border bg-card/40 p-5">
 			<RefreshCw class="mt-0.5 size-5 shrink-0 text-primary" />
 			<p class="text-sm text-muted-foreground">
-				EdgeStation updates itself each time it opens, from the same kind of file you installed: the
-				.deb from the .deb, the .rpm from the .rpm and the AppImage from the AppImage. The .deb and
-				the .rpm ask for your password to install an update.
+				Each time EdgeStation opens, it looks for a newer release and asks on the Edge before it
+				installs it, from the same kind of file you installed: the .deb from the .deb, the .rpm from
+				the .rpm and the AppImage from the AppImage. The .deb and the .rpm ask for your password to
+				install an update.
 			</p>
 		</div>
 	</section>

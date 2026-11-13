@@ -81,7 +81,7 @@ A dashboard runs all day, so EdgeStation keeps its footprint small.
 
 **Linux.** EdgeStation runs on X11 desktops, and Wayland sessions run it on XWayland. It draws its windows with WebKitGTK 4.1. The mixer works with PulseAudio, or PipeWire with pipewire-pulse. The Media widget reads players through MPRIS, and the Wi-Fi name comes from NetworkManager. The tray icon needs an app indicator host. On a desktop without one, start EdgeStation again to open Settings. The AppImage needs libfuse2, which recent distributions no longer install by default (on Ubuntu 24.04, `libfuse2t64`).
 
-GPU load and temperature need an NVIDIA GPU and its driver; everything else works without one. EdgeStation updates itself each time it opens, from the same kind of package you installed: the `.msi`, the `-setup.exe`, the `.deb`, the `.rpm` or the AppImage. The `.deb` and the `.rpm` ask for your password to install an update. **Settings → General → Check for updates** looks for a new release at once.
+GPU load and temperature need an NVIDIA GPU and its driver; everything else works without one. Each time EdgeStation opens, it looks for a newer release and asks on the Edge before it installs it, from the same kind of package you installed: the `.msi`, the `-setup.exe`, the `.deb`, the `.rpm` or the AppImage. The `.deb` and the `.rpm` ask for your password to install an update. **Settings → General → Check for updates** looks for a new release at once.
 
 ## Write your own widget
 

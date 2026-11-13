@@ -16,7 +16,6 @@ mod os;
 mod process;
 mod system;
 mod tray;
-mod updater;
 mod widgets;
 
 use tauri::Manager;
@@ -40,7 +39,8 @@ pub fn run() {
         // `api.fetch` sends the widget requests from here, so CORS does not apply.
         .plugin(tauri_plugin_http::init())
         // Gets newer releases from GitHub. CI signs them. plugins.updater in tauri.conf.json
-        // sets the source.
+        // sets the source. The Edge looks for one at launch and asks before it installs it
+        // (UpdatePrompt.svelte).
         .plugin(tauri_plugin_updater::Builder::new().build())
         // Only the host opens files and folders. The plugin script asks for a permission that
         // remote pages do not have, so links in widget web views do not open when it is on.
@@ -99,7 +99,6 @@ pub fn run() {
             if let Some(edge) = app.get_webview_window("edge") {
                 edge.set_background_color(Some(app_windows::page_background(app.handle())))?;
             }
-            updater::install_at_launch(app.handle());
             widgets::marketplace::update::update_at_launch(app.handle());
             Ok(tray::create(app.handle())?)
         })
