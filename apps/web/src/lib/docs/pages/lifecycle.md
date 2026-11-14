@@ -26,7 +26,7 @@ A widget is unmounted when:
 
 - the user removes it from its page, or removes the page,
 - the user changes one of its [settings](/docs/settings): it is then mounted again, with the new values,
-- the Edge reloads (Settings → Widgets → Reload Edge).
+- the Edge reloads (Reload Edge, at the bottom of the Settings sidebar).
 
 On unmount, EdgeStation runs the cleanup `mount` returned and the functions passed to [`api.onDispose`](/docs/api/helpers#api-ondispose), and releases everything the widget registered through the `api`: `every` and `after` timers, web views, scrollbars, and `fetch` requests still waiting for an answer. Your own `setTimeout`, `setInterval`, `requestAnimationFrame`, event listeners on `window` or `document`, and sockets are yours to stop.
 

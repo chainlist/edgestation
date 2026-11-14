@@ -129,7 +129,7 @@ pnpm test          # run the unit tests
 pnpm tauri build   # build the installers
 ```
 
-Without a secondary display, the Edge window opens as a normal 1280×360 window on the main screen. In debug builds the built-in widgets are read straight from `widgets/`, and `pnpm tauri dev` rebuilds one whenever its source changes, so editing one only needs Settings → Widgets → Reload Edge.
+Without a secondary display, the Edge window opens as a normal 1280×360 window on the main screen. In debug builds the built-in widgets are read straight from `widgets/`, and `pnpm tauri dev` rebuilds one whenever its source changes, so editing one only needs a click on Reload Edge at the bottom of the Settings sidebar.
 
 **Where things are.** [ARCHITECTURE.md](ARCHITECTURE.md) has the repository layout and where each part of the app lives, from the widget runtime to the audio mixer.
 

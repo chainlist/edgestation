@@ -55,7 +55,7 @@ export default {
 1. In Settings → Widgets, click **Rescan**. CPU shows under **Your widgets**.
 2. In Settings → Pages, open a page, choose CPU in its widget list and click **Add**. Drag it to move it, drag a corner to resize it.
 
-The tile shows on the Edge right away. After you edit `main.js` or `styles.css`, click **Reload Edge** in Settings → Widgets to load the change.
+The tile shows on the Edge right away. After you edit `main.js` or `styles.css`, click **Reload Edge** at the bottom of the Settings sidebar to load the change.
 
 > If something is wrong, for example a typo that throws in `mount`, an error card replaces the tile with the message and a Retry button. The rest of the Edge keeps running.
 
@@ -143,7 +143,7 @@ Rebuild on every change:
 npx vite build --watch
 ```
 
-and click **Reload Edge** in Settings → Widgets to load each new build.
+and click **Reload Edge** at the bottom of the Settings sidebar to load each new build.
 
 ## Next steps
 

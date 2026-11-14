@@ -199,7 +199,7 @@ EdgeStation loads every folder of `%APPDATA%\com.edgestation.dashboard\widgets\`
 mklink /J "%APPDATA%\com.edgestation.dashboard\widgets\my-widget" C:\path\to\my-widget
 ```
 
-Then rebuild on each change, and use Settings → Widgets → Reload Edge to load the new build:
+Then rebuild on each change, and click Reload Edge at the bottom of the Settings sidebar to load the new build:
 
 ```bash
 npx vite build --watch

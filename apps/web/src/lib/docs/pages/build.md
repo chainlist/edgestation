@@ -68,7 +68,7 @@ The link's name, `my-widget`, is the widget's id. Then:
 1. In Settings → Widgets, click **Rescan**: the widget shows under **Your widgets**.
 2. Add it to a page in Settings → Pages.
 3. Run `npx vite build --watch`, which rebuilds on every change.
-4. After each build, click **Reload Edge** in Settings → Widgets to load it.
+4. After each build, click **Reload Edge** at the bottom of the Settings sidebar to load it.
 
 **Rescan** reads the widget folders again, so Settings shows a new widget or a changed manifest. **Reload Edge** reloads the Edge, which then loads each widget's latest build.
 

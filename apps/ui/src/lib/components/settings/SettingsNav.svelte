@@ -38,8 +38,10 @@
 </script>
 
 <script lang="ts">
+	import RotateCcw from '@lucide/svelte/icons/rotate-ccw';
 	import { page } from '$app/state';
 	import { Button } from '#lib/components/ui/button/index.ts';
+	import { reloadEdge } from '#lib/tauri/events.ts';
 
 	// Each starts as `null`, the fallback value of Button. A bind to `undefined` throws an error.
 	const links: Record<string, HTMLElement | null> = $state(
@@ -90,4 +92,13 @@
 			</div>
 		{/each}
 	</div>
+	<footer class="mt-auto grid">
+		<Button
+			variant="ghost"
+			onclick={reloadEdge}
+			class="justify-start hover:bg-primary/10 dark:hover:bg-primary/10"
+		>
+			<RotateCcw />Reload Edge
+		</Button>
+	</footer>
 </nav>
