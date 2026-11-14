@@ -7,11 +7,11 @@ use windows::Win32::Media::Audio::{
 use windows::core::Interface;
 
 use super::apps::apps;
+use super::default_output;
 use super::devices::{default, device, enumerator, id, inputs, name, volume};
 use super::meters::METERS;
 use super::sessions::app_sessions;
 use super::with_com;
-use super::default_output;
 use crate::audio::{Mixer, Output, Target};
 
 pub fn mixer() -> std::result::Result<Mixer, String> {
@@ -117,8 +117,8 @@ pub fn set_output(target: &str) -> std::result::Result<bool, String> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::super::meters::levels;
+    use super::*;
     use std::time::Instant;
 
     /// Reads the real sound of the machine. Run it with `--ignored --nocapture` to see the values.

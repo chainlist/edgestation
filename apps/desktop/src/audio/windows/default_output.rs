@@ -18,11 +18,9 @@ const POLICY_CONFIG_CLIENT: GUID = GUID::from_u128(0x870af99c_171d_4f9e_af0d_e63
 #[interface("f8679f50-850a-41cf-9c72-430f290290c8")]
 unsafe trait IPolicyConfig: IUnknown {
     fn GetMixFormat(&self, device: PCWSTR, format: *mut *mut c_void) -> HRESULT;
-    fn GetDeviceFormat(&self, device: PCWSTR, default: i32, format: *mut *mut c_void)
-    -> HRESULT;
+    fn GetDeviceFormat(&self, device: PCWSTR, default: i32, format: *mut *mut c_void) -> HRESULT;
     fn ResetDeviceFormat(&self, device: PCWSTR) -> HRESULT;
-    fn SetDeviceFormat(&self, device: PCWSTR, endpoint: *mut c_void, mix: *mut c_void)
-    -> HRESULT;
+    fn SetDeviceFormat(&self, device: PCWSTR, endpoint: *mut c_void, mix: *mut c_void) -> HRESULT;
     fn GetProcessingPeriod(
         &self,
         device: PCWSTR,

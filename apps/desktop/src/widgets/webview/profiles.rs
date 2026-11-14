@@ -38,11 +38,8 @@ pub async fn webview_profile_delete<R: Runtime>(
     profile: String,
 ) -> Result<(), String> {
     let dir = profile_dir(&app, &profile)?;
-    let views: Vec<_> = app
-        .webviews()
-        .into_values()
-        .filter(|view| in_profile(view.label(), &profile))
-        .collect();
+    let views: Vec<_> =
+        app.webviews().into_values().filter(|view| in_profile(view.label(), &profile)).collect();
     if let Some(first) = views.first() {
         let released = native::release(first, profile).await?;
         for view in &views {

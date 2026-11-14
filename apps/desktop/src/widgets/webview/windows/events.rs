@@ -11,7 +11,9 @@ pub fn report_loads<R: Runtime>(
     webview: &Webview<R>,
     on_load: Channel<PageLoad>,
 ) -> tauri::Result<()> {
-    use webview2_com::{take_pwstr, NavigationCompletedEventHandler, NavigationStartingEventHandler};
+    use webview2_com::{
+        NavigationCompletedEventHandler, NavigationStartingEventHandler, take_pwstr,
+    };
     use windows::core::{Error, PWSTR};
 
     webview.with_webview(move |platform| {
@@ -56,7 +58,7 @@ pub fn report_sources<R: Runtime>(
     webview: &Webview<R>,
     on_navigate: Channel<String>,
 ) -> tauri::Result<()> {
-    use webview2_com::{take_pwstr, SourceChangedEventHandler};
+    use webview2_com::{SourceChangedEventHandler, take_pwstr};
     use windows::core::{Error, PWSTR};
 
     webview.with_webview(move |platform| {
@@ -91,15 +93,17 @@ pub fn keep_fullscreen<R: Runtime>(
     on_fullscreen: Channel<bool>,
 ) -> tauri::Result<()> {
     use webview2_com::ContainsFullScreenElementChangedEventHandler;
-    use windows::core::{Error, BOOL};
+    use windows::core::{BOOL, Error};
 
     webview.with_webview(move |platform| {
         let mut was_fullscreen = false;
-        let handler = ContainsFullScreenElementChangedEventHandler::create(Box::new(
-            move |sender, _| {
+        let handler =
+            ContainsFullScreenElementChangedEventHandler::create(Box::new(move |sender, _| {
                 let mut entered = BOOL::default();
                 // SAFETY: a WebView2 call on the thread that runs its events.
-                unsafe { sender.ok_or_else(Error::empty)?.ContainsFullScreenElement(&mut entered)? };
+                unsafe {
+                    sender.ok_or_else(Error::empty)?.ContainsFullScreenElement(&mut entered)?
+                };
                 let _ = on_fullscreen.send(entered.as_bool());
                 if entered.as_bool() {
                     // Tauri queued its own change but did not aply it yet. This is the state
@@ -112,8 +116,7 @@ pub fn keep_fullscreen<R: Runtime>(
                     tauri::async_runtime::spawn(async move { window.set_fullscreen(true) });
                 }
                 Ok(())
-            },
-        ));
+            }));
         let mut token = 0;
         // SAFETY: the controller is alive while its webview is, and this runs on its thread.
         unsafe {

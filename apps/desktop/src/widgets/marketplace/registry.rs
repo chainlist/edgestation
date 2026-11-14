@@ -15,9 +15,7 @@ pub(super) struct Entry {
 pub(super) fn valid_id(id: &str) -> bool {
     !id.starts_with('-')
         && !id.is_empty()
-        && id
-            .bytes()
-            .all(|b| matches!(b, b'a'..=b'z' | b'0'..=b'9' | b'-'))
+        && id.bytes().all(|b| matches!(b, b'a'..=b'z' | b'0'..=b'9' | b'-'))
 }
 
 /// True for a GitHub repo in the form `owner/name`.
@@ -26,17 +24,14 @@ fn valid_repo(repo: &str) -> bool {
         !p.is_empty()
             && p != "."
             && p != ".."
-            && p.bytes()
-                .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'-' | b'_' | b'.'))
+            && p.bytes().all(|b| b.is_ascii_alphanumeric() || matches!(b, b'-' | b'_' | b'.'))
     };
     matches!(repo.split_once('/'), Some((owner, name)) if part(owner) && part(name))
 }
 
 /// Gets the widgets of the registry. It skipps each entry that does not have a valid id and repo.
 pub(super) async fn registry(client: &Client) -> Result<Vec<Entry>, String> {
-    let list = get_json(client, &registry_url())
-        .await
-        .map_err(marketplace_unavailable)?;
+    let list = get_json(client, &registry_url()).await.map_err(marketplace_unavailable)?;
     let entries = list
         .as_array()
         .ok_or_else(|| marketplace_unavailable("its list is not an array".into()))?;
@@ -45,10 +40,7 @@ pub(super) async fn registry(client: &Client) -> Result<Vec<Entry>, String> {
         .filter_map(|entry| {
             let id = entry["id"].as_str()?;
             let repo = entry["repo"].as_str()?;
-            (valid_id(id) && valid_repo(repo)).then(|| Entry {
-                id: id.into(),
-                repo: repo.into(),
-            })
+            (valid_id(id) && valid_repo(repo)).then(|| Entry { id: id.into(), repo: repo.into() })
         })
         .collect())
 }
@@ -57,10 +49,7 @@ pub(super) async fn registry(client: &Client) -> Result<Vec<Entry>, String> {
 pub(super) async fn release_manifest(client: &Client, repo: &str) -> Result<Value, String> {
     match get_json(client, &release_url(repo, "manifest.json")).await {
         Ok(manifest) if manifest.is_object() => Ok(manifest),
-        Ok(_) => Err(unavailable(
-            repo,
-            "its manifest.json must contain an object".into(),
-        )),
+        Ok(_) => Err(unavailable(repo, "its manifest.json must contain an object".into())),
         Err(cause) => Err(unavailable(repo, cause)),
     }
 }
@@ -100,10 +89,7 @@ mod tests {
     fn messages_hide_the_cause() {
         let url = "https://github.com/jane/w/releases/latest/download/widget.zip";
         let message = unavailable("jane/w", format!("{url} answered 404 Not Found"));
-        assert_eq!(
-            message,
-            "This widget is currently unavailable for download."
-        );
+        assert_eq!(message, "This widget is currently unavailable for download.");
         let message = marketplace_unavailable(format!("{url} answered 404 Not Found"));
         assert!(!message.contains(url));
     }

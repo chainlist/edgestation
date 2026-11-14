@@ -45,10 +45,7 @@ async fn update_all<R: Runtime>(app: &AppHandle<R>) -> Result<Vec<Attempt>, Stri
         let latest = match release_manifest(&client, &entry.repo).await {
             Ok(latest) => latest,
             Err(error) => {
-                attempts.push(Attempt {
-                    id: entry.id,
-                    error: Some(error),
-                });
+                attempts.push(Attempt { id: entry.id, error: Some(error) });
                 continue;
             }
         };
@@ -70,17 +67,11 @@ async fn update_all<R: Runtime>(app: &AppHandle<R>) -> Result<Vec<Attempt>, Stri
             continue;
         }
         let error = install(app, &client, &entry, &latest).await.err();
-        attempts.push(Attempt {
-            id: entry.id,
-            error,
-        });
+        attempts.push(Attempt { id: entry.id, error });
     }
 
-    let updated: Vec<String> = attempts
-        .iter()
-        .filter(|a| a.error.is_none())
-        .map(|a| a.id.clone())
-        .collect();
+    let updated: Vec<String> =
+        attempts.iter().filter(|a| a.error.is_none()).map(|a| a.id.clone()).collect();
     if !updated.is_empty() {
         changed(app, &updated);
     }

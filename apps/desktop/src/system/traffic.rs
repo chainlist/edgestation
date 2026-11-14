@@ -46,7 +46,8 @@ impl Traffic {
     }
 
     fn since(&self, from: usize) -> Rate {
-        let (Some(&(t0, rx0, tx0)), Some(&(t1, rx1, tx1))) = (self.0.get(from), self.0.back()) else {
+        let (Some(&(t0, rx0, tx0)), Some(&(t1, rx1, tx1))) = (self.0.get(from), self.0.back())
+        else {
             return Rate::default();
         };
         let secs = (t1 - t0).as_secs_f64();

@@ -28,9 +28,7 @@ pub fn run() {
         // A second launch opens the settings of the running app. Linux trays give no clicks,
         // and some desktops show no tray at all, so this is the way in there. It goes first, so
         // the second app exits before the other plugins start.
-        .plugin(tauri_plugin_single_instance::init(|app, _, _| {
-            app_windows::show_settings(app)
-        }))
+        .plugin(tauri_plugin_single_instance::init(|app, _, _| app_windows::show_settings(app)))
         .plugin(tauri_plugin_store::Builder::new().build())
         // The Edge window registers its shortcuts from the saved settings.
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
@@ -45,11 +43,7 @@ pub fn run() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         // Only the host opens files and folders. The plugin script asks for a permission that
         // remote pages do not have, so links in widget web views do not open when it is on.
-        .plugin(
-            tauri_plugin_opener::Builder::new()
-                .open_js_links_on_click(false)
-                .build(),
-        )
+        .plugin(tauri_plugin_opener::Builder::new().open_js_links_on_click(false).build())
         .register_asynchronous_uri_scheme_protocol("widget", widgets::protocol)
         .register_asynchronous_uri_scheme_protocol("appicon", apps::icon_protocol)
         .on_page_load(|page, payload| {

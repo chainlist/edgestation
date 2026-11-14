@@ -8,10 +8,10 @@ mod mixer;
 mod sessions;
 mod watch;
 
+pub(super) use devices::{default, enumerator, inputs, volume};
 pub use meters::{Meter, levels};
 pub use mixer::{mixer, outputs, set_muted, set_output, set_volume};
 pub use watch::{unwatch, watch};
-pub(super) use devices::{default, enumerator, inputs, volume};
 
 use crate::os::windows::com::{self, Apartment};
 

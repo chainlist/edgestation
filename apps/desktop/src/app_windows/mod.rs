@@ -21,11 +21,7 @@ pub fn page_background<R: Runtime>(app: &AppHandle<R>) -> Color {
         .ok()
         .and_then(|store| store.get("theme"))
         .is_some_and(|theme| theme["mode"] == "light");
-    if light {
-        Color(255, 255, 255, 255)
-    } else {
-        Color(10, 10, 10, 255)
-    }
+    if light { Color(255, 255, 255, 255) } else { Color(10, 10, 10, 255) }
 }
 
 /// Opens the settings, as `open_settings` does, and prints the error if that fails. The tray and

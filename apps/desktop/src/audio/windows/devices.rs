@@ -70,4 +70,3 @@ pub(super) unsafe fn name(device: &IMMDevice) -> Result<String> {
         Ok(name?.unwrap_or_default())
     }
 }
-

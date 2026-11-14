@@ -83,10 +83,7 @@ pub(super) async fn install<R: Runtime>(
             "One of your own widgets uses the id \"{id}\". Rename or remove its folder first."
         ));
     }
-    compatibility(
-        &app.package_info().version.to_string(),
-        manifest["minAppVersion"].as_str(),
-    )?;
+    compatibility(&app.package_info().version.to_string(), manifest["minAppVersion"].as_str())?;
 
     let zip = get(client, &release_url(&entry.repo, "widget.zip"), MAX_ZIP)
         .await

@@ -70,24 +70,14 @@ pub async fn webview_open<R: Runtime>(
     }
     // Far to the left of the window, so that no part of it shows.
     let outside = LogicalPosition::new(-100_000.0, 0.0);
-    let webview = window
-        .add_child(builder, outside, rect.size)
-        .map_err(|e| e.to_string())?;
+    let webview = window.add_child(builder, outside, rect.size).map_err(|e| e.to_string())?;
     // On Linux, Tauri packs the view below the page. There it moves into a window of its own,
     // over the page.
     native::added(&webview, Rect { position: outside.into(), size: rect.size })
         .map_err(|e| e.to_string())?;
     // The widget never gets the label of a view that failed to set up, so close the view here.
-    let set = set_up(
-        &webview,
-        window,
-        &bounds,
-        user_agent,
-        on_navigate,
-        on_load,
-        on_fullscreen,
-        url,
-    );
+    let set =
+        set_up(&webview, window, &bounds, user_agent, on_navigate, on_load, on_fullscreen, url);
     if let Err(e) = set.await {
         let _ = webview.close();
         return Err(e);

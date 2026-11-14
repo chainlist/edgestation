@@ -79,7 +79,5 @@ pub fn marketplace_open_link<R: Runtime>(app: AppHandle<R>, url: String) -> Resu
     if !url.starts_with("https://") {
         return Err(format!("Not an https link: {url}"));
     }
-    app.opener()
-        .open_url(url, None::<&str>)
-        .map_err(|e| e.to_string())
+    app.opener().open_url(url, None::<&str>).map_err(|e| e.to_string())
 }

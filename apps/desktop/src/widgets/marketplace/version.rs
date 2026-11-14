@@ -1,15 +1,16 @@
 /// Returns `Ok` if an app at `app_version` can run a widget that needs `min_app_version`.
 /// Else it returns the reason.
-pub(super) fn compatibility(app_version: &str, min_app_version: Option<&str>) -> Result<(), String> {
+pub(super) fn compatibility(
+    app_version: &str,
+    min_app_version: Option<&str>,
+) -> Result<(), String> {
     let Some(min) = min_app_version else {
         return Ok(());
     };
     let need = parse_version(min)
         .ok_or_else(|| format!("its minAppVersion \"{min}\" is not a version like 0.1.0"))?;
     if parse_version(app_version).unwrap_or_default() < need {
-        return Err(format!(
-            "It needs EdgeStation {min} or later, and this is {app_version}"
-        ));
+        return Err(format!("It needs EdgeStation {min} or later, and this is {app_version}"));
     }
     Ok(())
 }
@@ -27,9 +28,7 @@ fn parse_version(version: &str) -> Option<[u64; 3]> {
     let major = next()?.parse().ok()?;
     let minor = next()?.parse().ok()?;
     let rest = next()?;
-    let digits = rest
-        .find(|c: char| !c.is_ascii_digit())
-        .unwrap_or(rest.len());
+    let digits = rest.find(|c: char| !c.is_ascii_digit()).unwrap_or(rest.len());
     let patch = rest[..digits].parse().ok()?;
     Some([major, minor, patch])
 }

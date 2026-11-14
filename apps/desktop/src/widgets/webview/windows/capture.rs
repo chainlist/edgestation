@@ -20,9 +20,7 @@ pub async fn capture<R: Runtime>(webview: &Webview<R>) -> Result<Vec<u8>, String
             stream.Seek(0, STREAM_SEEK_SET, None)?;
             loop {
                 let mut read = 0;
-                stream
-                    .Read(chunk.as_mut_ptr().cast(), chunk.len() as u32, Some(&mut read))
-                    .ok()?;
+                stream.Read(chunk.as_mut_ptr().cast(), chunk.len() as u32, Some(&mut read)).ok()?;
                 if read == 0 {
                     return Ok(bytes);
                 }

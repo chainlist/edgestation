@@ -25,7 +25,12 @@ fn changed(app: &AppHandle, rewire: bool) {
 }
 
 /// One object for all kinds of callbacks.
-#[implement(IMMNotificationClient, IAudioEndpointVolumeCallback, IAudioSessionNotification, IAudioSessionEvents)]
+#[implement(
+    IMMNotificationClient,
+    IAudioEndpointVolumeCallback,
+    IAudioSessionNotification,
+    IAudioSessionEvents
+)]
 pub(super) struct Events {
     pub(super) app: AppHandle,
 }

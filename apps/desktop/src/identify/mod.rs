@@ -8,8 +8,8 @@
 #[cfg_attr(target_os = "linux", path = "linux.rs")]
 mod native;
 
-use std::sync::{Mutex, PoisonError};
 use std::sync::atomic::{AtomicU32, Ordering};
+use std::sync::{Mutex, PoisonError};
 use std::time::Duration;
 
 use percent_encoding::{NON_ALPHANUMERIC, utf8_percent_encode};
@@ -90,9 +90,8 @@ fn sync<R: Runtime>(app: &AppHandle<R>, show: bool) -> tauri::Result<()> {
     // Remove the boxes of monitors that were unpluged or resized, and the boxes without a window.
     boxes.retain(|found| {
         let window = app.get_webview_window(&found.label);
-        let current = monitors
-            .iter()
-            .any(|(name, m)| *name == found.name && *m.size() == found.size);
+        let current =
+            monitors.iter().any(|(name, m)| *name == found.name && *m.size() == found.size);
         if let (false, Some(window)) = (current, &window) {
             let _ = window.destroy();
         }
@@ -135,10 +134,7 @@ fn create<R: Runtime>(
 ) -> tauri::Result<String> {
     let label = format!("{LABEL}{}", NEXT.fetch_add(1, Ordering::Relaxed));
     let name = utf8_percent_encode(name, NON_ALPHANUMERIC);
-    let url = format!(
-        "identify?name={name}&width={}&height={}",
-        size.width, size.height
-    );
+    let url = format!("identify?name={name}&width={}&height={}", size.width, size.height);
     let window = WebviewWindowBuilder::new(app, &label, WebviewUrl::App(url.into()))
         .title("Identify screen")
         .inner_size(SIZE.width, SIZE.height)

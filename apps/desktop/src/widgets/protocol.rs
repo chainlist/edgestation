@@ -1,10 +1,10 @@
 use std::path::Path;
 
 use percent_encoding::percent_decode_str;
-use tauri::http::{header, Request, Response, StatusCode};
+use tauri::http::{Request, Response, StatusCode, header};
 use tauri::{Runtime, UriSchemeContext, UriSchemeResponder};
 
-use super::roots::{resolve, roots, Root};
+use super::roots::{Root, resolve, roots};
 
 /// Serves widget files at `widget://localhost/<id>/<file>`, and at `http://widget.localhost/...`
 /// on Windows. Real slashes in the URL let relative `import`s in widget modules work.

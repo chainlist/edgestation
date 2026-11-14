@@ -9,8 +9,8 @@ use tauri::AppHandle;
 use x11rb::connection::Connection;
 use x11rb::protocol::Event;
 use x11rb::protocol::xproto::{
-    AtomEnum, ChangeWindowAttributesAux, ClientMessageEvent, ConnectionExt as _,
-    CreateWindowAux, EventMask, MapState, Window, WindowClass,
+    AtomEnum, ChangeWindowAttributesAux, ClientMessageEvent, ConnectionExt as _, CreateWindowAux,
+    EventMask, MapState, Window, WindowClass,
 };
 
 use crate::os::linux::x11::{Monitor, X11, error};
@@ -29,20 +29,8 @@ fn start(app: AppHandle) -> Result<(), String> {
     let conn = &x11.conn;
     let wake = conn.generate_id().map_err(error)?;
     let only_input = CreateWindowAux::new();
-    conn.create_window(
-        0,
-        wake,
-        x11.root,
-        -1,
-        -1,
-        1,
-        1,
-        0,
-        WindowClass::INPUT_ONLY,
-        0,
-        &only_input,
-    )
-    .map_err(error)?;
+    conn.create_window(0, wake, x11.root, -1, -1, 1, 1, 0, WindowClass::INPUT_ONLY, 0, &only_input)
+        .map_err(error)?;
     let root_events = ChangeWindowAttributesAux::new().event_mask(EventMask::PROPERTY_CHANGE);
     conn.change_window_attributes(x11.root, &root_events).map_err(error)?;
     conn.flush().map_err(error)?;
@@ -79,9 +67,7 @@ fn listen(x11: &X11, wake: Window, app: &AppHandle) {
                     watch.check();
                 }
             }
-            Event::ConfigureNotify(event) if Some(event.window) == watch.target => {
-                watch.check()
-            }
+            Event::ConfigureNotify(event) if Some(event.window) == watch.target => watch.check(),
             Event::MapNotify(event) if Some(event.window) == watch.target => watch.check(),
             Event::UnmapNotify(event) if Some(event.window) == watch.target => watch.check(),
             Event::DestroyNotify(event) if Some(event.window) == watch.target => {
@@ -174,8 +160,7 @@ impl Watch<'_> {
     fn bounds(&self, window: Window) -> Option<(i32, i32, i32, i32)> {
         let conn = &self.x11.conn;
         let size = conn.get_geometry(window).ok()?.reply().ok()?;
-        let origin =
-            conn.translate_coordinates(window, self.x11.root, 0, 0).ok()?.reply().ok()?;
+        let origin = conn.translate_coordinates(window, self.x11.root, 0, 0).ok()?.reply().ok()?;
         let (x, y) = (origin.dst_x.into(), origin.dst_y.into());
         Some((x, y, size.width.into(), size.height.into()))
     }
@@ -203,8 +188,7 @@ fn covers_monitor(bounds: (i32, i32, i32, i32), state: &State, monitors: &[Monit
     monitors
         .iter()
         .find(|m| {
-            (m.x..m.x + m.width).contains(&center_x)
-                && (m.y..m.y + m.height).contains(&center_y)
+            (m.x..m.x + m.width).contains(&center_x) && (m.y..m.y + m.height).contains(&center_y)
         })
         .is_some_and(|m| {
             x <= m.x && y <= m.y && x + width >= m.x + m.width && y + height >= m.y + m.height
@@ -216,13 +200,8 @@ mod tests {
     use super::*;
 
     fn monitors() -> Vec<Monitor> {
-        let monitor = |name: &str, x, width, height| Monitor {
-            name: name.into(),
-            x,
-            y: 0,
-            width,
-            height,
-        };
+        let monitor =
+            |name: &str, x, width, height| Monitor { name: name.into(), x, y: 0, width, height };
         vec![monitor("DP-1", 0, 2560, 1440), monitor("DP-2", 2560, 2560, 720)]
     }
 

@@ -14,9 +14,7 @@ pub(super) fn unpack(zip: &[u8], dest: &Path, limit: u64) -> Result<(), String> 
         let mut file = archive.by_index(i).map_err(|e| bad(&e))?;
         let name = String::from_utf8_lossy(file.name_raw()).into_owned();
         let Some(rel) = file.enclosed_name() else {
-            return Err(format!(
-                "widget.zip has a path outside the widget folder: {name}"
-            ));
+            return Err(format!("widget.zip has a path outside the widget folder: {name}"));
         };
         if file.is_symlink() {
             return Err(format!("widget.zip has a symbolic link: {name}"));
@@ -34,10 +32,7 @@ pub(super) fn unpack(zip: &[u8], dest: &Path, limit: u64) -> Result<(), String> 
         total +=
             io::copy(&mut (&mut file).take(limit - total + 1), &mut out).map_err(|e| bad(&e))?;
         if total > limit {
-            return Err(format!(
-                "widget.zip unpacks to more than {} MB",
-                (limit >> 20).max(1)
-            ));
+            return Err(format!("widget.zip unpacks to more than {} MB", (limit >> 20).max(1)));
         }
     }
     Ok(())
@@ -50,18 +45,16 @@ pub(super) fn check_widget(dir: &Path) -> Result<(), String> {
         read_manifest(dir).map_err(|e| format!("widget.zip has no valid manifest.json: {e}"))?;
     let main = manifest["main"].as_str().unwrap_or("main.js");
     if !dir.join(main).is_file() {
-        return Err(format!(
-            "widget.zip has no {main}, which its manifest.json names"
-        ));
+        return Err(format!("widget.zip has no {main}, which its manifest.json names"));
     }
     Ok(())
 }
 
 #[cfg(test)]
 mod tests {
+    use super::super::install::MAX_UNPACKED;
     use super::*;
     use crate::widgets::marketplace::temp_dir;
-    use super::super::install::MAX_UNPACKED;
     use std::io::Write;
     use zip::write::SimpleFileOptions;
 

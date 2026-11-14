@@ -2,7 +2,7 @@ use std::collections::HashSet;
 use std::fs;
 use std::path::Path;
 
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use tauri::{AppHandle, Runtime};
 use tauri_plugin_opener::OpenerExt;
 
@@ -53,7 +53,5 @@ pub(super) fn read_manifest(dir: &Path) -> Result<Value, String> {
 pub fn widgets_open_dir<R: Runtime>(app: AppHandle<R>) -> Result<(), String> {
     let dir = user_dir(&app).map_err(|e| e.to_string())?;
     fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
-    app.opener()
-        .open_path(dir.to_string_lossy(), None::<&str>)
-        .map_err(|e| e.to_string())
+    app.opener().open_path(dir.to_string_lossy(), None::<&str>).map_err(|e| e.to_string())
 }

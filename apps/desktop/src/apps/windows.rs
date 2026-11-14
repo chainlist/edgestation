@@ -151,11 +151,8 @@ unsafe fn name_of(item: &IShellItem, kind: SIGDN) -> Option<String> {
 unsafe fn encode(bitmap: HBITMAP) -> Option<Vec<u8>> {
     unsafe {
         let mut info = BITMAP::default();
-        let read = GetObjectW(
-            bitmap.into(),
-            size_of::<BITMAP>() as i32,
-            Some((&raw mut info).cast()),
-        );
+        let read =
+            GetObjectW(bitmap.into(), size_of::<BITMAP>() as i32, Some((&raw mut info).cast()));
         let (width, height) = (info.bmWidth, info.bmHeight);
         if read == 0 || width <= 0 || height <= 0 {
             return None;
@@ -235,7 +232,6 @@ mod tests {
         assert_eq!(pixels, [3, 2, 1, 255, 30, 20, 10, 255]);
     }
 
-
     #[test]
     fn serves_an_installed_app_icon_as_png() {
         let app = &list().unwrap()[0];
@@ -289,11 +285,7 @@ mod tests {
             "/file/48/%5C%5Cserver%5Cshare%5Ca.exe",
             "/file/48/C%3A%5CNo%5CSuch.exe",
         ] {
-            assert_eq!(
-                icon_response(path).status(),
-                StatusCode::NOT_FOUND,
-                "{path}"
-            );
+            assert_eq!(icon_response(path).status(), StatusCode::NOT_FOUND, "{path}");
         }
     }
 }

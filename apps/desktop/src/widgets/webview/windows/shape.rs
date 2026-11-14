@@ -9,7 +9,7 @@ use crate::widgets::webview::shape::{Bounds, Hole};
 pub fn shape<R: Runtime>(webview: &Webview<R>, bounds: &Bounds) -> tauri::Result<()> {
     use windows::Win32::Foundation::HWND;
     use windows::Win32::Graphics::Gdi::{
-        CombineRgn, CreateRectRgn, CreateRoundRectRgn, DeleteObject, SetWindowRgn, HRGN, RGN_DIFF,
+        CombineRgn, CreateRectRgn, CreateRoundRectRgn, DeleteObject, HRGN, RGN_DIFF, SetWindowRgn,
     };
 
     /// Makes the region from `x1, y1` to `x2, y2`, without its right and bottom edges. `r`

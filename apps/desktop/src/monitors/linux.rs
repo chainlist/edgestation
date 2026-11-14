@@ -32,10 +32,7 @@ mod tests {
     #[test]
     fn names_have_the_connector() {
         let dp = || Some("DP-2".to_owned());
-        assert_eq!(
-            unique_name(Some("XENEON EDGE"), dp()).as_deref(),
-            Some("XENEON EDGE (DP-2)")
-        );
+        assert_eq!(unique_name(Some("XENEON EDGE"), dp()).as_deref(), Some("XENEON EDGE (DP-2)"));
         assert_eq!(unique_name(None, dp()).as_deref(), Some("DP-2"));
         assert_eq!(unique_name(Some(""), dp()).as_deref(), Some("DP-2"));
         assert_eq!(unique_name(Some("XENEON EDGE"), None).as_deref(), Some("XENEON EDGE"));

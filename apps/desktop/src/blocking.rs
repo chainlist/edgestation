@@ -3,7 +3,5 @@
 pub async fn run<T: Send + 'static>(
     f: impl FnOnce() -> Result<T, String> + Send + 'static,
 ) -> Result<T, String> {
-    tauri::async_runtime::spawn_blocking(f)
-        .await
-        .map_err(|error| error.to_string())?
+    tauri::async_runtime::spawn_blocking(f).await.map_err(|error| error.to_string())?
 }

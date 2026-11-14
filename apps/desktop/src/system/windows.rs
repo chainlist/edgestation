@@ -21,7 +21,8 @@ fn lookup() -> Option<String> {
         // Find the Wi-Fi adapters, to tell thier connections apart from Ethernet and VPN ones.
         let mut table: *mut MIB_IF_TABLE2 = std::ptr::null_mut();
         GetIfTable2(&mut table).ok().ok()?;
-        let rows = std::slice::from_raw_parts((*table).Table.as_ptr(), (*table).NumEntries as usize);
+        let rows =
+            std::slice::from_raw_parts((*table).Table.as_ptr(), (*table).NumEntries as usize);
         let wifi: Vec<_> = rows
             .iter()
             .filter(|row| row.Type == IF_TYPE_IEEE80211)

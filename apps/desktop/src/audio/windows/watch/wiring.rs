@@ -124,8 +124,12 @@ impl Watch {
             for wired in self.wired.drain(..) {
                 let _ = match wired {
                     Wired::Volume(endpoint) => endpoint.UnregisterControlChangeNotify(&self.volume),
-                    Wired::Sessions(manager) => manager.UnregisterSessionNotification(&self.sessions),
-                    Wired::Session(session) => session.UnregisterAudioSessionNotification(&self.session),
+                    Wired::Sessions(manager) => {
+                        manager.UnregisterSessionNotification(&self.sessions)
+                    }
+                    Wired::Session(session) => {
+                        session.UnregisterAudioSessionNotification(&self.session)
+                    }
                 };
             }
         }

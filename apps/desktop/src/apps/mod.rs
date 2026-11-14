@@ -69,10 +69,7 @@ fn icon_response(path: &str) -> Response<Vec<u8>> {
         None => (icon, path),
     };
     let png = path.split_once('/').and_then(|(size, id)| {
-        let size = size
-            .parse::<u32>()
-            .ok()?
-            .clamp(*ICON_SIZES.start(), *ICON_SIZES.end());
+        let size = size.parse::<u32>().ok()?.clamp(*ICON_SIZES.start(), *ICON_SIZES.end());
         draw(&percent_decode_str(id).decode_utf8().ok()?, size)
     });
     let response = Response::builder().header(header::CACHE_CONTROL, "max-age=3600");
