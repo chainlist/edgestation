@@ -60,4 +60,4 @@ Links that open a new tab, and sign-in popups, open in a separate window in the 
 
 With `{ mobile: true }`, the view presents itself as Chrome on a phone for every page it loads, user agent and client hints alike (Google's sites read the hints), so sites that pick their layout from the browser serve their mobile one. On Linux, WebKitGTK has no client hints, so only the user agent changes. Popup windows it opens don't: they present the app's own browser. Sites that only follow the width already fit the cell either way.
 
-The [`url` widget](https://github.com/chainlist/edgestation/tree/main/widgets/url) lets the user choose between the two with a setting, and shows the Home button. The [`youtube` widget](https://github.com/chainlist/edgestation/tree/main/widgets/youtube) opens one fixed page.
+The [`url` widget](https://github.com/chainlist/edgestation/tree/main/widgets/url) lets the user choose between the two with a setting, and shows the Home button. The [`youtube` widget](https://github.com/chainlist/edgestation/tree/main/widgets/youtube) gives the same choice in its Layout setting.

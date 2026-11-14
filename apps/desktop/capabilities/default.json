@@ -1,17 +1,14 @@
 {
-  "$schema": "../gen/schemas/desktop-schema.json",
-  "identifier": "default",
-  "description": "Permissions shared by the Edge and settings windows",
-  "windows": ["edge", "settings"],
-  "permissions": [
-    "core:default",
-    "core:webview:allow-set-webview-background-color",
-    "core:window:allow-set-always-on-top",
-    "core:window:allow-set-background-color",
-    "core:window:allow-set-fullscreen",
-    "core:window:allow-set-position",
-    "core:window:allow-show",
-    "store:default",
-    "updater:default"
-  ]
+	"$schema": "../gen/schemas/desktop-schema.json",
+	"identifier": "default",
+	"description": "Permissions shared by the Edge and settings windows",
+	"windows": ["edge", "settings"],
+	"permissions": [
+		"core:default",
+		"core:webview:allow-set-webview-background-color",
+		"core:window:allow-set-always-on-top",
+		"core:window:allow-set-background-color",
+		"store:default",
+		"updater:default"
+	]
 }

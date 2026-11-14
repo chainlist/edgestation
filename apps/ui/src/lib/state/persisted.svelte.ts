@@ -6,6 +6,12 @@ export interface Persisted<T> {
 	readonly ready: Promise<void>;
 }
 
+/** The `ready` promise of each persisted value, so that `allRead` needs no hand-kept list. */
+const reads: Promise<void>[] = [];
+
+/** Resolves when every persisted value made until now is read. */
+export const allRead = () => Promise.all(reads).then(() => {});
+
 /**
  * A reactive settings value that the app saves to disk. All windows see the same value.
  * Do not change a value in place. Assign a new object to `current` to save it.
@@ -19,6 +25,7 @@ export function persisted<T>(key: string, fallback: T): Persisted<T> {
 	const ready = settingsStore.get<T>(key).then((saved) => {
 		if (saved !== undefined) value = saved;
 	});
+	reads.push(ready);
 	void settingsStore.onKeyChange<T>(key, (next) => {
 		if (echoes > 0) echoes--;
 		else value = next ?? fallback;

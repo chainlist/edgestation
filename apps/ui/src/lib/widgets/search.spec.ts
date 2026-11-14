@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { filterInstalled, matchesQuery } from './search';
-import type { InstalledWidget } from './types';
+import { ids, installedWidget, listedWidget as listed } from '#lib/test-helpers.ts';
+import { filterInstalled, filterListing, matchesQuery } from './search';
 
 describe('matchesQuery', () => {
 	it('needs every word in one of the fields, in any case', () => {
@@ -15,21 +15,35 @@ describe('matchesQuery', () => {
 });
 
 describe('filterInstalled', () => {
-	const widget = (id: string, more: Partial<InstalledWidget> = {}): InstalledWidget => ({
-		id,
-		name: id,
-		source: 'builtin',
-		...more
-	});
 	const widgets = [
-		widget('clock', { name: 'Clock', author: 'EdgeStation' }),
-		widget('jira', { name: 'Jira board', description: 'The active sprint', source: 'marketplace' })
+		installedWidget('clock', { name: 'Clock', author: 'EdgeStation', source: 'builtin' }),
+		installedWidget('jira', {
+			name: 'Jira board',
+			description: 'The active sprint',
+			source: 'marketplace'
+		})
 	];
-	const ids = (list: InstalledWidget[]) => list.map((w) => w.id);
 
 	it('matches the id, name, description and author', () => {
 		expect(ids(filterInstalled(widgets, 'sprint'))).toEqual(['jira']);
 		expect(ids(filterInstalled(widgets, 'edgestation'))).toEqual(['clock']);
 		expect(ids(filterInstalled(widgets, ''))).toEqual(['clock', 'jira']);
+	});
+});
+
+describe('filterListing', () => {
+	const widgets = [
+		listed('weather', { manifest: { name: 'Weather', description: 'Forecast for your city' } }),
+		listed('clock', { manifest: { name: 'Clock', author: 'Jane' } })
+	];
+
+	it('matches every word against id, name, description and author', () => {
+		expect(ids(filterListing(widgets, 'city forecast'))).toEqual(['weather']);
+		expect(ids(filterListing(widgets, 'JANE'))).toEqual(['clock']);
+		expect(ids(filterListing(widgets, 'clock jane weather'))).toEqual([]);
+	});
+
+	it('keeps everything for an empty query', () => {
+		expect(ids(filterListing(widgets, '  '))).toEqual(['weather', 'clock']);
 	});
 });

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { AudioTarget } from '@edgestation/sdk';
-	import Glyph from './Glyph.svelte';
+	import ChannelIcon from './ChannelIcon.svelte';
 	import PadBody from './PadBody.svelte';
 	import PadGrid from './PadGrid.svelte';
 	import type { Strip } from './strip.ts';
@@ -28,19 +28,15 @@
 			onclick={() => toggle(target, muted)}
 		>
 			<PadBody {name} detail={off ? 'Not running' : muted ? 'Muted' : 'On'}>
-				{#if src && !broken[target]}
-					<img alt="" {src} onerror={() => (broken = { ...broken, [target]: true })} />
-				{:else}
-					<Glyph name={muted ? (fallback === 'mic' ? 'micOff' : 'speakerOff') : fallback} />
-				{/if}
+				<ChannelIcon {target} {src} {fallback} {muted} bind:broken />
 			</PadBody>
 		</button>
 	{/each}
 </PadGrid>
 
 <style>
-	.pad.muted img,
-	.pad.off img {
+	.pad.muted :global(img),
+	.pad.off :global(img) {
 		opacity: 0.5;
 		filter: grayscale(1);
 	}

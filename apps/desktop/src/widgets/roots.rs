@@ -2,7 +2,7 @@ use serde::Serialize;
 use std::path::{Component, Path, PathBuf};
 use tauri::{AppHandle, Manager, Runtime};
 
-/// Where a widget folder comes from. `list_widgets` gives it to Settings as `source`.
+/// Where a widget folder comes from. `widgets_list` gives it to Settings as `source`.
 #[derive(Clone, Copy, Serialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Source {

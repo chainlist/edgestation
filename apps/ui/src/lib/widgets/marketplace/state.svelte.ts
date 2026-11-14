@@ -1,12 +1,12 @@
-import { getVersion } from '@tauri-apps/api/app';
 import { invoke } from '@tauri-apps/api/core';
+import { appVersion as readAppVersion } from '#lib/tauri/app-version.ts';
 import type { ListedWidget } from '../types';
 
 let listing = $state.raw<ListedWidget[]>();
 let listingError = $state<string>();
 let loading: Promise<void> | undefined;
 let appVersion = $state<string>();
-getVersion().then((version) => (appVersion = version), console.error);
+readAppVersion().then((version) => (appVersion = version), console.error);
 
 /** For each widget id, the action that runs now: install or uninstall. */
 const busy: Record<string, 'install' | 'uninstall'> = $state({});
@@ -89,4 +89,4 @@ export async function updateWidgets(ids: string[]): Promise<void> {
 	}
 }
 
-export const openLink = (url: string) => invoke('open_link', { url });
+export const openLink = (url: string) => invoke('marketplace_open_link', { url });

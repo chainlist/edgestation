@@ -2,7 +2,7 @@
 	"$schema": "../../packages/sdk/manifest.schema.json",
 	"name": "Weather",
 	"version": "1.0.0",
-	"description": "The weather in a city, from Open-Meteo: the next 24 hours as a temperature curve over the chance of rain, the temperature now, or today in detail (feels-like, wind, humidity, UV index, sunrise and sunset). Type the city in its settings, with its region or country after a comma when the name is shared (Paris, Texas).",
+	"description": "The weather in a city, from Open-Meteo: the next 24 hours as a temperature curve over the chance of rain, the temperature now, or today in detail. Type the city in its settings, with its region or country after a comma when the name is shared (Paris, Texas).",
 	"author": "EdgeStation",
 	"main": "dist/main.js",
 	"icon": "icon.svg",
@@ -35,6 +35,18 @@
 				{ "value": "metric", "label": "°C, km/h" },
 				{ "value": "imperial", "label": "°F, mph" }
 			]
+		},
+		{
+			"key": "hours",
+			"label": "Time format",
+			"type": "select",
+			"default": "auto",
+			"options": [
+				{ "value": "auto", "label": "Automatic" },
+				{ "value": "12", "label": "12-hour (AM/PM)" },
+				{ "value": "24", "label": "24-hour" }
+			],
+			"unless": { "show": "current" }
 		}
 	]
 }

@@ -1,14 +1,13 @@
 <script lang="ts">
-	import { getVersion } from '@tauri-apps/api/app';
 	import { disable, enable, isEnabled } from '@tauri-apps/plugin-autostart';
-	import { check, type Update } from '@tauri-apps/plugin-updater';
 	import PageHeader from '#lib/components/settings/PageHeader.svelte';
 	import SettingsGroup from '#lib/components/settings/SettingsGroup.svelte';
 	import SettingsRow from '#lib/components/settings/SettingsRow.svelte';
 	import { Button } from '#lib/components/ui/button/index.ts';
 	import { Switch } from '#lib/components/ui/switch/index.ts';
+	import { createAppUpdate } from '#lib/state/app-update.svelte.ts';
 	import { freezeOnFullscreen } from '#lib/state/settings.svelte.ts';
-	import { installUpdate } from '#lib/tauri/updater.ts';
+	import { appVersion } from '#lib/tauri/app-version.ts';
 
 	const id = $props.id();
 
@@ -31,52 +30,28 @@
 	}
 
 	let version = $state<string>();
-	getVersion().then((v) => (version = v), console.error);
+	appVersion().then((v) => (version = v), console.error);
 
+	/** The newer release that Check for updates found. It installs only when the user says so. */
+	const offer = createAppUpdate();
 	/** The result of Check for updates. It shows in place of the row description. */
 	let updateStatus = $state<string>();
-	let updateError = $state<string>();
-	/** True while the app looks for a release or instals one. */
-	let busy = $state(false);
-	/** The newer release that Check for updates found. It installs only when the user says so. */
-	let update = $state<Update>();
-	/** The part of the download that is done, from 0 to 100. */
-	let percent = $state(0);
 
 	async function checkForUpdates() {
-		busy = true;
 		updateStatus = 'Looking for a newer release…';
-		updateError = undefined;
-		try {
-			update = (await check()) ?? undefined;
-			updateStatus = update
-				? `EdgeStation ${update.version} is available. You have ${update.currentVersion}.`
+		const found = await offer.check();
+		updateStatus = offer.error
+			? undefined
+			: found
+				? `EdgeStation ${found.version} is available. You have ${found.currentVersion}.`
 				: 'You have the latest release.';
-		} catch (e) {
-			console.error(e);
-			updateStatus = undefined;
-			updateError = `Couldn't update: ${e}`;
-		} finally {
-			busy = false;
-		}
 	}
 
 	async function install() {
-		if (!update) return;
-		const offer = updateStatus;
-		busy = true;
-		percent = 0;
-		updateError = undefined;
-		updateStatus = `Updating to ${update.version}. EdgeStation closes and opens again once it's done.`;
-		try {
-			await installUpdate(update, (p) => (percent = p));
-		} catch (e) {
-			console.error(e);
-			updateStatus = offer;
-			updateError = `Couldn't update: ${e}`;
-		} finally {
-			busy = false;
-		}
+		if (!offer.update) return;
+		const shown = updateStatus;
+		updateStatus = `Updating to ${offer.update.version}. EdgeStation closes and opens again once it's done.`;
+		if (!(await offer.install())) updateStatus = shown;
 	}
 </script>
 
@@ -121,14 +96,14 @@
 			label={version ? `Version ${version}` : 'Version'}
 			description={updateStatus ??
 				'EdgeStation looks for a newer release each time it opens, and asks on the Edge before it installs it.'}
-			error={updateError}
+			error={offer.error}
 		>
-			{#if update}
-				<Button onclick={install} disabled={busy}>
-					{busy ? `Downloading… ${percent}%` : 'Download & install'}
+			{#if offer.update}
+				<Button onclick={install} disabled={offer.busy}>
+					{offer.installLabel}
 				</Button>
 			{:else}
-				<Button variant="outline" onclick={checkForUpdates} disabled={busy}>
+				<Button variant="outline" onclick={checkForUpdates} disabled={offer.busy}>
 					Check for updates
 				</Button>
 			{/if}

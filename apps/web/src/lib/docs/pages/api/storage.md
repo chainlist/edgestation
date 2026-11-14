@@ -42,4 +42,4 @@ api.every(2000, async () => {
 });
 ```
 
-The [`logs-timeline` widget](https://github.com/chainlist/edgestation/tree/main/widgets/logs-timeline) keeps a timeline that every copy shows and edits. The [`todo` widget](https://github.com/chainlist/edgestation/tree/main/widgets/todo) keeps a list per placement.
+The [`logs-timeline` widget](https://github.com/chainlist/edgestation/tree/main/widgets/logs-timeline) keeps a timeline that every copy shows and edits. The [`todo` widget](https://github.com/chainlist/edgestation/tree/main/widgets/todo) keeps one list for all its copies.

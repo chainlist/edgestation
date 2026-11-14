@@ -1,11 +1,10 @@
 <script lang="ts">
 	import type { WidgetApi } from '@edgestation/sdk';
 	import Band from './Band.svelte';
-	import Icon from './Icon.svelte';
+	import Now from './Now.svelte';
 	import Today from './Today.svelte';
 	import { findPlace, loadForecast, type Forecast, type Place } from './forecast.ts';
-	import { degrees } from './format.ts';
-	import { condition } from './weather-codes.ts';
+	import { hourOptions } from './format.ts';
 
 	let props: { api: WidgetApi } = $props();
 	// `api` does not change. A changed setting mounts the widget again.
@@ -14,6 +13,7 @@
 	const { show } = api.settings;
 	const query = api.settings.city.trim();
 	const imperial = api.settings.units === 'imperial';
+	const hourStyle = hourOptions[api.settings.hours];
 
 	/** After this age, the next tick gets a new forecast. Open-Meteo updates every 15 minutes. */
 	const STALE = 15 * 60_000;
@@ -74,17 +74,14 @@
 		</div>
 	{/if}
 {:else if show === 'today'}
-	<Today {forecast} {imperial} />
+	<Today {forecast} {imperial} {hourStyle} />
 {:else if show === 'current'}
 	<div class="current">
-		<div class="now">
-			<span class="icon"><Icon {...condition(forecast.current.code, forecast.current.day)} /></span>
-			<span class="temperature">{degrees(forecast.current.temperature)}</span>
-		</div>
+		<Now current={forecast.current} />
 		<p class="place">{forecast.place}</p>
 	</div>
 {:else}
-	<Band {forecast} />
+	<Band {forecast} {hourStyle} />
 {/if}
 
 <style>
@@ -122,25 +119,11 @@
 	}
 
 	/* The icon is above the temperature in a square or tall cell, and next to it in a wide cell. */
-	.now {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 2cqh;
-	}
-
-	.icon {
-		flex: none;
-		width: min(36cqh, 40cqw);
-		height: min(36cqh, 40cqw);
-		color: var(--primary);
-	}
-
-	.temperature {
-		font-size: min(30cqh, 30cqw);
-		font-weight: 600;
-		line-height: 1;
-		font-variant-numeric: tabular-nums;
+	.current {
+		--now-direction: column;
+		--now-gap: 2cqh;
+		--now-icon: min(36cqh, 40cqw);
+		--now-text: min(30cqh, 30cqw);
 	}
 
 	.place {
@@ -149,18 +132,11 @@
 	}
 
 	@container (aspect-ratio > 4 / 3) {
-		.now {
-			flex-direction: row;
-			gap: 4cqw;
-		}
-
-		.icon {
-			width: min(48cqh, 24cqw);
-			height: min(48cqh, 24cqw);
-		}
-
-		.temperature {
-			font-size: min(44cqh, 20cqw);
+		.current {
+			--now-direction: row;
+			--now-gap: 4cqw;
+			--now-icon: min(48cqh, 24cqw);
+			--now-text: min(44cqh, 20cqw);
 		}
 	}
 </style>

@@ -4,8 +4,8 @@ A widget is a folder with a manifest and an ES module. Here, "the Edge" is the d
 
 EdgeStation looks for widgets in three places:
 
-- `%APPDATA%\com.edgestation.dashboard\widgets\<id>\`: your own widgets (Settings → Widgets → Open folder).
-- `%APPDATA%\com.edgestation.dashboard\marketplace\<id>\`: widgets installed from the marketplace (Settings → Widgets → Browse), which EdgeStation updates on its own.
+- `widgets/<id>/` in EdgeStation's data folder (`%APPDATA%\com.edgestation.dashboard` on Windows, `~/.local/share/com.edgestation.dashboard` on Linux): your own widgets (Settings → Widgets → Open folder).
+- `marketplace/<id>/` in the same folder: widgets installed from the marketplace (Settings → Widgets → Browse). A new release installs when the user clicks Update or Update all under Installed.
 - This folder (`widgets/` in the repo): the built-in examples, bundled with the app.
 
 The folder name is the widget id. A user widget replaces a marketplace or built-in one with the same id. To list yours in the marketplace, see [Publish to the marketplace](../apps/web/src/lib/docs/pages/build.md#publish-to-the-marketplace).
@@ -44,7 +44,7 @@ Only `name` is required. `main` defaults to `main.js`. `size` is the default siz
 
 `permissions` lists the parts of the `api` the widget uses: `system` (for `api.system()` and `api.topPrograms()`), `media`, `apps`, `audio`, `fetch` and `webview`. Before a marketplace install, a dialog tells the user what each one lets the widget do and asks them to confirm. An update that adds permissions waits for the user too, and its dialog lists only the new ones. A widget that asks for no permissions installs with no dialog. Calling a member without its permission shows the widget's error card and throws. `webview` also gives the widget's settings a Profile choice. Permissions tell the user what a widget means to use; they are not a sandbox, as widgets run inside the Edge page.
 
-`minAppVersion` is the oldest EdgeStation the widget runs on, as `major.minor.patch`: the version whose `api` it uses. An older app shows the widget's error card, saying which version it needs, instead of loading it. `$schema` is only for editors: with the SDK installed, it points them at its schema, which checks the manifest and completes its fields as you type (EdgeStation ignores it).
+`minAppVersion` is the oldest EdgeStation the widget runs on, as `major.minor.patch`: the version whose `api` it uses. An older app shows the widget's error card, saying which version it needs, instead of loading it. The `0.1.0` above is only an example: with the SDK, use the SDK version you build with. `$schema` is only for editors: with the SDK installed, it points them at its schema, which checks the manifest and completes its fields as you type (EdgeStation ignores it).
 
 ## Settings
 
@@ -87,7 +87,7 @@ A widget can declare options that the user sets separately for each placement (S
 | `when`        | Optional. Show only while the named settings have these values, or one of a list.  |
 | `unless`      | Optional. Hide while the named settings have these values, or one of a list.       |
 
-With `"source": "audioApps"`, a `select` also lists the apps with sound on the default output (`api.audio`), after `options`, read when the settings show; each is saved as its executable's file name (`AudioApp.program`, such as `Discord.exe`). A saved value that isn't in the list then (an app that isn't running) stays saved, marked `(not running)` in the field, and the widget gets it as it is.
+With `"source": "audioApps"`, a `select` also lists the apps with sound on the default output (`api.audio`), after `options`, read when the settings show; each is saved as its executable's file name (`AudioApp.program`, such as `Discord.exe` on Windows or `firefox` on Linux). A saved value that isn't in the list then (an app that isn't running) stays saved, marked `(not running)` in the field, and the widget gets it as it is.
 
 The widget reads the values from `api.settings`, e.g. `api.settings.metric`. Every declared key is always present (saved value, else its default), and a saved `select` value that is no longer one of the options falls back to the default (any saved value stays when the select has a `source`). A `text` value is saved when the user presses Enter or leaves the field, not on each key. When the user changes a setting, the widget is unmounted and mounted again with the new values.
 
@@ -123,7 +123,7 @@ The API is intentionally small for now; it will grow.
 | `system()`                   | Promise of the machine's performance (see below).                                                                                                                          |
 | `topPrograms(n)`             | Promise of the `n` programs using the most CPU (see below).                                                                                                                |
 | `media`                      | What is playing and its playback controls (see below).                                                                                                                     |
-| `apps`                       | The apps of the Start menu: list them, start them, show their icons (see below).                                                                                           |
+| `apps`                       | The apps of the Start menu, or of the app menu on Linux: list them, start them, show their icons (see below).                                                              |
 | `audio`                      | Volumes, mute and level meters of the default output, the microphone and each app (see below).                                                                             |
 | `fetch(input, init?)`        | The web's `fetch`, sent by the app so that CORS doesn't apply: any API answers (see below).                                                                                |
 | `storage`                    | Data kept across remounts and restarts, for this placement or for every copy of the widget (see below).                                                                    |
@@ -147,16 +147,16 @@ api.every(1000, async () => {
 });
 ```
 
-| Field                            | Meaning                                                                                 |
-| -------------------------------- | --------------------------------------------------------------------------------------- |
-| `hostname`                       | Machine name.                                                                           |
-| `wifi`                           | Connected Wi-Fi network (its Windows profile name, the SSID unless renamed), or `null`. |
-| `cpu.load`                       | Load of all cores, percent.                                                             |
-| `gpu.load`, `gpu.temperature`    | First NVIDIA GPU: percent and °C. `gpu` is `null` without one.                          |
-| `net.down`, `net.up`             | Internet traffic since the previous call, bytes per second.                             |
-| `net.avg1m`, `.avg5m`, `.avg15m` | `{ down, up }` averaged over the calls of the last 1, 5 or 15 minutes.                  |
+| Field                            | Meaning                                                                                                                                                  |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `hostname`                       | Machine name.                                                                                                                                            |
+| `wifi`                           | The connected Wi-Fi network, or `null`: the name of its Windows profile, or of its NetworkManager connection on Linux. Both are the SSID unless renamed. |
+| `cpu.load`                       | Load of all cores, percent.                                                                                                                              |
+| `gpu.load`, `gpu.temperature`    | First NVIDIA GPU: percent and °C. `gpu` is `null` without one.                                                                                           |
+| `net.down`, `net.up`             | Internet traffic since the previous call, bytes per second.                                                                                              |
+| `net.avg1m`, `.avg5m`, `.avg15m` | `{ down, up }` averaged over the calls of the last 1, 5 or 15 minutes.                                                                                   |
 
-The averages only know the calls widgets made: they cover the full window while a widget keeps polling, and less right after polling starts or resumes (for example when a page comes back on screen). CPU temperature is not available yet: Windows doesn't expose it to normal apps.
+The averages only know the calls widgets made: they cover the full window while a widget keeps polling, and less right after polling starts or resumes (for example when a page comes back on screen). CPU temperature is not available, on either system: Windows doesn't expose it to normal apps.
 
 ### `api.topPrograms(count)`
 
@@ -169,16 +169,16 @@ api.every(1000, async () => {
 });
 ```
 
-| Field  | Meaning                                                                                                                                                                                       |
-| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `name` | What Task Manager calls it: the executable's description (`THE FINALS`, `Google Chrome`), else its file name (`crashpad_handler.exe`). All the processes with that name count as one program. |
-| `cpu`  | Percent of all logical processors, like Task Manager.                                                                                                                                         |
+| Field  | Meaning                                                                                                                                                                                                                                                                                  |
+| ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name` | What Task Manager calls it: the executable's description (`THE FINALS`, `Google Chrome`), else its file name without `.exe` (`crashpad_handler`). On Linux, the name of its app in the app menu, else the executable's file name. All the processes with that name count as one program. |
+| `cpu`  | Percent of all logical processors, like Task Manager.                                                                                                                                                                                                                                    |
 
 Services and system processes are included, as in Task Manager.
 
 ### `api.media`
 
-The media session Windows considers current: the one the volume flyout shows and the media keys control. Spotify, browsers (YouTube, ...) and most players publish one. Read it once, then again when the system says it changed, so nothing polls:
+The media sessions of the machine, and the one the system considers current: the one the media keys control. On Windows, it is the one the volume flyout shows. On Linux, it is one of the MPRIS players on the session bus. Spotify, browsers (YouTube, ...) and most players publish one. Read it once, then again when the system says it changed, so nothing polls:
 
 ```js
 const show = api.guard(async () => {
@@ -189,23 +189,28 @@ show();
 api.media.onChange(show);
 ```
 
-| Member            | What it does                                                                                                                         |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `current()`       | Promise of the session below, or `null` when nothing is playing.                                                                     |
-| `art()`           | Promise of the album art from the latest `current()` call, as a data URL (`null` without art).                                       |
-| `control(action)` | Asks the app to `'play'`, `'pause'`, skip to `'next'` or go to `'previous'`. Resolves `false` if it declined.                        |
-| `seek(position)`  | Asks the app to go to `position` seconds in the track: `seek(0)` plays it from the start. Resolves `false` if it declined.           |
-| `onChange(fn)`    | Calls `fn` when a session opens, closes or becomes current, or its track, playback state or timeline changes: read `current()` then. |
+| Member                 | What it does                                                                                                                                                       |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `current()`            | Promise of the current session below, or `null` when there is none (a paused session counts).                                                                      |
+| `sessions()`           | Promise of every session, in the system's order. Empty when there is none.                                                                                         |
+| `art(id?)`             | Promise of the album art of session `id` from the latest `current()` or `sessions()` call, as a data URL (`null` without art). Without `id`, the current one.      |
+| `control(action, id?)` | Asks the app of session `id`, or of the current one, to `'play'`, `'pause'`, skip to `'next'` or go to `'previous'`. Resolves `false` if it declined.              |
+| `seek(position, id?)`  | Asks the app of session `id`, or of the current one, to go to `position` seconds in the track: `seek(0)` plays it from the start. Resolves `false` if it declined. |
+| `onChange(fn)`         | Calls `fn` when a session opens, closes or becomes current, or its track, playback state or timeline changes: read `current()` or `sessions()` then.               |
 
-| Field                      | Meaning                                                                                                    |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `title`, `artist`, `album` | As the app reports them; empty when it doesn't.                                                            |
-| `app`                      | Id of the app that owns the session (`Spotify.exe`, `MSEdge`, ...).                                        |
-| `playing`                  | `true` while playing, `false` when paused or stopped.                                                      |
-| `rate`                     | Playback speed, `1` at normal speed: while playing, `position` moves on by `rate` seconds per second.      |
-| `position`, `duration`     | Seconds, `position` as of the call. `null` when the app reports no timeline (see below).                   |
-| `art`                      | A number that changes when the art does, or `null`. Call `art()` only when it changes: the image is large. |
-| `can`                      | `{ play, pause, next, previous, seek }`: which actions the app accepts right now.                          |
+Spotify and a browser can both have a session at the same time. `sessions()` lists them all, with `current` set on the one `current()` would give. Pass a session's `id` to `art()`, `control()` and `seek()` to act on that one instead of the current one.
+
+| Field                      | Meaning                                                                                                                                                                      |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`                       | Names the session in `art()`, `control()` and `seek()`. On Windows, the app id, with `#2`, `#3`, ... when one app has more sessions. On Linux, the player's name on the bus. |
+| `current`                  | `true` for the session the media keys control.                                                                                                                               |
+| `title`, `artist`, `album` | As the app reports them; empty when it doesn't.                                                                                                                              |
+| `app`                      | Id of the app that owns the session (`Spotify.exe`, `MSEdge`, ...). On Linux, the player's desktop entry (`spotify`, `firefox`, ...), else its name on the bus.              |
+| `playing`                  | `true` while playing, `false` when paused or stopped.                                                                                                                        |
+| `rate`                     | Playback speed, `1` at normal speed: while playing, `position` moves on by `rate` seconds per second.                                                                        |
+| `position`, `duration`     | Seconds, `position` as of the call. `null` when the app reports no timeline (see below).                                                                                     |
+| `art`                      | A number that changes when the art does, or `null`. Call `art()` only when it changes: the image is large.                                                                   |
+| `can`                      | `{ play, pause, next, previous, seek }`: which actions the app accepts right now.                                                                                            |
 
 `fn` gets no arguments: it doesn't say what changed or in which session, so read the sessions again. A burst of changes (a new track often sends several) calls it at most every 100 ms. It only listens while the widget's page shows and the Edge isn't frozen, and calls `fn` once when the widget shows again. The position of a playing track moves on without a call: advance it yourself from the last read, by `rate` seconds per second, with `api.every`, which asks the system nothing.
 
@@ -213,7 +218,7 @@ Zen and Firefox report the timeline only on play, pause and seek, and blank it o
 
 ### `api.apps`
 
-The apps of the Start menu's All apps list, Store apps included, the way the Start menu lists, starts and draws them:
+The apps of the system's app menu, the way it lists, starts and draws them: on Windows, the Start menu's All apps list, Store apps included; on Linux, the desktop entries, through GIO as the menus of GNOME and KDE do.
 
 ```js
 const apps = await api.apps.list();
@@ -228,11 +233,11 @@ button.onclick = () => api.apps.launch(terminal.id);
 | `launch(id)`      | Starts the app with its default action. Its window is asked for on the main screen rather than the Edge (apps that remember their position may still open where they were). Rejects when the app is no longer there. |
 | `icon(id, size?)` | URL of the app's icon, a PNG `size` pixels square (16 to 256, default 64), for an `<img>`. Ask for the size it shows at in device pixels. The image fails to load when the app is gone.                              |
 
-`id` is the app's name in the shell's Apps folder (its AppUserModelID, or a path for a program without one). It stays the same across restarts, so save it with `api.storage` to remember an app. Like the Start menu, `launch` opens a new window for most apps when one is already open.
+`id` names the app. On Windows, it is its name in the shell's Apps folder (its AppUserModelID, or a path for a program without one). On Linux, it is the id of its desktop entry, such as `firefox.desktop`. It stays the same across restarts, so save it with `api.storage` to remember an app. Like the Start menu or the app menu, `launch` opens a new window for most apps when one is already open.
 
 ### `api.audio`
 
-The machine's sound as Windows' volume mixer shows it. Read it once, then again when Windows says it changed, so nothing polls:
+The machine's sound as the system's volume mixer shows it: Windows' volume mixer, or PulseAudio on Linux, which PipeWire also serves. Read it once, then again when the system says it changed, so nothing polls:
 
 ```js
 const show = api.guard(async () => {
@@ -257,17 +262,17 @@ api.audio.onChange(show);
 
 A device is `{ id, name, volume, muted }`, `volume` from 0 to 1. The microphone's `muted` is `true` only when the one for calls is muted too. Each app is one group of sessions, the way the volume mixer groups them, playing or not, by name with System sounds last:
 
-| Field     | Meaning                                                                                                             |
-| --------- | ------------------------------------------------------------------------------------------------------------------- |
-| `id`      | Names the app's sound while it runs, for `setVolume`, `setMuted` and `levels()`. Not kept across restarts.          |
-| `name`    | The name the app gives its sound, else what Task Manager calls it, else its executable's file name.                 |
-| `path`    | Its executable, for `icon()`; `null` for System sounds.                                                             |
-| `program` | Its executable's file name (`Discord.exe`), `null` for System sounds: it names the app across restarts and updates. |
-| `volume`  | From 0 to 1, a share of the output's volume.                                                                        |
-| `muted`   | `true` while muted.                                                                                                 |
-| `active`  | `true` while it plays, `false` while its session is open but silent.                                                |
+| Field     | Meaning                                                                                                                                            |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`      | Names the app's sound while it runs, for `setVolume`, `setMuted` and `levels()`. Not kept across restarts.                                         |
+| `name`    | The name the app gives its sound, else what Task Manager calls it, else its executable's file name.                                                |
+| `path`    | Its executable, for `icon()`; `null` for System sounds.                                                                                            |
+| `program` | Its executable's file name (`Discord.exe` on Windows, `firefox` on Linux), `null` for System sounds: it names the app across restarts and updates. |
+| `volume`  | From 0 to 1, a share of the output's volume.                                                                                                       |
+| `muted`   | `true` while muted.                                                                                                                                |
+| `active`  | `true` while it plays, `false` while its session is open but silent.                                                                               |
 
-`onChange` listens to Windows' notifications, so nothing runs while nothing changes; a burst of changes calls it at most every 100 ms. Windows has no notification for levels, so `onLevels` has the app read them, and only while a widget listens: 25 times a second while there is sound and for two seconds after, so meters can fall, then four times a second without calling `fn` until there is sound again. Both only listen while the widget's page shows and the Edge isn't frozen; `onChange` then calls `fn` once when the widget shows again. Calls of `mixer()` less than 250 ms apart share one read, whichever widgets make them; a change made from here is in the next `mixer()` read. Windows has no public API to change the default output: `setOutput` uses the one Sound settings itself uses, which other volume tools rely on too.
+`onChange` listens to the system's notifications, so nothing runs while nothing changes; a burst of changes calls it at most every 100 ms. Neither Windows nor PulseAudio sends levels as they change, so `onLevels` has the app read them, and only while a widget listens: 25 times a second while there is sound and for two seconds after, so meters can fall, then four times a second without calling `fn` until there is sound again. Both only listen while the widget's page shows and the Edge isn't frozen; `onChange` then calls `fn` once when the widget shows again. Calls of `mixer()` less than 250 ms apart share one read, whichever widgets make them; a change made from here is in the next `mixer()` read. Windows has no public API to change the default output: `setOutput` uses the one Sound settings itself uses, which other volume tools rely on too.
 
 ### `api.fetch(input, init?)`
 
@@ -303,7 +308,7 @@ Both have the same members:
 | `set(key, value)` | Saves `value` under `key`, replacing the previous one. Values must fit in JSON. |
 | `delete(key)`     | Removes `key`. Resolves `true` if it had a value.                               |
 
-Nothing is deleted for you: data stays when the placement, its page or the widget is removed, so use `delete(key)` for what you no longer need. Every widget's data lives in one file, `%APPDATA%\com.edgestation.dashboard\widget-data.json`, rewritten whole on each change (at most every 100 ms), so keep it to small data.
+Nothing is deleted for you: data stays when the placement, its page or the widget is removed, so use `delete(key)` for what you no longer need. Every widget's data lives in one file, `widget-data.json` in EdgeStation's data folder (`%APPDATA%\com.edgestation.dashboard` on Windows, `~/.local/share/com.edgestation.dashboard` on Linux), rewritten whole on each change (at most every 100 ms), so keep it to small data.
 
 ### `api.webview(el, url, options?)`
 
@@ -331,8 +336,10 @@ It closes when the widget unmounts, so the next mount loads `url` again; `api.we
 
 Pass `{ mobile: true }` to ask for the site's mobile version, which fits narrow cells better: the view then presents itself as Chrome on a phone for every page it loads, user agent and client hints alike (Google's sites read the hints), so sites that pick their layout from the browser serve their mobile one. Popup windows it opens don't: they present the app's own browser. Sites that only follow the width already fit the cell either way.
 
+Pass `{ homeButton: true }` to show a round Home button above the keyboard button while the view is away from `url`, which takes it back there.
+
 ```js
-api.webview(el, 'https://en.wikipedia.org/', { mobile: true });
+api.webview(el, 'https://en.wikipedia.org/', { mobile: true, homeButton: true });
 ```
 
 ### `api.scrollbars(el)`

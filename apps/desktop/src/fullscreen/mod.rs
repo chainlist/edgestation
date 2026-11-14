@@ -10,20 +10,22 @@ mod native;
 
 use tauri::{AppHandle, Emitter};
 
+use crate::changes::EDGE;
+
 /// The event to the Edge window. It is `true` while another app is full screen, then `false`.
-const EVENT: &str = "fullscreen-app";
+const EVENT: &str = "fullscreen:changed";
 
 /// Starts or stops the watch. A start sends the current state at once, also when the watch
 /// already runs.
 #[tauri::command]
-pub fn watch_fullscreen(app: AppHandle, enabled: bool) -> Result<(), String> {
-    native::set(app, enabled)
+pub fn fullscreen_watch(app: AppHandle, on: bool) -> Result<(), String> {
+    native::set(app, on)
 }
 
 /// Sends the state to the Edge window. Each side calls this only when the state changed, or when
 /// a watch starts.
 fn send(app: &AppHandle, fullscreen: bool) {
-    if let Err(error) = app.emit_to("edge", EVENT, fullscreen) {
+    if let Err(error) = app.emit_to(EDGE, EVENT, fullscreen) {
         eprintln!("could not send the full-screen state: {error}");
     }
 }

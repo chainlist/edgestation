@@ -65,7 +65,7 @@ ln -s /path/to/my-widget ~/.local/share/com.edgestation.dashboard/widgets/my-wid
 
 The link's name, `my-widget`, is the widget's id. Then:
 
-1. In Settings → Widgets, click **Rescan**: the widget shows under **Your widgets**.
+1. In Settings → Widgets, click the Rescan button (the circular arrow): the widget shows under **Installed**.
 2. Add it to a page in Settings → Pages.
 3. Run `npx vite build --watch`, which rebuilds on every change.
 4. After each build, click **Reload Edge** at the bottom of the Settings sidebar to load it.
@@ -122,7 +122,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
 ```
 
-A widget is checked once, when it is added to the list, not at each release: every release you publish reaches its users the next time they open EdgeStation. A widget taken off the list stops getting updates.
+A widget is checked once, when it is added to the list, not at each release: every release you publish is offered to its users as an update, which they install from Installed. A widget taken off the list stops getting updates.
 
 Settings shows each marketplace widget with the permissions it asks for and the GitHub account that owns its repository. A verified badge marks trusted accounts. The badge never comes from `author` in the manifest, because any widget can set that.
 

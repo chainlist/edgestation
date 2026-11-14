@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { flush } from '../../test-helpers';
+import { flush } from '#lib/test-helpers.ts';
 import { createScope } from '../scope';
 import { createLoading } from './loading';
 

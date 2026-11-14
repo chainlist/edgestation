@@ -10,7 +10,6 @@
 #[cfg_attr(target_os = "linux", path = "linux/mod.rs")]
 mod native;
 
-mod changed;
 mod sampler;
 
 use std::collections::HashMap;
@@ -20,7 +19,15 @@ use tauri::webview::PageLoadPayload;
 use tauri::{AppHandle, Runtime, Webview};
 
 use crate::blocking;
-use crate::changes::{self, EDGE};
+use crate::changes::{self, EDGE, Throttled};
+
+static CHANGED: Throttled = Throttled::new("audio:changed");
+
+/// Tells the Edge window that the mixer changed. The change callbacks of Windows and the
+/// PulseAudio subscription on Linux call this.
+fn changed(app: &AppHandle) {
+    CHANGED.send(app);
+}
 
 #[derive(Serialize)]
 pub struct Mixer {

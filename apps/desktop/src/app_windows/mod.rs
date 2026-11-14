@@ -62,7 +62,7 @@ pub fn open_settings<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<()> {
         if let WindowEvent::Destroyed = event {
             let handle = handle.clone();
             // `identify::release` must not block the main thread.
-            tauri::async_runtime::spawn(async move { identify::release(&handle) });
+            tauri::async_runtime::spawn_blocking(move || identify::release(&handle));
         }
     });
     // By default, Windows opens a new window next to the other window of the app, wich is on the

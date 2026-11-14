@@ -23,7 +23,7 @@
 	 * The chanel of this placement: `all`, `output`, `input`, `system`, `outputs`, or the program
 	 * of an app. A program is the file name of its executable, as the `audioApps` source saves it.
 	 */
-	const channel = api.settings.channel || 'all';
+	const channel = api.settings.channel;
 	/** Only mute buttons, one for each channel, with no faders and no meters. */
 	const buttons = api.settings.display === 'buttons';
 	/** One button for each output device, which makes it the default. Show does not apply. */
@@ -227,6 +227,7 @@
 		color: inherit;
 		font: inherit;
 		cursor: pointer;
+		-webkit-tap-highlight-color: transparent;
 	}
 
 	/* A pad, as on a DJ controller. It is lit in the accent color when its sound plays. It is
@@ -251,14 +252,14 @@
 
 	:where(.mixer) :global(.pad.muted) {
 		border-color: var(--destructive);
-		background: color-mix(in oklch, var(--destructive) 12%, var(--card));
+		background: color-mix(in oklch, var(--destructive) 12%, transparent);
 		color: var(--destructive);
 		box-shadow: none;
 	}
 
 	:where(.mixer) :global(.pad.off) {
 		border-color: var(--border);
-		background: var(--muted);
+		background: color-mix(in oklch, var(--card-foreground) 6%, transparent);
 		color: var(--muted-foreground);
 		box-shadow: none;
 		cursor: default;

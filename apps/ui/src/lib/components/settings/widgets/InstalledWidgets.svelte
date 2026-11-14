@@ -2,19 +2,19 @@
 	import Download from '@lucide/svelte/icons/download';
 	import FolderOpen from '@lucide/svelte/icons/folder-open';
 	import LoaderCircle from '@lucide/svelte/icons/loader-circle';
-	import RefreshCw from '@lucide/svelte/icons/refresh-cw';
-	import Search from '@lucide/svelte/icons/search';
 	import Store from '@lucide/svelte/icons/store';
 	import type { Snippet } from 'svelte';
 	import { Button } from '#lib/components/ui/button/index.ts';
 	import * as Card from '#lib/components/ui/card/index.ts';
-	import { Input } from '#lib/components/ui/input/index.ts';
-	import { openWidgetsFolder, rescanWidgets } from '#lib/widgets/installed.svelte.ts';
+	import { installed, openWidgetsFolder, rescanWidgets } from '#lib/widgets/installed.svelte.ts';
 	import { listingStatus } from '#lib/widgets/marketplace/listing.ts';
 	import { marketplace, updateWidgets } from '#lib/widgets/marketplace/state.svelte.ts';
 	import { filterInstalled } from '#lib/widgets/search.ts';
 	import type { InstalledWidget } from '#lib/widgets/types.ts';
+	import RefreshButton from '#lib/components/settings/controls/RefreshButton.svelte';
+	import SearchField from '#lib/components/settings/controls/SearchField.svelte';
 	import SegmentedControl from '#lib/components/settings/controls/SegmentedControl.svelte';
+	import SettingsSection from '#lib/components/settings/SettingsSection.svelte';
 	import CardGrid from './CardGrid.svelte';
 	import Count from './Count.svelte';
 	import InstalledCard from './InstalledCard.svelte';
@@ -73,9 +73,8 @@
 	}
 </script>
 
-<section class="grid gap-3">
-	<div class="flex min-h-8 items-center justify-between gap-2">
-		<h2 class="text-sm font-medium">Installed</h2>
+<SettingsSection title="Installed">
+	{#snippet actions()}
 		{#if outdated.length}
 			<Button
 				size="sm"
@@ -86,9 +85,13 @@
 				Update all <Count count={outdated.length} />
 			</Button>
 		{/if}
-	</div>
+	{/snippet}
 	{#if updateError}
 		<p class="px-1 text-sm text-destructive">{updateError}</p>
+	{/if}
+	<!-- A failed scan keeps the previous list. -->
+	{#if installed.error}
+		<p class="px-1 text-sm text-destructive">Couldn't read the widgets folder. {installed.error}</p>
 	{/if}
 	<div class="flex flex-wrap items-center justify-between gap-2">
 		<SegmentedControl
@@ -104,28 +107,8 @@
 			{/snippet}
 		</SegmentedControl>
 		<div class="flex min-w-56 flex-1 items-center gap-1">
-			<div class="relative flex-1">
-				<Search
-					class="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
-				/>
-				<Input
-					type="search"
-					bind:value={query}
-					placeholder="Search installed widgets"
-					aria-label="Search installed widgets"
-					class="pl-8"
-				/>
-			</div>
-			<Button
-				variant="ghost"
-				size="icon"
-				title="Rescan the widgets folder"
-				aria-label="Rescan the widgets folder"
-				disabled={scanning}
-				onclick={rescan}
-			>
-				<RefreshCw class={scanning ? 'animate-spin' : undefined} />
-			</Button>
+			<SearchField bind:value={query} label="Search installed widgets" class="flex-1" />
+			<RefreshButton label="Rescan the widgets folder" busy={scanning} onclick={rescan} />
 			<Button
 				variant="ghost"
 				size="icon"
@@ -174,7 +157,7 @@
 			>, replaces it.
 		</p>
 	{/if}
-</section>
+</SettingsSection>
 
 {#snippet empty(Icon: typeof Store, title: string, text: string, action: Snippet)}
 	<div class="grid justify-items-center gap-3 px-6 py-10 text-center">

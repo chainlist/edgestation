@@ -8,7 +8,7 @@
 #[cfg_attr(target_os = "linux", path = "linux.rs")]
 mod native;
 
-use std::sync::Mutex;
+use std::sync::{Mutex, PoisonError};
 use std::sync::atomic::{AtomicU32, Ordering};
 use std::time::Duration;
 
@@ -54,10 +54,10 @@ pub async fn identify_prepare<R: Runtime>(app: AppHandle<R>) -> tauri::Result<()
 pub async fn identify_screens<R: Runtime>(app: AppHandle<R>) -> tauri::Result<()> {
     sync(&app, true)?;
     let shows = SHOWS.fetch_add(1, Ordering::Relaxed) + 1;
-    std::thread::spawn(move || {
+    tauri::async_runtime::spawn_blocking(move || {
         std::thread::sleep(SHOWN);
         if SHOWS.load(Ordering::Relaxed) == shows {
-            for found in BOXES.lock().unwrap().iter() {
+            for found in BOXES.lock().unwrap_or_else(PoisonError::into_inner).iter() {
                 if let Some(window) = app.get_webview_window(&found.label) {
                     let _ = set_visible(&window.as_ref().window(), false);
                 }
@@ -75,7 +75,7 @@ pub async fn identify_release<R: Runtime>(app: AppHandle<R>) {
 
 /// Destroys the boxes. Do not call this on the main thread (see `BOXES`).
 pub fn release<R: Runtime>(app: &AppHandle<R>) {
-    for found in BOXES.lock().unwrap().drain(..) {
+    for found in BOXES.lock().unwrap_or_else(PoisonError::into_inner).drain(..) {
         if let Some(window) = app.get_webview_window(&found.label) {
             let _ = window.destroy();
         }
@@ -86,7 +86,7 @@ pub fn release<R: Runtime>(app: &AppHandle<R>) {
 /// monitors. If `show` is true, each box shows.
 fn sync<R: Runtime>(app: &AppHandle<R>, show: bool) -> tauri::Result<()> {
     let monitors = crate::monitors::named(app)?;
-    let mut boxes = BOXES.lock().unwrap();
+    let mut boxes = BOXES.lock().unwrap_or_else(PoisonError::into_inner);
     // Remove the boxes of monitors that were unpluged or resized, and the boxes without a window.
     boxes.retain(|found| {
         let window = app.get_webview_window(&found.label);

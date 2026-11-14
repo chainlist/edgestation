@@ -79,7 +79,13 @@
 		{/if}
 
 		<form onsubmit={add}>
-			<input bind:value={draft} placeholder="Add a task" enterkeyhint="done" maxlength="200" />
+			<input
+				bind:value={draft}
+				aria-label="New task"
+				placeholder="Add a task"
+				enterkeyhint="done"
+				maxlength="200"
+			/>
 			<button class="add" aria-label="Add" disabled={!draft.trim()}>
 				<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
 			</button>
@@ -132,10 +138,13 @@
 		color: inherit;
 		font: inherit;
 		cursor: pointer;
+		-webkit-tap-highlight-color: transparent;
 	}
 
+	/* 2.75em of the small text is 2.2em of the widget text, the touch size of the other buttons. */
 	.clear {
 		flex: none;
+		min-height: 2.75em;
 		padding: 0.3em 0.8em;
 		border-radius: 999px;
 		background: var(--secondary);

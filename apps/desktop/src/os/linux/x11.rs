@@ -1,6 +1,8 @@
 //! X11 calls for the Linux side: the active window, the windows of this app, and the monitors.
 //! The app runs on X11, also under Wayland through XWayland (see `run`).
 
+use std::sync::OnceLock;
+
 use x11rb::connection::Connection;
 use x11rb::protocol::randr::ConnectionExt as _;
 use x11rb::protocol::xproto::{Atom, AtomEnum, ConnectionExt as _, Window};
@@ -37,6 +39,14 @@ pub struct X11 {
     pub conn: RustConnection,
     pub root: Window,
     pub atoms: Atoms,
+}
+
+/// The connection that the app keeps. It stays open, because the X server destroys the windows
+/// of a connection that closes, such as the windows that hold the web views. Focus and monitors
+/// use it too, so a touch on a text field opens no connection.
+pub fn kept() -> Option<&'static X11> {
+    static KEPT: OnceLock<Option<X11>> = OnceLock::new();
+    KEPT.get_or_init(|| X11::connect().ok()).as_ref()
 }
 
 /// Turns any X11 error into text.

@@ -48,18 +48,9 @@
 </script>
 
 {#if page}
-	<header class="mb-4 flex items-center gap-2">
-		<Button
-			variant="ghost"
-			size="icon"
-			href="/settings/pages"
-			aria-label="All pages"
-			title="All pages"
-		>
-			<ArrowLeft />
-		</Button>
-		<PageForm {page} />
-	</header>
+	<PageHeader title={page.name} back="/settings/pages">
+		{#snippet heading()}<PageForm {page} />{/snippet}
+	</PageHeader>
 	<div class="grid gap-3">
 		<AddWidget {page} />
 		<GridEditor {page} selected={editing?.id} onselect={toggle} ondragstart={close} />

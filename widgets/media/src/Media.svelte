@@ -120,10 +120,23 @@
 		min-width: 0;
 	}
 
-	/* The child components use this rule too. `:where()` keeps its specificity low, so a rule in
-	   a child component always overrides it. */
+	/* The child components use the rules that follow. `:where()` keeps their specificity low, so
+	   a rule in a child component always overrides them. */
 	:where(.body) :global(p) {
 		margin: 0;
+	}
+
+	:where(.body) :global(button) {
+		padding: 0;
+		border: none;
+		background: transparent;
+		color: var(--card-foreground);
+		cursor: pointer;
+		transition: transform 0.1s;
+	}
+
+	:where(.body) :global(button:not(:disabled):active) {
+		transform: scale(0.9);
 	}
 
 	.title {

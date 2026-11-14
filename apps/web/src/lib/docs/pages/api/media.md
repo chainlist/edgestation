@@ -15,8 +15,8 @@ api.media.onChange(show);
 
 | Member                 | What it does                                                                                                                                                       |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `current()`            | Promise of the current session below, or `null` when nothing is playing.                                                                                           |
-| `sessions()`           | Promise of every session, in the system's order. Empty when nothing is playing. See [several sessions](#several-sessions).                                         |
+| `current()`            | Promise of the current session below, or `null` when there is none (a paused session counts).                                                                      |
+| `sessions()`           | Promise of every session, in the system's order. Empty when there is none. See [several sessions](#several-sessions).                                              |
 | `art(id?)`             | Promise of the album art of session `id` from the latest `current()` or `sessions()` call, as a data URL (`null` without art). Without `id`, the current one.      |
 | `control(action, id?)` | Asks the app of session `id`, or of the current one, to `'play'`, `'pause'`, skip to `'next'` or go to `'previous'`. Resolves `false` if it declined.              |
 | `seek(position, id?)`  | Asks the app of session `id`, or of the current one, to go to `position` seconds in the track: `seek(0)` plays it from the start. Resolves `false` if it declined. |

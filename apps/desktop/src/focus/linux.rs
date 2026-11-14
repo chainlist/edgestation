@@ -7,7 +7,7 @@ use tauri::{Runtime, Window};
 use x11rb::connection::Connection;
 use x11rb::protocol::xproto::{ClientMessageEvent, ConnectionExt as _, EventMask};
 
-use crate::os::linux::x11::X11;
+use crate::os::linux::x11::kept;
 
 /// The window that had the focus before the last `focus_borrow`, or 0.
 static LENDER: AtomicU32 = AtomicU32::new(0);
@@ -17,7 +17,7 @@ static LENDER: AtomicU32 = AtomicU32::new(0);
 /// `give_back`.
 pub fn remember<R: Runtime>(own: &Window<R>) -> tauri::Result<bool> {
     own.set_focusable(true)?;
-    let Ok(x11) = X11::connect() else { return Ok(false) };
+    let Some(x11) = kept() else { return Ok(false) };
     let other = x11.active().filter(|&window| !x11.is_own(window));
     if let Some(window) = other {
         LENDER.store(window, Ordering::Relaxed);
@@ -31,7 +31,7 @@ pub fn remember<R: Runtime>(own: &Window<R>) -> tauri::Result<bool> {
 pub fn give_back<R: Runtime>(own: Option<Window<R>>) {
     let window = LENDER.swap(0, Ordering::Relaxed);
     if window != 0
-        && let Ok(x11) = X11::connect()
+        && let Some(x11) = kept()
     {
         let data = [2, x11rb::CURRENT_TIME, 0, 0, 0];
         let event = ClientMessageEvent::new(32, window, x11.atoms._NET_ACTIVE_WINDOW, data);

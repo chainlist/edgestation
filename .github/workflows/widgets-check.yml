@@ -1,0 +1,48 @@
+name: Widgets check
+
+# Type-checks the built-in widgets (widgets/) when they change, or what they build on: the SDK,
+# whose types and adapters they import, the root package.json, which has their dev dependencies,
+# and the lockfile.
+on:
+  pull_request:
+    paths:
+      - 'widgets/**'
+      - 'packages/sdk/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/widgets-check.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'widgets/**'
+      - 'packages/sdk/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/widgets-check.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A newer push to the same branch replaces the run in progress.
+concurrency:
+  group: widgets-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      # Nothing from this cache gets into an installer or a package. The release builds do not
+      # use it.
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      # The root package (`edgestation`), which has the tools of the widgets, and the SDK. The
+      # widgets import the SDK from its source files, so the job does not build the SDK.
+      - run: pnpm install --frozen-lockfile --filter edgestation...
+      # The root `pnpm check` also checks each package. This step checks only the widgets.
+      - run: pnpm exec svelte-check --tsconfig widgets/tsconfig.json

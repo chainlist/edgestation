@@ -84,3 +84,17 @@ fn icon_response(path: &str) -> Response<Vec<u8>> {
 }
 
 use native::{away_from, executable_icon, icon, launch, list};
+
+#[cfg(test)]
+mod tests {
+    use tauri::http::StatusCode;
+
+    use super::icon_response;
+
+    #[test]
+    fn answers_not_found_for_bad_paths() {
+        for path in ["/big/x", "/48", "/"] {
+            assert_eq!(icon_response(path).status(), StatusCode::NOT_FOUND, "{path}");
+        }
+    }
+}

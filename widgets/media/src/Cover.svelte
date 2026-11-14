@@ -61,7 +61,7 @@
 		height: min(100cqw, 100cqh);
 		overflow: hidden;
 		border-radius: calc(var(--radius) * 0.75);
-		background: var(--muted);
+		background: color-mix(in oklch, var(--card-foreground) 8%, transparent);
 		color: var(--muted-foreground);
 		transition: transform 0.1s;
 	}
@@ -69,7 +69,6 @@
 	/* The note under the image. The buttons have their own glyph rules. */
 	.art > :global(svg) {
 		width: 40%;
-		fill: currentColor;
 		opacity: 0.6;
 	}
 
@@ -92,9 +91,11 @@
 		align-items: flex-end;
 		justify-content: center;
 		padding: 0 0 8% 0;
-		border: none;
-		background: transparent;
-		cursor: pointer;
+	}
+
+	/* The art scales in place of the button. */
+	.step:active {
+		transform: none;
 	}
 
 	/* The art under the dots and the restart button can be of any color, so they sit on a small
@@ -131,20 +132,10 @@
 		place-items: center;
 		width: max(28px, 14cqmin);
 		aspect-ratio: 1;
-		padding: 0;
-		border: none;
-		color: var(--card-foreground);
-		cursor: pointer;
-		transition: transform 0.1s;
 	}
 
 	.restart :global(svg) {
 		width: 60%;
-		fill: currentColor;
-	}
-
-	.restart:active {
-		transform: scale(0.9);
 	}
 
 	/* In square and tall cells, the art fills the height that the text does not use. */

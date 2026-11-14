@@ -166,7 +166,7 @@ fn apps(inputs: &[Input], sink: u32, path: impl Fn(u32) -> Option<String>) -> Ve
         }
         let path = input.pid.and_then(&path);
         let name = input.app.clone().or_else(|| {
-            let program = path.as_deref().and_then(crate::process::program_name);
+            let program = path.as_deref().map(crate::process::display_name);
             program.or_else(|| input.binary.clone())
         });
         apps.push(App {

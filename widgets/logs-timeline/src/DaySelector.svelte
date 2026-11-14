@@ -62,8 +62,8 @@
 		display: grid;
 		flex: none;
 		place-items: center;
-		width: 2em;
-		height: 2em;
+		width: 2.2em;
+		height: 2.2em;
 		border-radius: 50%;
 	}
 
@@ -88,10 +88,10 @@
 		justify-content: center;
 		gap: 0.5em;
 		min-width: 0;
-		height: 2em;
+		height: 2.2em;
 		padding: 0 0.6em;
 		border-radius: 999px;
-		line-height: 2em;
+		line-height: 2.2em;
 		white-space: nowrap;
 	}
 

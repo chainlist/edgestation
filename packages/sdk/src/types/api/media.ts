@@ -49,7 +49,7 @@ export type MediaAction = 'play' | 'pause' | 'next' | 'previous';
  */
 export interface MediaInfo {
 	/**
-	 * Names the session in `art()` and `control()`. On Windows, it is the app id, with `#2`, `#3`,
+	 * Names the session in `art()`, `control()` and `seek()`. On Windows, it is the app id, with `#2`, `#3`,
 	 * ... for more sessions of the same app, in the order of the system. On Linux, the bus name of
 	 * the player.
 	 */

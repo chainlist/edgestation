@@ -2,8 +2,8 @@ import type { Cleanup } from '../cleanup.js';
 
 /**
  * The sound of the machine, as the Windows volume mixer shows it. On Linux, it comes from
- * PulseAudio, which PipeWire also serves, as the sound settings show it. Nothing listens between
- * calls.
+ * PulseAudio, which PipeWire also serves, as the sound settings show it. Only `onChange` and
+ * `onLevels` listen between calls, while a widget uses them.
  */
 export interface AudioApi {
 	/**

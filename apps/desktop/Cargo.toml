@@ -8,7 +8,7 @@ rust-version = "1.90"
 
 [lib]
 name = "edgestation_lib"
-crate-type = ["staticlib", "cdylib", "rlib"]
+crate-type = ["rlib"]
 
 [build-dependencies]
 tauri-build = { version = "2.7.4", features = [] }
@@ -20,11 +20,12 @@ tauri-plugin-store = "2"
 tauri-plugin-opener = "2"
 # Page shortcuts. The Edge window registers them from its settings.
 tauri-plugin-global-shortcut = "2"
-# Open at startup. Settings > Display turns it on and off.
+# Open at startup. Settings > General turns it on and off.
 tauri-plugin-autostart = "2"
 # `api.fetch` sends the widget requests from Rust, so CORS does not apply.
 tauri-plugin-http = "2"
-# Installs newer releases once at launch, and from Settings > General.
+# Finds newer releases at launch and from Settings > General. It installs one only when the user
+# says so.
 tauri-plugin-updater = "2"
 # Only one EdgeStation runs. A second launch opens the settings, which is the way in where the
 # tray icon gets no clicks (Linux).
@@ -35,8 +36,6 @@ serde = { version = "1.0", features = ["derive"] }
 sysinfo = { version = "0.38", default-features = false, features = ["system", "network"] }
 nvml-wrapper = "0.13"
 base64 = "0.23"
-# App icons for the launcher widget. Tauri already brings this crate into the tree.
-png = "0.18"
 # Unpacks marketplace widgets, with read suport only. The updater already brings this crate in.
 zip = { version = "9", default-features = false, features = ["deflate-flate2-zlib-rs"] }
 # Fetches a few marketplace manifests at a time. Tauri already brings this crate into the tree.
@@ -47,6 +46,9 @@ futures-util = "0.3"
 # names to the top programs. They give rounded corners to the identify boxes and the Start menu
 # apps to the launcher widget. The audio mixer gets the devices, sessions and thier volumes.
 [target."cfg(windows)".dependencies]
+# App icons for the launcher widget. Tauri already brings this crate into the tree. Linux draws
+# them with gdk-pixbuf.
+png = "0.18"
 # Full-screen events of widget web views. Keep the version that Tauri uses.
 webview2-com = "0.39"
 # The code from the `interface` macro names this crate. The audio code uses that macro for the

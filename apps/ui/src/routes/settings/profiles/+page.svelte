@@ -118,6 +118,7 @@
 					onchange={(event) => {
 						const name = event.currentTarget.value.trim();
 						if (name) renameProfile(profile.id, name);
+						else event.currentTarget.value = profile.name;
 					}}
 				/>
 				<Card.Action>
@@ -140,7 +141,7 @@
 						{#if list.length}Its widgets switch to Default.{/if}
 					</p>
 					{#if error}
-						<p class="text-sm text-destructive">Could not delete it: {error}</p>
+						<p class="text-sm text-destructive">Couldn't delete it: {error}</p>
 					{/if}
 					<div class="flex gap-2">
 						<Button variant="destructive" disabled={deleting} onclick={() => remove(profile.id)}>

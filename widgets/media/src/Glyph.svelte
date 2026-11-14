@@ -5,3 +5,9 @@
 </script>
 
 <svg viewBox="0 0 24 24" aria-hidden="true"><path d={ICONS[name]} /></svg>
+
+<style>
+	svg {
+		fill: currentColor;
+	}
+</style>

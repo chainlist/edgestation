@@ -1,19 +1,13 @@
-use std::collections::HashMap;
-use std::sync::{Mutex, PoisonError};
-
 use windows::Win32::Foundation::S_OK;
 use windows::Win32::Media::Audio::{AudioSessionStateActive, IMMDevice, ISimpleAudioVolume};
 use windows::Win32::Storage::FileSystem::QueryDosDeviceW;
 use windows::Win32::UI::Shell::SHLoadIndirectString;
 use windows::core::{HSTRING, Interface, Result};
 
-use super::devices::take;
 use super::sessions::sessions;
 use crate::audio::App;
+use crate::os::windows::com::take;
 use crate::process::{self, image_path};
-
-/// The descriptions of executables, by path. The host reads each file only once.
-static NAMES: Mutex<Option<HashMap<String, String>>> = Mutex::new(None);
 
 /// The apps on `output`, one for each group of sessions.
 pub(super) unsafe fn apps(output: &IMMDevice) -> Result<Vec<App>> {
@@ -40,7 +34,7 @@ pub(super) unsafe fn apps(output: &IMMDevice) -> Result<Vec<App>> {
             let given = take(session.GetDisplayName()?)?.and_then(|name| indirect(&name));
             let name = match (given, &kernel_path) {
                 (Some(name), _) => name,
-                (None, Some(path)) => program_name(path),
+                (None, Some(path)) => process::display_name(path),
                 (None, None) => String::new(),
             };
             let kernel_path = kernel_path.filter(|_| !is_system);
@@ -48,7 +42,7 @@ pub(super) unsafe fn apps(output: &IMMDevice) -> Result<Vec<App>> {
                 id,
                 name,
                 path: kernel_path.as_deref().and_then(|path| dos_path(&drives, path)),
-                program: kernel_path.as_deref().map(|path| file_name(path).to_owned()),
+                program: kernel_path.as_deref().map(|path| process::file_name(path).to_owned()),
                 volume: volume.GetMasterVolume()?,
                 muted,
                 active,
@@ -77,26 +71,6 @@ fn indirect(name: &str) -> Option<String> {
     unsafe { SHLoadIndirectString(&HSTRING::from(name), &mut text, None).ok()? };
     let length = text.iter().position(|&c| c == 0).unwrap_or(text.len());
     Some(String::from_utf16_lossy(&text[..length])).filter(|text| !text.is_empty())
-}
-
-/// The name that Task Manager shows for the executable at kernel path `path`. This is its
-/// description, or else its file name without `.exe`.
-fn program_name(path: &str) -> String {
-    let mut names = NAMES.lock().unwrap_or_else(PoisonError::into_inner);
-    let names = names.get_or_insert_with(HashMap::new);
-    names
-        .entry(path.to_owned())
-        .or_insert_with(|| {
-            process::program_name(path).unwrap_or_else(|| {
-                let file = file_name(path);
-                file.strip_suffix(".exe").unwrap_or(file).to_owned()
-            })
-        })
-        .clone()
-}
-
-fn file_name(path: &str) -> &str {
-    path.rsplit('\\').next().unwrap_or(path)
 }
 
 /// Each drive letter with its kernel device, for example `C:` and `\Device\HarddiskVolume3`.

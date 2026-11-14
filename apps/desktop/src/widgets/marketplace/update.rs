@@ -3,10 +3,10 @@ use serde_json::Value;
 use tauri::{AppHandle, Runtime};
 
 use super::changed;
-use super::fetch::client;
 use super::install::install;
 use super::registry::{registry, release_manifest};
 use super::version::{compatibility, is_newer};
+use crate::http::client;
 use crate::widgets::installed::read_manifest;
 use crate::widgets::roots::{marketplace_dir, user_dir};
 
@@ -27,7 +27,7 @@ pub async fn marketplace_update<R: Runtime>(app: AppHandle<R>) -> Result<Vec<Att
 }
 
 async fn update_all<R: Runtime>(app: &AppHandle<R>) -> Result<Vec<Attempt>, String> {
-    let client = client(app)?;
+    let client = client()?;
     let root = marketplace_dir(app).map_err(|e| e.to_string())?;
     let user = user_dir(app).map_err(|e| e.to_string())?;
     let app_version = app.package_info().version.to_string();

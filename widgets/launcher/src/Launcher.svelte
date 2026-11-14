@@ -29,7 +29,7 @@
 	// svelte-ignore state_referenced_locally
 	const { api } = props;
 
-	const rows = Number(api.settings.rows) || 2;
+	const rows = Number(api.settings.rows);
 	const labels = api.settings.labels === 'show';
 	const editable = api.settings.editing === 'on';
 	// The icon sizes are in screen pixels, not CSS pixels.

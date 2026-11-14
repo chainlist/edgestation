@@ -13,7 +13,6 @@ use windows::Win32::Graphics::Gdi::{
     GetObjectW, HBITMAP, MONITOR_DEFAULTTONEAREST, MONITOR_DEFAULTTOPRIMARY, MonitorFromPoint,
     MonitorFromWindow, ReleaseDC,
 };
-use windows::Win32::System::Com::CoTaskMemFree;
 use windows::Win32::UI::Shell::{
     BHID_EnumItems, FOLDERID_AppsFolder, IEnumShellItems, ILFree, IShellItem,
     IShellItemImageFactory, KF_FLAG_DEFAULT, SEE_MASK_FLAG_NO_UI, SEE_MASK_HMONITOR,
@@ -25,7 +24,7 @@ use windows::Win32::UI::WindowsAndMessaging::SW_SHOWNORMAL;
 use windows::core::{HRESULT, HSTRING, Result};
 
 use super::App;
-use crate::os::windows::com::{self, Apartment};
+use crate::os::windows::com::{self, Apartment, take};
 
 /// "The data necessary to complete this operation is not yet available". The SDK defines it only
 /// with the URL monikers.
@@ -145,12 +144,7 @@ fn item_path(id: &str) -> HSTRING {
 }
 
 unsafe fn name_of(item: &IShellItem, kind: SIGDN) -> Option<String> {
-    unsafe {
-        let name = item.GetDisplayName(kind).ok()?;
-        let text = name.to_string().ok();
-        CoTaskMemFree(Some(name.0 as _));
-        text
-    }
+    unsafe { take(item.GetDisplayName(kind).ok()?).ok().flatten() }
 }
 
 /// Encodes `bitmap`, a 32-bit image from the shell, as PNG.
@@ -287,12 +281,9 @@ mod tests {
     }
 
     #[test]
-    fn answers_not_found_for_unknown_apps_and_bad_paths() {
+    fn answers_not_found_for_unknown_apps_and_bad_files() {
         for path in [
             "/48/No.Such.App%21App",
-            "/big/x",
-            "/48",
-            "/",
             // Only executables, only on a local drive.
             "/file/48/C%3A%5CWindows%5Cwin.ini",
             "/file/48/%5C%5Cserver%5Cshare%5Ca.exe",

@@ -1,0 +1,39 @@
+name: Web check
+
+# Type-checks the website (apps/web) when it changes, or when the lockfile changes. The website
+# does not use the SDK, so a change to the SDK does not start this check. The build and the deploy
+# are in pages.yml.
+on:
+  pull_request:
+    paths: ['apps/web/**', 'pnpm-lock.yaml', '.github/workflows/web-check.yml']
+  push:
+    branches: [main]
+    paths: ['apps/web/**', 'pnpm-lock.yaml', '.github/workflows/web-check.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A newer push to the same branch replaces the run in progress.
+concurrency:
+  group: web-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      # Nothing from this cache gets into an installer or a package. The release builds do not
+      # use it.
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      # The website and the workspace packages that it uses.
+      - run: pnpm install --frozen-lockfile --filter @edgestation/web...
+      - run: pnpm check

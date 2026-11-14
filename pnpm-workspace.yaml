@@ -3,5 +3,3 @@ packages:
   - packages/*
   - widgets/*
 engineStrict: true
-allowBuilds:
-  esbuild: true

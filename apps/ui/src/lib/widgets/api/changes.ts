@@ -1,5 +1,6 @@
 import { invoke } from '@tauri-apps/api/core';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
+import type { Scope } from '../scope';
 import type { Cleanup } from '../types';
 import { whileShown, type Pause } from './timers';
 
@@ -34,8 +35,6 @@ export function stream<T>(event: string, command: string, each?: (payload: T) =>
 	};
 }
 
-type Guard = <A extends unknown[]>(fn: (...args: A) => unknown) => (...args: A) => void;
-
 /**
  * Makes an `onChange` of `api` from `changes`, a stream of change events. The listener of one
  * widget listens only while its page shows and the Edge is not frozen (`pause`). It runs once
@@ -46,7 +45,7 @@ export const watchChanges =
 	(
 		changes: (listener: () => void) => Cleanup,
 		pause: Pause,
-		guard: Guard,
+		guard: Scope['guard'],
 		track: (stop: Cleanup) => Cleanup
 	) =>
 	(fn: () => unknown): Cleanup => {

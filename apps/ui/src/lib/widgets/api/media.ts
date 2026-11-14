@@ -1,4 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
+import type { Scope } from '../scope';
 import type { Cleanup, MediaAction, MediaApi, MediaInfo } from '../types';
 import { stream, watchChanges } from './changes';
 import type { Pause } from './timers';
@@ -21,6 +22,6 @@ const changes = stream<null>('media:changed', 'media_watch');
  */
 export const createMediaApi = (
 	pause: Pause,
-	guard: <A extends unknown[]>(fn: (...args: A) => unknown) => (...args: A) => void,
+	guard: Scope['guard'],
 	track: (stop: Cleanup) => Cleanup
 ): MediaApi => Object.freeze({ ...readers, onChange: watchChanges(changes, pause, guard, track) });

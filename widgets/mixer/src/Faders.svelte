@@ -198,32 +198,32 @@
 	}
 </script>
 
-{#if channel === 'all' || (channel === 'output' && mixer.output)}
-	<Header {mixer} {channel} {openOutputs} {toggle} />
-{/if}
-
-<div class="strips-box">
-	<div class="strips" class:single class:rows {@attach (strips) => api.scrollbars(strips)}>
-		{#each strips as item (item.target || item.name)}
-			<ChannelStrip
-				{...item}
-				held={held[item.target]}
-				level={levels[item.target]}
-				{single}
-				{rows}
-				{press}
-				{move}
-				{release}
-				{key}
-				{toggle}
-				bind:broken
-			/>
-		{/each}
-	</div>
-</div>
-
 {#if outputs}
 	<OutputSheet {api} {outputs} {mixer} close={() => (outputs = null)} {pick} />
+{:else}
+	{#if channel === 'all' || (channel === 'output' && mixer.output)}
+		<Header {mixer} {channel} {openOutputs} {toggle} />
+	{/if}
+
+	<div class="strips-box">
+		<div class="strips" class:single class:rows {@attach (strips) => api.scrollbars(strips)}>
+			{#each strips as item (item.target || item.name)}
+				<ChannelStrip
+					{...item}
+					held={held[item.target]}
+					level={levels[item.target]}
+					{single}
+					{rows}
+					{press}
+					{move}
+					{release}
+					{key}
+					{toggle}
+					bind:broken
+				/>
+			{/each}
+		</div>
+	</div>
 {/if}
 
 <style>
@@ -236,6 +236,7 @@
 		display: flex;
 		gap: 0.3em;
 		height: 100%;
+		overscroll-behavior: contain;
 	}
 
 	.strips.single {

@@ -17,7 +17,7 @@
 		widgetBlur,
 		widgetOpacity
 	} from '#lib/state/settings.svelte.ts';
-	import { widgetGlassVars } from '#lib/theme/background.ts';
+	import { widgetGlassStyle } from '#lib/theme/background.ts';
 	import { bringEdgeToFront, placeEdgeWindow, setEdgeVisible } from '#lib/tauri/edge-window.ts';
 	import { onReloadRequest, onShowPageRequest } from '#lib/tauri/events.ts';
 	import { lendFocusToTextFields } from '#lib/tauri/focus.ts';
@@ -43,15 +43,9 @@
 		hidden = !shows;
 	}
 
-	$effect(() => {
-		const unlisten = onReloadRequest(() => location.reload());
-		return () => void unlisten.then((off) => off());
-	});
+	$effect(() => onReloadRequest(() => location.reload()));
 
-	$effect(() => {
-		const unlisten = watchWidgetChanges();
-		return () => void unlisten.then((off) => off());
-	});
+	$effect(() => watchWidgetChanges());
 
 	// The keyboard stays with the app in front, also a game. Only a touched text field takes it.
 	$effect(lendFocusToTextFields);
@@ -92,10 +86,7 @@
 	);
 
 	// A page tab picked in Settings > Pages turns the Edge to that page. It stays there after.
-	$effect(() => {
-		const unlisten = onShowPageRequest((id) => carousel.show(id));
-		return () => void unlisten.then((off) => off());
-	});
+	$effect(() => onShowPageRequest((id) => carousel.show(id)));
 
 	// When another app is full screen, widget timers and animations stop until it leaves full
 	// screen. A touch on the Edge does not change this.
@@ -119,9 +110,7 @@
 	// On the plain color nothing shows through, so the cards stay opaque and there is no blur.
 	const glass = $derived(
 		backgroundImage.current
-			? Object.entries(widgetGlassVars(widgetOpacity.current, widgetBlur.current))
-					.map(([name, value]) => `${name}:${value}`)
-					.join(';')
+			? widgetGlassStyle(widgetOpacity.current, widgetBlur.current)
 			: undefined
 	);
 </script>

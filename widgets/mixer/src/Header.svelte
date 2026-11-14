@@ -57,7 +57,7 @@
 		align-items: center;
 		gap: 0.45em;
 		min-width: 0;
-		height: 2.1em;
+		height: 2.2em;
 		padding: 0 0.9em;
 		border-radius: 999px;
 		background: var(--secondary);
@@ -89,7 +89,7 @@
 		flex: none;
 		align-items: center;
 		gap: 0.45em;
-		height: 2.1em;
+		height: 2.2em;
 		padding: 0 0.9em;
 		font-weight: 600;
 	}

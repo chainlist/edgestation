@@ -8,5 +8,10 @@ bun.lockb
 # Miscellaneous
 /apps/ui/static/
 
+# Made by Tauri, and the Rust build of a local target folder
+/apps/desktop/gen/
+/apps/desktop/target/
+
 # Written by release-please on every release
 /CHANGELOG.md
+/apps/desktop/tauri.conf.json

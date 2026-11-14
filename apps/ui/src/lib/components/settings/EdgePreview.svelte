@@ -3,7 +3,7 @@
 	import { cellStyle, gridStyle } from '#lib/layout/grid.ts';
 	import type { Page } from '#lib/layout/types.ts';
 	import { edgeScreen } from '#lib/state/edge-screen.svelte.ts';
-	import { widgetGlassVars } from '#lib/theme/background.ts';
+	import { widgetGlassStyle } from '#lib/theme/background.ts';
 
 	let {
 		image,
@@ -31,11 +31,7 @@
 	 */
 	const edge = (px: number) => `${(px / edgeScreen.shortSide) * 100}cqmin`;
 
-	const glass = $derived(
-		Object.entries(widgetGlassVars(opacity, widgetBlur))
-			.map(([name, value]) => `${name}:${value}`)
-			.join(';')
-	);
+	const glass = $derived(widgetGlassStyle(opacity, widgetBlur));
 </script>
 
 <!-- A small copy of the Edge, drawn like the real one (see the Edge page, GridPage and WidgetSlot).

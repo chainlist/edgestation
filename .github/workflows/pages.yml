@@ -28,21 +28,21 @@ concurrency:
 
 jobs:
   build:
-    # release-please merges a release PR as "chore(main): release <version>". A run that release.yml
-    # calls has the same push event and commit message, so it says so with after-release. When
-    # build does not run, deploy does not run either.
+    # release-please merges a release PR as "chore(main): release <version>". A merge commit of that
+    # PR names its branch, "release-please--branches--main", instead. A run that release.yml calls
+    # has the same push event and commit message, so it says so with after-release. When build does
+    # not run, deploy does not run either.
     if: >-
       inputs.after-release ||
-      !startsWith(github.event.head_commit.message, 'chore(main): release ')
+      (!startsWith(github.event.head_commit.message, 'chore(main): release ') &&
+      !contains(github.event.head_commit.message, 'release-please--branches--'))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
-        with:
-          version: 12
       - uses: actions/setup-node@v5
         with:
-          node-version: 22
+          node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile --filter @edgestation/web
       - run: pnpm --filter @edgestation/web build

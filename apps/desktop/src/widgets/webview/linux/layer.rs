@@ -5,8 +5,6 @@
 //! window, and the page never moves. That X window moves to the bounds of the view. It stays
 //! above the page and inside it, and hides with it. A view moves before it loads its first page.
 
-use std::sync::OnceLock;
-
 use gdkx11::{X11Display, X11Window};
 use gtk::gdk;
 use gtk::prelude::*;
@@ -15,19 +13,12 @@ use x11rb::connection::Connection;
 use x11rb::protocol::xproto::{ConnectionExt as _, CreateWindowAux, InputFocus, WindowClass};
 use x11rb::wrapper::ConnectionExt as _;
 
-use crate::os::linux::x11::X11;
+use crate::os::linux::x11::kept;
 
 /// The key of the window that holds a view.
 const HOLDER: &str = "edgestation-holder";
 /// X11 keeps window positions in 16 bits, so a view outside the window stays in this range.
 const FAR: f64 = 30_000.0;
-
-/// The connection that makes the X windows of the views. It stays open, because the X
-/// server destroys the windows of a connection that closes.
-fn x11() -> Option<&'static X11> {
-    static X11: OnceLock<Option<X11>> = OnceLock::new();
-    X11.get_or_init(|| X11::connect().ok()).as_ref()
-}
 
 /// Cuts the X window that holds `view` to `rectangles`, for what it draws and for the input
 /// that it gets: x, y, width and height in pixels. `None` removes the cut.
@@ -36,7 +27,7 @@ pub fn cut(view: &gtk::Widget, rectangles: Option<&[(i32, i32, i32, i32)]>) {
     use x11rb::protocol::xproto::ClipOrdering;
     use x11rb::protocol::xproto::Rectangle;
 
-    let (Some(xid), Some(x11)) = (holder_xid(view), x11()) else { return };
+    let (Some(xid), Some(x11)) = (holder_xid(view), kept()) else { return };
     for kind in [SK::BOUNDING, SK::INPUT] {
         let _ = match rectangles {
             Some(rectangles) => {
@@ -94,7 +85,7 @@ pub fn set_bounds<R: Runtime>(webview: &Webview<R>, rect: Rect) -> tauri::Result
 pub fn take_keyboard<R: Runtime>(webview: &Webview<R>) -> tauri::Result<()> {
     webview.with_webview(|platform| {
         let view: gtk::Widget = platform.inner().upcast();
-        let (Some(xid), Some(x11)) = (holder_xid(&view), x11()) else { return };
+        let (Some(xid), Some(x11)) = (holder_xid(&view), kept()) else { return };
         let _ = x11.conn.set_input_focus(InputFocus::PARENT, xid, x11rb::CURRENT_TIME);
         let _ = x11.conn.flush();
     })
@@ -106,7 +97,7 @@ fn adopt(view: &gtk::Widget) -> Option<gtk::Window> {
     let page = view.toplevel()?.window()?;
     let display = page.display().downcast::<X11Display>().ok()?;
     let page = page.downcast::<X11Window>().ok()?;
-    let x11 = x11()?;
+    let x11 = kept()?;
     let xid = x11.conn.generate_id().ok()?;
     let no_attributes = CreateWindowAux::new();
     let class = WindowClass::INPUT_OUTPUT;

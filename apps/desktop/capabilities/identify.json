@@ -3,5 +3,5 @@
 	"identifier": "identify",
 	"description": "Permissions of the identify boxes: reading the theme, as every page does",
 	"windows": ["identify-*"],
-	"permissions": ["core:default", "store:default"]
+	"permissions": ["core:default", "store:allow-load", "store:allow-get"]
 }

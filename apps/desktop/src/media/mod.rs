@@ -148,12 +148,11 @@ pub async fn media_control(action: Action, id: Option<String>) -> Result<bool, S
 }
 
 /// Asks the app of session `id`, or of the current session, to go to `position` seconds in the
-/// track. Returns `false` if the app refuses or the session is gone.
+/// track. A negative position goes to the start. Returns `false` if the app refuses or the
+/// session is gone.
 #[tauri::command]
 pub async fn media_seek(position: f64, id: Option<String>) -> Result<bool, String> {
-    if position < 0.0 {
-        return Err(format!("Position {position} is negative"));
-    }
+    let position = position.max(0.0);
     blocking::run(move || seek(position, id.as_deref())).await
 }
 

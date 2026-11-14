@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { clamp } from '#lib/clamp.ts';
 	import { Input } from '#lib/components/ui/input/index.ts';
 
 	let {
@@ -18,7 +19,7 @@
 
 	function commit(input: HTMLInputElement) {
 		const next = input.valueAsNumber;
-		if (Number.isInteger(next)) onchange(Math.min(Math.max(next, min), max));
+		if (Number.isInteger(next)) onchange(clamp(next, min, max));
 		else input.valueAsNumber = value;
 	}
 </script>

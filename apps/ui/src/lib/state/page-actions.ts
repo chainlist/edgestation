@@ -1,4 +1,5 @@
-import { createPage, moveIn, placeWaiting, removeIn, updateIn } from '#lib/layout/pages.ts';
+import { createPage, placeWaiting } from '#lib/layout/pages.ts';
+import { moveIn, removeIn, updateIn } from '#lib/lists.ts';
 import type { Page, Placement } from '#lib/layout/types.ts';
 import { pages } from './settings.svelte';
 import { waiting } from './waiting.svelte';

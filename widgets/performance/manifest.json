@@ -28,38 +28,38 @@
 			"label": "Top programs",
 			"type": "select",
 			"default": "0",
-			"when": { "metric": "cpuLoad" },
 			"options": [
 				{ "value": "0", "label": "Off" },
 				{ "value": "1", "label": "Top 1" },
 				{ "value": "2", "label": "Top 2" },
 				{ "value": "3", "label": "Top 3" }
-			]
+			],
+			"when": { "metric": "cpuLoad" }
 		},
 		{
 			"key": "direction",
 			"label": "Direction",
 			"type": "select",
 			"default": "both",
-			"when": { "metric": "net" },
 			"options": [
 				{ "value": "down", "label": "Download" },
 				{ "value": "up", "label": "Upload" },
 				{ "value": "both", "label": "Download and upload" }
-			]
+			],
+			"when": { "metric": "net" }
 		},
 		{
 			"key": "period",
 			"label": "Show",
 			"type": "select",
 			"default": "now",
-			"when": { "metric": "net" },
 			"options": [
 				{ "value": "now", "label": "Instant" },
 				{ "value": "avg1m", "label": "Average over 1 min" },
 				{ "value": "avg5m", "label": "Average over 5 min" },
 				{ "value": "avg15m", "label": "Average over 15 min" }
-			]
+			],
+			"when": { "metric": "net" }
 		}
 	]
 }

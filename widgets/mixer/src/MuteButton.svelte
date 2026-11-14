@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type { AudioTarget } from '@edgestation/sdk';
+	import ChannelIcon from './ChannelIcon.svelte';
 	import Glyph from './Glyph.svelte';
-	import type { Icon } from './icons.ts';
+	import { offIcon, type Icon } from './icons.ts';
 
 	let {
 		target,
@@ -32,13 +33,9 @@
 	aria-pressed={muted}
 	onclick={() => toggle(target, muted)}
 >
-	{#if src && !broken[target]}
-		<img alt="" {src} onerror={() => (broken = { ...broken, [target]: true })} />
-	{:else}
-		<Glyph name={fallback} />
-	{/if}
+	<ChannelIcon {target} {src} {fallback} bind:broken />
 	{#if muted}
-		<span class="badge"><Glyph name={fallback === 'mic' ? 'micOff' : 'speakerOff'} /></span>
+		<span class="badge"><Glyph name={offIcon(fallback)} /></span>
 	{/if}
 </button>
 
@@ -63,7 +60,7 @@
 		opacity: 0.4;
 	}
 
-	.mute img {
+	.mute > :global(img) {
 		width: 100%;
 		height: 100%;
 		object-fit: contain;
@@ -75,7 +72,7 @@
 		color: var(--muted-foreground);
 	}
 
-	.mute.muted img,
+	.mute.muted > :global(img),
 	.mute.muted > :global(svg) {
 		opacity: 0.4;
 	}
@@ -90,7 +87,7 @@
 		height: 1em;
 		border-radius: 50%;
 		background: var(--destructive);
-		color: #fff;
+		color: white;
 	}
 
 	.badge :global(svg) {

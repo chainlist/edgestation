@@ -1,3 +1,5 @@
+import { clamp } from '#lib/clamp.ts';
+
 interface Size {
 	width: number;
 	height: number;
@@ -10,10 +12,8 @@ interface Size {
  */
 const MAX_BLUR = 5;
 
-const clamp01 = (value: number) => Math.min(Math.max(value, 0), 1);
-
 /** The blur radius in `cqmin` for a blur setting from 0 (sharp) to 1. */
-export const blurRadius = (blur: number) => clamp01(blur) * MAX_BLUR;
+export const blurRadius = (blur: number) => clamp(blur, 0, 1) * MAX_BLUR;
 
 /**
  * The CSS variables for the widget cards on the Edge (see WidgetSlot). `opacity` is how much the
@@ -23,10 +23,16 @@ export const blurRadius = (blur: number) => clamp01(blur) * MAX_BLUR;
 export function widgetGlassVars(opacity: number, blur: number): Record<string, string> {
 	const radius = blurRadius(blur);
 	return {
-		'--widget-opacity': `${Math.round(clamp01(opacity) * 100)}%`,
+		'--widget-opacity': `${Math.round(clamp(opacity, 0, 1) * 100)}%`,
 		'--widget-backdrop': radius > 0 ? `blur(${radius}cqmin)` : 'none'
 	};
 }
+
+/** `widgetGlassVars` as the value of a `style` attribute. */
+export const widgetGlassStyle = (opacity: number, blur: number) =>
+	Object.entries(widgetGlassVars(opacity, blur))
+		.map(([name, value]) => `${name}:${value}`)
+		.join(';');
 
 /**
  * Scales `image` down until it just covers `screen` pixel for pixel, as the background covers the

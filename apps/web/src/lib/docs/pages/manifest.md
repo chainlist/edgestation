@@ -41,7 +41,7 @@ The widget's id is not in the manifest: it is the name of its folder. The widget
 
 `minAppVersion` is the version of EdgeStation whose `api` the widget uses. An older app shows the widget's error card, saying which version it needs, instead of loading the widget and letting it fail on a missing `api` member.
 
-With the SDK, set it to the SDK version you build with: the two are released together.
+With the SDK, set it to the SDK version you build with: the two are released together. The `0.1.0` in the examples of these pages is only a placeholder.
 
 ## `permissions`
 
@@ -60,7 +60,7 @@ The other members (`storage`, `every`, `loading`, ...) only touch the widget its
 
 Calling a member the manifest doesn't list throws, and shows the widget's error card: it tells the user that the widget needs an update. The error in the console names the permission to add.
 
-When the user clicks Install in Browse, a dialog lists what the widget will be able to do, one short sentence per permission, and asks them to confirm. A new version that asks for more permissions does the same with only the new ones: automatic updates and Check for updates skip it, and it waits for the user to click its own Update button. A widget that asks for no permissions installs with no dialog. Built-in widgets and widgets dropped into the widgets folder show no dialog.
+When the user clicks Install in Browse, a dialog lists what the widget will be able to do, one short sentence per permission, and asks them to confirm. A new version that asks for more permissions does the same with only the new ones: Update all skips it, and it waits for the user to click its own Update button. A widget that asks for no permissions installs with no dialog. Built-in widgets and widgets dropped into the widgets folder show no dialog.
 
 Permissions tell the user what a widget means to use. They are not a sandbox: widgets run inside the Edge page itself, so install only widgets you trust.
 

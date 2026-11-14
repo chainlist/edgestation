@@ -7,9 +7,10 @@
 	import Search from '@lucide/svelte/icons/search';
 	import { findPages } from '#lib/layout/pages.ts';
 	import type { Page } from '#lib/layout/types.ts';
+	import { cleanupOf } from '#lib/tauri/events.ts';
 	import { borrowFocus, returnFocus } from '#lib/tauri/focus.ts';
 	import { getCurrentWindow } from '@tauri-apps/api/window';
-	import { fade, scale } from 'svelte/transition';
+	import EdgeDialog from './EdgeDialog.svelte';
 
 	let {
 		pages,
@@ -35,10 +36,11 @@
 	// blur, for the same reason as in `focus.ts`.
 	$effect(() => {
 		if (!open) return;
-		const listening = getCurrentWindow().onFocusChanged(({ payload: focused }) => {
-			if (!focused) close(false);
-		});
-		return () => void listening.then((off) => off());
+		return cleanupOf(
+			getCurrentWindow().onFocusChanged(({ payload: focused }) => {
+				if (!focused) close(false);
+			})
+		);
 	});
 
 	/** Opens the box, or closes it if it is open. The shortcut uses this. */
@@ -75,68 +77,62 @@
 {#if open}
 	<!-- The box owns the pointer. The carousel must not start a swipe from it. A press outside
 	     the box closes it, and Escape also closes it. -->
-	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<div
-		class="absolute inset-0 flex items-start justify-center bg-background/40 p-6"
-		transition:fade={{ duration: 150 }}
-		onpointerdown={(e) => {
+	<EdgeDialog
+		backdropClass="absolute items-start"
+		onbackdroppointerdown={(e) => {
 			e.stopPropagation();
 			if (e.target === e.currentTarget) close();
 		}}
+		class="flex max-h-full w-[min(44rem,100%)] flex-col overflow-hidden"
 	>
-		<div
-			class="flex max-h-full w-[min(44rem,100%)] flex-col overflow-hidden rounded-3xl border bg-card/90 shadow-lg backdrop-blur-md"
-			in:scale={{ start: 0.96, duration: 150 }}
-		>
-			<label class="flex shrink-0 items-center gap-4 px-6">
-				<Search class="size-7 shrink-0 text-muted-foreground" />
-				<input
-					{@attach (input) => input.focus()}
-					bind:value={query}
-					oninput={() => (picked = 0)}
-					onkeydown={keydown}
-					class="h-18 min-w-0 flex-1 bg-transparent text-3xl outline-none placeholder:text-muted-foreground"
-					placeholder="Go to page"
-					role="combobox"
-					aria-expanded="true"
-					aria-controls="page-switcher-list"
-					aria-autocomplete="list"
-					aria-activedescendant={found.length ? `page-switcher-${found[picked]}` : undefined}
-					autocomplete="off"
-					spellcheck="false"
-				/>
-			</label>
-			{#if found.length}
-				<div
-					bind:this={list}
-					id="page-switcher-list"
-					class="min-h-0 overflow-y-auto border-t p-2"
-					role="listbox"
-					aria-label="Pages"
-				>
-					{#each found as index, i (pages[index].id)}
-						<button
-							id="page-switcher-{index}"
-							class={[
-								'flex h-14 w-full items-center gap-4 rounded-2xl px-4 text-left text-2xl',
-								i === picked ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50'
-							]}
-							role="option"
-							aria-selected={i === picked}
-							tabindex="-1"
-							onclick={() => go(index)}
-						>
-							<span class="w-8 shrink-0 text-muted-foreground tabular-nums">{index + 1}</span>
-							<span class="min-w-0 flex-1 truncate">{pages[index].name}</span>
-							{#if index === active}
-								<span class="shrink-0 text-lg text-muted-foreground">Current</span>
-							{/if}
-						</button>
-					{/each}
-				</div>
-			{:else}
-				<p class="border-t px-6 py-4 text-xl text-muted-foreground">No page matches “{query}”</p>
-			{/if}
-		</div>
-	</div>
+		<label class="flex shrink-0 items-center gap-4 px-6">
+			<Search class="size-7 shrink-0 text-muted-foreground" />
+			<input
+				{@attach (input) => input.focus()}
+				bind:value={query}
+				oninput={() => (picked = 0)}
+				onkeydown={keydown}
+				class="h-18 min-w-0 flex-1 bg-transparent text-3xl outline-none placeholder:text-muted-foreground"
+				placeholder="Go to page"
+				role="combobox"
+				aria-expanded="true"
+				aria-controls="page-switcher-list"
+				aria-autocomplete="list"
+				aria-activedescendant={found.length ? `page-switcher-${found[picked]}` : undefined}
+				autocomplete="off"
+				spellcheck="false"
+			/>
+		</label>
+		{#if found.length}
+			<div
+				bind:this={list}
+				id="page-switcher-list"
+				class="min-h-0 overflow-y-auto border-t p-2"
+				role="listbox"
+				aria-label="Pages"
+			>
+				{#each found as index, i (pages[index].id)}
+					<button
+						id="page-switcher-{index}"
+						class={[
+							'flex h-14 w-full items-center gap-4 rounded-2xl px-4 text-left text-2xl',
+							i === picked ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50'
+						]}
+						role="option"
+						aria-selected={i === picked}
+						tabindex="-1"
+						onclick={() => go(index)}
+					>
+						<span class="w-8 shrink-0 text-muted-foreground tabular-nums">{index + 1}</span>
+						<span class="min-w-0 flex-1 truncate">{pages[index].name}</span>
+						{#if index === active}
+							<span class="shrink-0 text-lg text-muted-foreground">Current</span>
+						{/if}
+					</button>
+				{/each}
+			</div>
+		{:else}
+			<p class="border-t px-6 py-4 text-xl text-muted-foreground">No page matches “{query}”</p>
+		{/if}
+	</EdgeDialog>
 {/if}

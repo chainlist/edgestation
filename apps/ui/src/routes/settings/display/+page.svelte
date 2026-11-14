@@ -13,7 +13,7 @@
 	const AUTO = 'auto';
 
 	let monitors = $state.raw<Monitor[]>([]);
-	listMonitors().then((found) => (monitors = found));
+	listMonitors().then((found) => (monitors = found), console.error);
 
 	// Prepare the boxes befor the click, so they show at once.
 	$effect(() => prepareIdentify());

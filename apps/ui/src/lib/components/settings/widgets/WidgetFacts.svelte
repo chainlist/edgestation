@@ -1,6 +1,6 @@
 <script lang="ts">
 	import BadgeCheck from '@lucide/svelte/icons/badge-check';
-	import type { Fact } from '#lib/widgets/marketplace/listing.ts';
+	import type { Fact } from './facts.ts';
 
 	let { facts }: { facts: Fact[] } = $props();
 </script>

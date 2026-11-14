@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
+import { flush } from '#lib/test-helpers.ts';
 import { overlay } from './motion';
 import {
 	calls,
 	element,
-	flush,
 	keyboardHole,
 	nextPage,
 	onScreen,

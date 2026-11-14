@@ -2,10 +2,10 @@
 
 use tauri::Monitor;
 
-use crate::os::linux::x11::X11;
+use crate::os::linux::x11::kept;
 
 pub fn name(monitors: Vec<Monitor>) -> Vec<(String, Monitor)> {
-    let connectors = X11::connect().map(|x11| x11.monitors()).unwrap_or_default();
+    let connectors = kept().map(|x11| x11.monitors()).unwrap_or_default();
     let connector = |monitor: &Monitor| {
         let at = monitor.position();
         let found = connectors.iter().find(|c| c.x == at.x && c.y == at.y)?;

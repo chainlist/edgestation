@@ -4,17 +4,16 @@
 mod watch;
 
 use std::collections::HashMap;
-use std::sync::{Mutex, OnceLock, PoisonError};
-use std::time::Duration;
+use std::sync::{Mutex, PoisonError};
 
 use base64::Engine;
 use base64::engine::general_purpose::STANDARD;
 use tauri::Url;
-use tauri_plugin_http::reqwest::Client;
 use zbus::blocking::Connection;
 use zbus::zvariant::{ObjectPath, OwnedValue, Value};
 
 use super::{Action, Controls, MediaInfo, Session};
+use crate::http;
 use crate::os::linux::dbus::{self, Bus};
 
 pub use watch::{unwatch, watch};
@@ -334,21 +333,8 @@ fn fetch(url: &str) -> Option<Vec<u8>> {
 
 /// Downloads the art at `url`. Spotify and browsers give the art on the web.
 fn download(url: Url) -> Option<Vec<u8>> {
-    static CLIENT: OnceLock<Option<Client>> = OnceLock::new();
-    let client =
-        CLIENT.get_or_init(|| Client::builder().timeout(Duration::from_secs(10)).build().ok());
-    let client = client.as_ref()?;
-    tauri::async_runtime::block_on(async {
-        let mut response = client.get(url).send().await.ok()?.error_for_status().ok()?;
-        let mut bytes = Vec::new();
-        while let Some(chunk) = response.chunk().await.ok()? {
-            bytes.extend_from_slice(&chunk);
-            if bytes.len() > MAX_ART {
-                return None;
-            }
-        }
-        Some(bytes)
-    })
+    let client = http::client().ok()?;
+    tauri::async_runtime::block_on(http::get(&client, url.as_str(), MAX_ART)).ok()
 }
 
 /// The type of an image, from its first bytes. Image decoders look at the bytes too, so an image

@@ -1,9 +1,9 @@
 import { Channel } from '@tauri-apps/api/core';
 import { describe, expect, it, vi } from 'vitest';
+import { flush } from '#lib/test-helpers.ts';
 import { layoutChanged } from './motion';
 import {
 	calls,
-	flush,
 	host,
 	loading,
 	nextPage,

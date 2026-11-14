@@ -10,6 +10,7 @@ mod blocking;
 mod changes;
 mod focus;
 mod fullscreen;
+mod http;
 mod identify;
 mod media;
 mod monitors;
@@ -21,7 +22,6 @@ mod widgets;
 
 use tauri::Manager;
 
-#[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     os::prepare();
     tauri::Builder::default()
@@ -72,7 +72,7 @@ pub fn run() {
             focus::focus_return,
             app_windows::edge_visible,
             app_windows::edge_fullscreen,
-            fullscreen::watch_fullscreen,
+            fullscreen::fullscreen_watch,
             identify::identify_prepare,
             identify::identify_screens,
             identify::identify_release,
@@ -84,14 +84,14 @@ pub fn run() {
             media::media_watch,
             monitors::monitor_names,
             system::system_info,
-            system::top_programs,
-            widgets::installed::list_widgets,
-            widgets::installed::open_widgets_dir,
+            system::system_top_programs,
+            widgets::installed::widgets_list,
+            widgets::installed::widgets_open_dir,
             widgets::marketplace::listing::marketplace_list,
             widgets::marketplace::install::marketplace_install,
             widgets::marketplace::install::marketplace_uninstall,
             widgets::marketplace::update::marketplace_update,
-            widgets::marketplace::listing::open_link,
+            widgets::marketplace::listing::marketplace_open_link,
             widgets::webview::open::webview_open,
             widgets::webview::control::webview_place,
             widgets::webview::control::webview_navigate,
@@ -101,7 +101,7 @@ pub fn run() {
         ])
         .setup(|app| {
             // The page shows this window when it is on the Edge, maybe before the page is drawn.
-            if let Some(edge) = app.get_webview_window("edge") {
+            if let Some(edge) = app.get_webview_window(changes::EDGE) {
                 edge.set_background_color(Some(app_windows::page_background(app.handle())))?;
             }
             Ok(tray::create(app.handle())?)

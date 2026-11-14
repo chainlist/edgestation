@@ -1,5 +1,5 @@
 import scrollbars from 'overlayscrollbars/overlayscrollbars.css?inline';
-import scrollbarsTheme from '../scrollbars.css?inline';
+import scrollbarsTheme from '#lib/scrollbars.css?inline';
 import type { WidgetManifest } from './types';
 import { widgetUrl } from './url';
 

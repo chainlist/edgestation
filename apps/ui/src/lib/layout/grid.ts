@@ -1,3 +1,4 @@
+import { clamp } from '#lib/clamp.ts';
 import type { GridSize, Rect } from './types';
 
 /**
@@ -21,8 +22,6 @@ export const overlaps = (a: Rect, b: Rect) =>
 	a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 
 export const isFree = (taken: Rect[], rect: Rect) => !taken.some((other) => overlaps(other, rect));
-
-const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
 
 export function clampRect(grid: GridSize, rect: Rect): Rect {
 	const w = clamp(rect.w, 1, grid.cols);

@@ -5,11 +5,14 @@
 
 	let {
 		title,
+		heading,
 		description,
 		back,
 		actions
 	}: {
 		title: string;
+		/** Shows in place of the title, for example a field that renames the page. */
+		heading?: Snippet;
 		description?: string;
 		/** The page that the back button opens. Without it, there is no back button. */
 		back?: string;
@@ -25,8 +28,12 @@
 				<ArrowLeft />
 			</Button>
 		{/if}
-		<div class={['grid min-w-0 flex-1 gap-1', back && 'pt-1']}>
-			<h1 class="text-xl font-semibold">{title}</h1>
+		<div class={['grid min-w-0 flex-1 gap-1', back && !heading && 'pt-1']}>
+			{#if heading}
+				{@render heading()}
+			{:else}
+				<h1 class="text-xl font-semibold">{title}</h1>
+			{/if}
 			{#if description}
 				<p class="text-sm text-muted-foreground">{description}</p>
 			{/if}

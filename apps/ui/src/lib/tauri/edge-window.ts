@@ -7,6 +7,7 @@ import {
 	type Monitor
 } from '@tauri-apps/api/window';
 import type { PhysicalSize } from '@tauri-apps/api/dpi';
+import { cleanupOf } from './events';
 
 type Bounds = Pick<Monitor, 'position' | 'size'>;
 
@@ -161,5 +162,5 @@ export function watchEdgeSize(fn: (size: CssSize) => void): () => void {
 			console.error(error);
 			return undefined;
 		});
-	return () => void listening.then((off) => off?.());
+	return cleanupOf(listening);
 }

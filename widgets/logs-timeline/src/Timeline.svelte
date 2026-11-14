@@ -106,7 +106,7 @@
 
 	li.selected,
 	li.editing {
-		background: var(--muted);
+		background: color-mix(in oklch, var(--card-foreground) 6%, transparent);
 	}
 
 	/* No vertical padding. The rail fills the height of the row, so it joins the rail of the
@@ -168,7 +168,7 @@
 
 	/* The current activity: the latest entry of today. */
 	.now .entry .rail::after {
-		box-shadow: 0 0 0 0.22em color-mix(in oklab, var(--primary) 35%, transparent);
+		box-shadow: 0 0 0 0.22em color-mix(in oklch, var(--primary) 35%, transparent);
 	}
 
 	/* The line starts at the first dot and stops at the last one. */
@@ -201,10 +201,12 @@
 		padding: 0 0.5em 0.5em 0;
 	}
 
+	/* 2.75em of the small text is 2.2em of the widget text, the touch size of the other buttons. */
 	.actions button {
 		display: flex;
 		align-items: center;
 		gap: 0.35em;
+		min-height: 2.75em;
 		padding: 0.3em 0.8em;
 		border-radius: 999px;
 		background: var(--secondary);

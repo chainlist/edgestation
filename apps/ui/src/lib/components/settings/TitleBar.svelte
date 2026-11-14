@@ -6,6 +6,7 @@
 -->
 <script lang="ts">
 	import { getCurrentWindow } from '@tauri-apps/api/window';
+	import { cleanupOf } from '#lib/tauri/events.ts';
 
 	const win = getCurrentWindow();
 
@@ -18,8 +19,11 @@
 	$effect(() => {
 		const read = () => win.isMaximized().then((on) => (maximized = on), console.error);
 		read();
-		const offs = [win.onResized(read), win.onFocusChanged(({ payload }) => (focused = payload))];
-		return () => offs.forEach((off) => void off.then((stop) => stop()));
+		const stops = [
+			cleanupOf(win.onResized(read)),
+			cleanupOf(win.onFocusChanged(({ payload }) => (focused = payload)))
+		];
+		return () => stops.forEach((stop) => stop());
 	});
 
 	const run = (action: () => Promise<void>) => () => void action().catch(console.error);

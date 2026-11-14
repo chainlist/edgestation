@@ -11,7 +11,7 @@ vi.mock('@tauri-apps/api/webviewWindow', () => {
 
 it('turns the Edge to the page that Settings asks for', async () => {
 	const fn = vi.fn();
-	await onShowPageRequest(fn);
+	onShowPageRequest(fn);
 	await showPageOnEdge('p2');
 
 	const [target, sent, payload] = vi.mocked(emitTo).mock.calls[0];

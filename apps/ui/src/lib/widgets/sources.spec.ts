@@ -1,9 +1,13 @@
 import { invoke } from '@tauri-apps/api/core';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { mixer } from './api/audio';
 import { readSource, sourcedChoices } from './sources';
 import type { AudioApp, SelectSetting } from './types';
 
 vi.mock('@tauri-apps/api/core', () => ({ invoke: vi.fn() }));
+
+// Each test reads the mixer again, not the shared read of the test before.
+afterEach(() => mixer.forget());
 
 const setting: SelectSetting = {
 	key: 'channel',

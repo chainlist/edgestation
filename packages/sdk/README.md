@@ -38,7 +38,7 @@ my-widget/
 }
 ```
 
-`minAppVersion` is the oldest EdgeStation that can run the widget: set it to the version of this package you build with (they are released together), and older apps show an error card instead of a broken widget.
+`minAppVersion` is the oldest EdgeStation that can run the widget. The `0.1.0` above is only an example: set it to the version of this package you build with (they are released together), and older apps show an error card instead of a broken widget.
 
 `permissions` lists the parts of the `api` the widget uses. The examples below call `api.system()`, so they need `system`.
 
@@ -193,10 +193,16 @@ Pass `widget({ entry: 'src/other.ts' })` for another entry. For TypeScript to ac
 
 ## Try it in EdgeStation
 
-EdgeStation loads every folder of `%APPDATA%\com.edgestation.dashboard\widgets\` (Settings → Widgets → Open folder) that has a `manifest.json`; the folder name is the widget's id. Rather than copying your project there, link it, from a Command Prompt:
+EdgeStation loads every folder of its widgets folder that has a `manifest.json`: `%APPDATA%\com.edgestation.dashboard\widgets\` on Windows, `~/.local/share/com.edgestation.dashboard/widgets/` on Linux (Settings → Widgets → Open folder). The folder name is the widget's id. Rather than copying your project there, link it once. On Windows, from a Command Prompt:
 
 ```bat
 mklink /J "%APPDATA%\com.edgestation.dashboard\widgets\my-widget" C:\path\to\my-widget
+```
+
+On Linux, from a terminal:
+
+```bash
+ln -s /path/to/my-widget ~/.local/share/com.edgestation.dashboard/widgets/my-widget
 ```
 
 Then rebuild on each change, and click Reload Edge at the bottom of the Settings sidebar to load the new build:
@@ -209,4 +215,4 @@ To share the widget, ship the folder with `manifest.json`, `dist/` and any files
 
 ## Types
 
-Everything is exported from `@edgestation/sdk` as types: `WidgetApi`, `WidgetModule`, `WidgetManifest`, `WidgetProps`, the settings types and the results of `api.system()`, `api.media`, `api.audio`, `api.apps` and `api.storage`.
+Everything is exported from `@edgestation/sdk` as types: `WidgetApi`, `WidgetModule`, `WidgetManifest`, `WidgetPermission`, `WidgetProps`, the settings types and the results of `api.system()`, `api.media`, `api.audio`, `api.apps` and `api.storage`.

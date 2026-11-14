@@ -39,18 +39,11 @@
 		place-items: center;
 		width: min(20cqh, 11cqw);
 		aspect-ratio: 1;
-		padding: 0;
-		border: none;
 		border-radius: 50%;
-		background: transparent;
-		color: var(--card-foreground);
-		cursor: pointer;
-		transition: transform 0.1s;
 	}
 
 	button :global(svg) {
 		width: 55%;
-		fill: currentColor;
 	}
 
 	.toggle {
@@ -62,10 +55,6 @@
 	button:disabled {
 		opacity: 0.35;
 		cursor: default;
-	}
-
-	button:not(:disabled):active {
-		transform: scale(0.9);
 	}
 
 	.controls.idle {

@@ -38,3 +38,6 @@ export const ICONS = {
 	]
 };
 export type Icon = keyof typeof ICONS;
+
+/** The crossed out glyph of a channel. */
+export const offIcon = (icon: Icon): Icon => (icon === 'mic' ? 'micOff' : 'speakerOff');

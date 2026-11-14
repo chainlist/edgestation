@@ -28,7 +28,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Windows and Linux build at this time. macOS is ready. Uncomment its entries to build it.
+        # Windows and Linux build at this time. macOS first needs its platform side in the Rust code
+        # (see Platforms in ARCHITECTURE.md), then its entries here.
         # `assets` are the installers and their updater signatures to upload. The paths are
         # relative to the bundle folder of the target. Another platform also needs its entries in
         # latest.json, and its target in TARGETS of scripts/notices/generate.mjs.
@@ -68,8 +69,6 @@ jobs:
             libayatana-appindicator3-dev librsvg2-dev patchelf
       - run: rustup target add ${{ matrix.target }}
       - uses: pnpm/action-setup@v4
-        with:
-          version: 12
       # Do not use a dependency cache, so that files from other workflows cannot get into the
       # installers.
       - uses: actions/setup-node@v5

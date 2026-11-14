@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
+import { flush } from '#lib/test-helpers.ts';
 import {
 	calls,
-	flush,
 	fullscreen,
 	host,
 	keyboardButton,

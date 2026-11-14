@@ -1,5 +1,6 @@
 import { invoke } from '@tauri-apps/api/core';
-import { leaveProfile, newId, removeIn, updateIn } from '#lib/layout/pages.ts';
+import { leaveProfile } from '#lib/layout/pages.ts';
+import { newId, removeIn, updateIn } from '#lib/lists.ts';
 import { pages, profiles } from './settings.svelte';
 
 export function addProfile() {

@@ -12,7 +12,7 @@ export const widgetRevision = (id: string) => revisions[id] ?? 0;
 /**
  * For the Edge window. When the marketplace installs, updates or removes widgets, this forgets
  * their loaded modules and remounts their placements. The other widgets stay as they are.
- * Resolves to the unlisten function.
+ * Returns the function that stops this.
  */
 export const watchWidgetChanges = () =>
 	onWidgetsChanged((ids) => {

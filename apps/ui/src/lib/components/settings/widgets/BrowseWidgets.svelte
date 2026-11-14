@@ -2,20 +2,15 @@
 	import ChevronLeft from '@lucide/svelte/icons/chevron-left';
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
 	import LoaderCircle from '@lucide/svelte/icons/loader-circle';
-	import RefreshCw from '@lucide/svelte/icons/refresh-cw';
-	import Search from '@lucide/svelte/icons/search';
 	import { Button } from '#lib/components/ui/button/index.ts';
 	import * as Card from '#lib/components/ui/card/index.ts';
-	import { Input } from '#lib/components/ui/input/index.ts';
 	import { browseSort } from '#lib/state/settings.svelte.ts';
-	import {
-		filterListing,
-		paginate,
-		sortListing,
-		type ListingSort
-	} from '#lib/widgets/marketplace/listing.ts';
+	import { paginate, sortListing, type ListingSort } from '#lib/widgets/marketplace/listing.ts';
 	import { loadListing, marketplace } from '#lib/widgets/marketplace/state.svelte.ts';
+	import { filterListing } from '#lib/widgets/search.ts';
 	import ChoiceSelect from '#lib/components/settings/controls/ChoiceSelect.svelte';
+	import RefreshButton from '#lib/components/settings/controls/RefreshButton.svelte';
+	import SearchField from '#lib/components/settings/controls/SearchField.svelte';
 	import BrowseCard from './BrowseCard.svelte';
 	import CardGrid from './CardGrid.svelte';
 
@@ -52,19 +47,12 @@
 
 <div class="grid gap-3">
 	<div class="flex flex-wrap gap-2" bind:this={browseTop}>
-		<div class="relative min-w-56 flex-1">
-			<Search
-				class="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
-			/>
-			<Input
-				type="search"
-				bind:value={query}
-				oninput={() => (pageIndex = 0)}
-				placeholder="Search the marketplace"
-				aria-label="Search the marketplace"
-				class="pl-8"
-			/>
-		</div>
+		<SearchField
+			bind:value={query}
+			oninput={() => (pageIndex = 0)}
+			label="Search the marketplace"
+			class="min-w-56 flex-1"
+		/>
 		<ChoiceSelect
 			choices={SORTS}
 			value={browseSort.current}
@@ -74,16 +62,7 @@
 				pageIndex = 0;
 			}}
 		/>
-		<Button
-			variant="ghost"
-			size="icon"
-			title="Refresh the list"
-			aria-label="Refresh the list"
-			disabled={refreshing}
-			onclick={refresh}
-		>
-			<RefreshCw class={refreshing ? 'animate-spin' : undefined} />
-		</Button>
+		<RefreshButton label="Refresh the list" busy={refreshing} onclick={refresh} />
 	</div>
 
 	<!-- A failed refresh keeps the previous list. -->

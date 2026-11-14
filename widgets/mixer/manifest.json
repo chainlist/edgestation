@@ -2,7 +2,7 @@
 	"$schema": "../../packages/sdk/manifest.schema.json",
 	"name": "Mixer",
 	"version": "1.0.0",
-	"description": "Volume faders with level meters, or mute buttons only: every channel, or one per placement (the master, the microphone, an app such as Discord). Tap an icon or a button to mute it, the output's name to switch device, and the mic button to mute your microphone in every app. The Output devices channel shows a button for each output device and lights the active one.",
+	"description": "Volume faders with level meters, or mute buttons only, for every channel or one per placement: the master, the microphone, an app such as Discord, or the output devices. Tap an icon or a button to mute it, the output's name to switch device, and the mic button to mute your microphone in every app.",
 	"author": "EdgeStation",
 	"main": "dist/main.js",
 	"icon": "icon.svg",

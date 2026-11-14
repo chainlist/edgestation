@@ -77,7 +77,6 @@ export const homeHole = (rect: Rect) => ({ ...keyboardHole(rect), y: rect.height
  */
 export const square = (rect: Rect) => ({ ...rect, radius: 0, holes: [keyboardHole(rect)] });
 
-export { flush };
 /** The count of host calls that `calls` skips. */
 let skipped = 1;
 /** Host calls after the open, or after the first show of `show`, as `[command, args]`. */

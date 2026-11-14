@@ -21,7 +21,7 @@ fn changed(app: &AppHandle, rewire: bool) {
     if rewire {
         REWIRE.store(true, Ordering::Release);
     }
-    crate::audio::changed::changed(app);
+    crate::audio::changed(app);
 }
 
 /// One object for all kinds of callbacks.

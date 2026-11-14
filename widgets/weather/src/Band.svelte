@@ -55,7 +55,14 @@
 	import { degrees } from './format.ts';
 	import { condition } from './weather-codes.ts';
 
-	let { forecast }: { forecast: Forecast } = $props();
+	let {
+		forecast,
+		hourStyle
+	}: {
+		forecast: Forecast;
+		/** The hour format of the `hours` setting. */
+		hourStyle: Intl.DateTimeFormatOptions;
+	} = $props();
 
 	/** The width of the plot (the band without its side margins) and the height of the band. */
 	let width = $state(0);
@@ -64,7 +71,7 @@
 	const hours = $derived(forecast.hours);
 	const last = $derived(hours.length - 1);
 	const hourFormat = $derived(
-		new Intl.DateTimeFormat(undefined, { hour: 'numeric', timeZone: forecast.timeZone })
+		new Intl.DateTimeFormat(undefined, { ...hourStyle, timeZone: forecast.timeZone })
 	);
 
 	/**

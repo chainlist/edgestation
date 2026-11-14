@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { listedAsWidget, publisherFacts } from '#lib/widgets/marketplace/listing.ts';
+	import { listedAsWidget } from '#lib/widgets/marketplace/listing.ts';
 	import { marketplace } from '#lib/widgets/marketplace/state.svelte.ts';
 	import type { ListedWidget } from '#lib/widgets/types.ts';
-	import { downloadFacts } from './facts.ts';
+	import { downloadFacts, publisherFacts } from './facts.ts';
 	import MarketplaceButtons from './MarketplaceButtons.svelte';
 	import WidgetCard from './WidgetCard.svelte';
 

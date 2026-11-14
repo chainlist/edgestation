@@ -5,8 +5,9 @@ use std::sync::Once;
 
 use windows::Win32::System::Com::{
     APTTYPE, APTTYPE_MTA, APTTYPEQUALIFIER, COINIT_APARTMENTTHREADED, COINIT_MULTITHREADED,
-    CoGetApartmentType, CoIncrementMTAUsage, CoInitializeEx, CoUninitialize,
+    CoGetApartmentType, CoIncrementMTAUsage, CoInitializeEx, CoTaskMemFree, CoUninitialize,
 };
+use windows::core::{PWSTR, Result};
 
 /// The apartment that a thread joins.
 #[derive(Clone, Copy)]
@@ -68,4 +69,17 @@ pub fn in_mta() -> bool {
     let (mut kind, mut qualifier) = (APTTYPE::default(), APTTYPEQUALIFIER::default());
     // SAFETY: both pointers are to locals that live for the call.
     unsafe { CoGetApartmentType(&mut kind, &mut qualifier).is_ok() && kind == APTTYPE_MTA }
+}
+
+/// Returns the text of a string that the callee allocated, and frees the string. Returns `None`
+/// for a null pointer.
+pub unsafe fn take(text: PWSTR) -> Result<Option<String>> {
+    unsafe {
+        if text.is_null() {
+            return Ok(None);
+        }
+        let result = text.to_string();
+        CoTaskMemFree(Some(text.0 as _));
+        Ok(Some(result?))
+    }
 }

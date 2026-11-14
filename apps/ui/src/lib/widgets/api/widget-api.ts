@@ -1,6 +1,6 @@
 import { invoke } from '@tauri-apps/api/core';
 import { fetch as httpFetch } from '@tauri-apps/plugin-http';
-import { overlayScrollbars } from '../../scrollbars';
+import { overlayScrollbars } from '#lib/scrollbars.ts';
 import type { Scope } from '../scope';
 import type {
 	AppInfo,
@@ -85,7 +85,7 @@ export function createWidgetApi(
 		settings: Object.freeze(settings),
 		system: gate('system', () => invoke<SystemInfo>('system_info')),
 		topPrograms: gate('system', (count: number) =>
-			invoke<ProgramUsage[]>('top_programs', { count })
+			invoke<ProgramUsage[]>('system_top_programs', { count })
 		),
 		media: gate('media', createMediaApi(pause, scope.guard, track)),
 		apps: gate('apps', apps),
@@ -122,6 +122,8 @@ export function createWidgetApi(
 		scrollbars(viewport: HTMLElement) {
 			return track(overlayScrollbars(viewport));
 		},
-		onDispose: scope.add
+		onDispose(fn: Cleanup) {
+			scope.add(fn);
+		}
 	});
 }

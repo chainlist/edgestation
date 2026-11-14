@@ -3,6 +3,7 @@
 	import X from '@lucide/svelte/icons/x';
 	import type { Corner, DragMode } from '#lib/layout/grid.ts';
 	import type { Placement, Rect } from '#lib/layout/types.ts';
+	import { widgetName } from '#lib/widgets/installed.svelte.ts';
 	import PreviewItem from './PreviewItem.svelte';
 
 	let {
@@ -25,6 +26,8 @@
 		/** Opens the widget settings. Not set if the widget has none, and then no button shows. */
 		onsettings?: () => void;
 	} = $props();
+
+	const name = $derived(widgetName(item.widget));
 
 	// For each corner: the name for screen readers, the handle position and cursor, and the
 	// bracket in the handle.
@@ -58,7 +61,7 @@
 	{#if onsettings}
 		<button
 			class="absolute top-1 right-9 rounded-sm p-0.5 opacity-0 group-hover:opacity-100 hover:bg-accent focus-visible:opacity-100"
-			aria-label="{item.widget} settings"
+			aria-label="{name} settings"
 			onpointerdown={(event) => event.stopPropagation()}
 			onclick={onsettings}
 		>
@@ -66,8 +69,8 @@
 		</button>
 	{/if}
 	<button
-		class="absolute top-1 right-4 rounded-sm p-0.5 opacity-0 group-hover:opacity-100 hover:bg-destructive/20 hover:text-destructive"
-		aria-label="Remove {item.widget}"
+		class="absolute top-1 right-4 rounded-sm p-0.5 opacity-0 group-hover:opacity-100 hover:bg-destructive/20 hover:text-destructive focus-visible:opacity-100"
+		aria-label="Remove {name}"
 		onpointerdown={(event) => event.stopPropagation()}
 		onclick={onremove}
 	>
@@ -76,7 +79,7 @@
 	{#each handles as [corner, label, position, bracket] (corner)}
 		<button
 			class="absolute size-4 {position}"
-			aria-label="Resize {item.widget} from the {label}"
+			aria-label="Resize {name} from the {label}"
 			tabindex="-1"
 			onpointerdown={(event) => {
 				event.stopPropagation();

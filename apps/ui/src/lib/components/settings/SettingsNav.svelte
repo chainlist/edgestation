@@ -95,7 +95,7 @@
 	<footer class="mt-auto grid">
 		<Button
 			variant="ghost"
-			onclick={reloadEdge}
+			onclick={() => reloadEdge().catch(console.error)}
 			class="justify-start hover:bg-primary/10 dark:hover:bg-primary/10"
 		>
 			<RotateCcw />Reload Edge

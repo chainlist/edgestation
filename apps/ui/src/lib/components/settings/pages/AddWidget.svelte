@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Plus from '@lucide/svelte/icons/plus';
 	import { Button } from '#lib/components/ui/button/index.ts';
-	import { DEFAULT_WIDGET_SIZE } from '#lib/layout/defaults.ts';
+	import { widgetSize } from '#lib/layout/defaults.ts';
 	import { newPlacement } from '#lib/layout/pages.ts';
 	import type { Page } from '#lib/layout/types.ts';
 	import { editWaiting } from '#lib/state/page-actions.ts';
@@ -17,7 +17,7 @@
 		installed.current
 			.filter((widget) => !widget.error)
 			.map((widget) => {
-				const { w, h } = widget.size ?? DEFAULT_WIDGET_SIZE;
+				const { w, h } = widgetSize(widget);
 				return { value: widget.id, label: `${widget.name} (${w}×${h})` };
 			})
 	);
@@ -27,7 +27,7 @@
 	function add() {
 		const widget = installed.current.find((w) => w.id === choice);
 		if (!widget) return;
-		const item = newPlacement(page, widget.id, widget.size ?? DEFAULT_WIDGET_SIZE);
+		const item = newPlacement(page, widget.id, widgetSize(widget));
 		editWaiting(page.id, (items) => [...items, item]);
 	}
 </script>

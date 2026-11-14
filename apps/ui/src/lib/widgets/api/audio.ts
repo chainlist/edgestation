@@ -7,6 +7,8 @@ import type {
 	AudioTarget,
 	Cleanup
 } from '../types';
+import { clamp } from '#lib/clamp.ts';
+import type { Scope } from '../scope';
 import { fileIconUrl } from '../url';
 import { stream, watchChanges } from './changes';
 import { whileShown, type Pause } from './timers';
@@ -36,7 +38,8 @@ export function shared<T>(read: () => Promise<T>, ms: number) {
 const MIXER_SHARE_MS = 250;
 const LEVELS_SHARE_MS = 30;
 
-const mixer = shared(() => invoke<AudioMixer>('audio_mixer'), MIXER_SHARE_MS);
+/** The mixer read for the whole window: the widget api and the `audioApps` setting source. */
+export const mixer = shared(() => invoke<AudioMixer>('audio_mixer'), MIXER_SHARE_MS);
 const levels = shared(() => invoke<AudioLevels>('audio_levels'), LEVELS_SHARE_MS);
 /** After a change from here, the next mixer read shows it and does not share an older read. */
 const change = (done: Promise<boolean>) => done.finally(mixer.forget);
@@ -45,13 +48,12 @@ const change = (done: Promise<boolean>) => done.finally(mixer.forget);
 const changes = stream<null>('audio:changed', 'audio_watch', mixer.forget);
 const levelStream = stream<AudioLevels>('audio:levels', 'audio_meters');
 
+// The readers are wrapped, so that widgets do not get `forget`.
 const readers = Object.freeze({
-	mixer,
-	levels,
+	mixer: () => mixer(),
+	levels: () => levels(),
 	setVolume: (target: AudioTarget, volume: number) =>
-		change(
-			invoke<boolean>('audio_set_volume', { target, volume: Math.min(1, Math.max(0, volume)) })
-		),
+		change(invoke<boolean>('audio_set_volume', { target, volume: clamp(volume, 0, 1) })),
 	setMuted: (target: AudioTarget, muted: boolean) =>
 		change(invoke<boolean>('audio_set_muted', { target, muted })),
 	outputs: () => invoke<AudioOutput[]>('audio_outputs'),
@@ -66,7 +68,7 @@ const readers = Object.freeze({
  */
 export function createAudioApi(
 	pause: Pause,
-	guard: <A extends unknown[]>(fn: (...args: A) => unknown) => (...args: A) => void,
+	guard: Scope['guard'],
 	track: (stop: Cleanup) => Cleanup
 ): AudioApi {
 	return Object.freeze({

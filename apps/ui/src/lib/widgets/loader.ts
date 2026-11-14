@@ -1,4 +1,4 @@
-import { getVersion } from '@tauri-apps/api/app';
+import { appVersion } from '#lib/tauri/app-version.ts';
 import type { WidgetManifest, WidgetModule } from './types';
 import { widgetUrl } from './url';
 import { versionProblem } from './version';
@@ -31,7 +31,7 @@ async function load(id: string): Promise<LoadedWidget> {
 	if (!response.ok) throw new Error(`Widget "${id}" is not installed`);
 	const manifest: WidgetManifest = { ...(await response.json()), id };
 	if (manifest.minAppVersion !== undefined) {
-		const problem = versionProblem(await getVersion(), String(manifest.minAppVersion));
+		const problem = versionProblem(await appVersion(), String(manifest.minAppVersion));
 		if (problem) throw new Error(`Widget "${id}" can't load: ${problem}`);
 	}
 

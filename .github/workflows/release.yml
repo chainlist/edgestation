@@ -54,8 +54,6 @@ jobs:
         with:
           ref: ${{ inputs.tag }}
       - uses: pnpm/action-setup@v4
-        with:
-          version: 12
       # Node 24 contains npm 11. npm stage publish needs npm 11.15 or later. Do not use a
       # dependency cache, so that files from other workflows cannot get into the package.
       - uses: actions/setup-node@v5

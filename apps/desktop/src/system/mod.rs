@@ -18,6 +18,8 @@ use nvml_wrapper::enum_wrappers::device::TemperatureSensor;
 use serde::Serialize;
 use sysinfo::{CpuRefreshKind, MINIMUM_CPU_UPDATE_INTERVAL, Networks, RefreshKind, System};
 
+use crate::blocking;
+
 use programs::Program;
 use traffic::{Rate, Traffic};
 
@@ -77,12 +79,11 @@ static READER: Mutex<Option<Reader>> = Mutex::new(None);
 #[tauri::command]
 pub async fn system_info() -> Result<SystemInfo, String> {
     // Run on a blocking thread, because a read can wait a short time for a fresh baseline.
-    tauri::async_runtime::spawn_blocking(|| {
+    blocking::run(|| {
         let mut reader = READER.lock().unwrap_or_else(PoisonError::into_inner);
-        reader.get_or_insert_with(Reader::new).read()
+        Ok(reader.get_or_insert_with(Reader::new).read())
     })
     .await
-    .map_err(|error| error.to_string())
 }
 
 static PROGRAMS: Mutex<Option<programs::Reader>> = Mutex::new(None);
@@ -91,15 +92,14 @@ static PROGRAMS: Mutex<Option<programs::Reader>> = Mutex::new(None);
 /// `count`. This is a seperate command from `system_info` because it lists all processes. Only
 /// the widgets that show programs pay for that.
 #[tauri::command]
-pub async fn top_programs(count: usize) -> Result<Vec<Program>, String> {
-    tauri::async_runtime::spawn_blocking(move || {
+pub async fn system_top_programs(count: usize) -> Result<Vec<Program>, String> {
+    blocking::run(move || {
         let mut reader = PROGRAMS.lock().unwrap_or_else(PoisonError::into_inner);
         let mut top = reader.get_or_insert_with(programs::Reader::new).read();
         top.truncate(count);
-        top
+        Ok(top)
     })
     .await
-    .map_err(|error| error.to_string())
 }
 
 impl Reader {

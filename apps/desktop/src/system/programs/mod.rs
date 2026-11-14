@@ -16,7 +16,7 @@ use serde::Serialize;
 use sysinfo::MINIMUM_CPU_UPDATE_INTERVAL;
 
 use super::{SHARE, STALE};
-use crate::process::{image_path, program_name};
+use crate::process::{display_name, image_path};
 use native::Lister;
 
 #[derive(Clone, Serialize)]
@@ -47,8 +47,6 @@ pub struct Reader {
     lister: Lister,
     /// The time of the last process list, and the CPU time of each process at that time.
     times: (Instant, HashMap<Key, u64>),
-    /// The name of each executable seen so far, by path. The host reads each file only once.
-    names: HashMap<String, String>,
     last: Option<(Instant, Vec<Program>)>,
 }
 
@@ -58,7 +56,6 @@ impl Reader {
             cpus: thread::available_parallelism().map_or(1, NonZero::get) as f64,
             lister: Lister::default(),
             times: (Instant::now(), HashMap::new()),
-            names: HashMap::new(),
             last: None,
         }
     }
@@ -77,7 +74,7 @@ impl Reader {
         }
         let mut used: HashMap<String, f64> = HashMap::new();
         for (process, cpu) in self.measure() {
-            *used.entry(self.name(process)).or_default() += cpu;
+            *used.entry(name(process)).or_default() += cpu;
         }
         let mut programs: Vec<_> =
             used.into_iter().map(|(name, cpu)| Program { name, cpu }).collect();
@@ -110,15 +107,12 @@ impl Reader {
         self.times = (at, times);
         used
     }
+}
 
-    /// The name of a process: the name that people know its executable by (see
-    /// `process::program_name`), or else its file name. Some system processes have no file at
-    /// all.
-    fn name(&mut self, process: Process) -> String {
-        let Some(path) = image_path(process.key.0) else { return process.name };
-        let name = self.names.entry(path);
-        name.or_insert_with_key(|path| program_name(path).unwrap_or(process.name)).clone()
-    }
+/// The name of a process: the name of its executable (see `process::display_name`). Some system
+/// processes have no file at all, so they keep the name of the process.
+fn name(process: Process) -> String {
+    image_path(process.key.0).map_or(process.name, |path| display_name(&path))
 }
 
 #[cfg(test)]

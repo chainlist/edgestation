@@ -20,6 +20,8 @@ use std::sync::mpsc;
 
 use tauri::{AppHandle, Manager, Runtime, Url, Webview};
 
+use crate::blocking;
+
 /// The start of each view label. The label is `widget-webview-<n>` in the Default profile, and
 /// `widget-webview-<n>_<profile id>` in other profiles.
 const PREFIX: &str = "widget-webview-";
@@ -46,10 +48,7 @@ fn web_page(url: &str) -> Result<Url, String> {
 
 /// Waits for `rx`, but does not block the async runtime.
 async fn receive<T: Send + 'static>(rx: mpsc::Receiver<T>) -> Result<T, String> {
-    tauri::async_runtime::spawn_blocking(move || rx.recv())
-        .await
-        .map_err(|e| e.to_string())?
-        .map_err(|_| "the browser stopped answering".to_string())
+    blocking::run(move || rx.recv().map_err(|_| "the browser stopped answering".to_string())).await
 }
 
 #[cfg(test)]

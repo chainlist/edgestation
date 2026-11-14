@@ -9,6 +9,8 @@ mod native;
 
 use tauri::{AppHandle, Manager, Runtime, Webview};
 
+use crate::changes::EDGE;
+
 /// Gives the focus to the window of the calling page, then to web view `view` or to the page.
 /// Keeps the window that had the focus before, so `focus_return` can give it back. If this
 /// window already has the focus, the first lender stays.
@@ -30,5 +32,5 @@ pub fn focus_borrow<R: Runtime>(webview: Webview<R>, view: Option<String>) -> ta
 /// takes no focus again.
 #[tauri::command]
 pub fn focus_return<R: Runtime>(app: AppHandle<R>) {
-    native::give_back(app.get_window("edge"));
+    native::give_back(app.get_window(EDGE));
 }

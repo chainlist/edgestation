@@ -3,6 +3,10 @@
 	"version": "0.7.0",
 	"private": true,
 	"type": "module",
+	"packageManager": "pnpm@12.4.1",
+	"engines": {
+		"node": ">=22.17"
+	},
 	"scripts": {
 		"tauri": "pnpm --filter @edgestation/desktop tauri",
 		"build:widgets": "pnpm --filter \"@edgestation/widget-*\" build",

@@ -1,46 +1,17 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createWidgetApi } from './widget-api';
+import { describe, expect, it, vi } from 'vitest';
 import { shared } from './audio';
-import { createScope } from '../scope';
-import { createPause } from './timers';
-import type { WidgetPermission } from '../types';
-import { overlayScrollbars } from '../../scrollbars';
+import { overlayScrollbars } from '#lib/scrollbars.ts';
 import { openWebview } from '../webview/open-webview';
 import { fetch as httpFetch } from '@tauri-apps/plugin-http';
 import { invoke } from '@tauri-apps/api/core';
+import { setup } from './widget-api.stubs';
 
-vi.mock('@tauri-apps/api/core', () => ({ invoke: vi.fn(async () => []) }));
-vi.mock('../webview/open-webview', () => ({ openWebview: vi.fn(() => () => {}) }));
-vi.mock('@tauri-apps/plugin-http', () => ({ fetch: vi.fn() }));
-vi.mock('../../scrollbars', () => ({ overlayScrollbars: vi.fn() }));
-
-const ALL: WidgetPermission[] = ['system', 'media', 'apps', 'audio', 'fetch', 'webview'];
-
-/** `permissions` is the list in the manifest. */
-const setup = ({
-	permissions = ALL,
-	profile
-}: { permissions?: WidgetPermission[]; profile?: string } = {}) => {
-	const fail = vi.fn();
-	const scope = createScope(fail);
-	const pause = createPause(false);
-	const api = createWidgetApi(
-		'instance',
-		{ id: 'test', name: 'Test', permissions },
-		{},
-		profile,
-		scope,
-		pause,
-		vi.fn()
-	);
-	return { api, scope, pause, fail };
-};
-
-beforeEach(() => {
-	vi.useFakeTimers();
-	vi.mocked(openWebview).mockClear();
-});
-afterEach(() => vi.useRealTimers());
+vi.mock('@tauri-apps/api/core', async () => (await import('./widget-api.mocks')).coreModule());
+vi.mock('../webview/open-webview', async () =>
+	(await import('./widget-api.mocks')).openWebviewModule()
+);
+vi.mock('@tauri-apps/plugin-http', async () => (await import('./widget-api.mocks')).httpModule());
+vi.mock('#lib/scrollbars.ts', async () => (await import('./widget-api.mocks')).scrollbarsModule());
 
 describe('webview', () => {
 	const el = {} as HTMLElement;
@@ -82,7 +53,7 @@ describe('permissions', () => {
 
 	it('gives topPrograms with system', () => {
 		void setup({ permissions: ['system'] }).api.topPrograms(3);
-		expect(invoke).toHaveBeenLastCalledWith('top_programs', { count: 3 });
+		expect(invoke).toHaveBeenLastCalledWith('system_top_programs', { count: 3 });
 		expect(() => setup({ permissions: ['media'] }).api.topPrograms(3)).toThrow(
 			'how busy your PC is'
 		);
@@ -172,146 +143,5 @@ describe('audio.icon', () => {
 		const [, route, size, encoded] = url.pathname.split('/');
 		expect([route, size]).toEqual(['file', '256']);
 		expect(decodeURIComponent(encoded)).toBe(path);
-	});
-});
-
-describe('fetch', () => {
-	const url = 'https://example.com/';
-	const sentSignal = () => vi.mocked(httpFetch).mock.lastCall![1]!.signal!;
-	const unanswered = () => vi.mocked(httpFetch).mockReturnValueOnce(new Promise(() => {}));
-
-	it('sends the request through the http plugin', async () => {
-		const response = new Response('ok');
-		vi.mocked(httpFetch).mockResolvedValueOnce(response);
-		const { api } = setup();
-		await expect(api.fetch(url, { method: 'POST', body: 'x' })).resolves.toBe(response);
-		expect(httpFetch).toHaveBeenLastCalledWith(
-			url,
-			expect.objectContaining({ method: 'POST', body: 'x' })
-		);
-	});
-
-	it('cancels an unanswered request on unmount', () => {
-		unanswered();
-		const { api, scope } = setup();
-		void api.fetch(url);
-		scope.dispose();
-		expect(sentSignal().aborted).toBe(true);
-	});
-
-	it('forgets a request once answered', async () => {
-		vi.mocked(httpFetch).mockResolvedValueOnce(new Response());
-		const { api, scope } = setup();
-		await api.fetch(url);
-		scope.dispose();
-		expect(sentSignal().aborted).toBe(false);
-	});
-
-	it("still follows the widget's own signal", () => {
-		unanswered();
-		const { api } = setup();
-		const own = new AbortController();
-		void api.fetch(url, { signal: own.signal });
-		own.abort();
-		expect(sentSignal().aborted).toBe(true);
-	});
-
-	it('follows the signal of a Request', () => {
-		unanswered();
-		const { api } = setup();
-		const own = new AbortController();
-		void api.fetch(new Request(url, { signal: own.signal }));
-		own.abort();
-		expect(sentSignal().aborted).toBe(true);
-	});
-});
-
-describe('every', () => {
-	it('stops when its stop function is called', () => {
-		const { api } = setup();
-		const fn = vi.fn();
-		const stop = api.every(1000, fn);
-		vi.advanceTimersByTime(1000);
-		stop();
-		vi.advanceTimersByTime(5000);
-		expect(fn).toHaveBeenCalledOnce();
-	});
-
-	it('stops on unmount', () => {
-		const { api, scope } = setup();
-		const fn = vi.fn();
-		api.every(1000, fn);
-		scope.dispose();
-		vi.advanceTimersByTime(5000);
-		expect(fn).not.toHaveBeenCalled();
-	});
-
-	it('waits while its page is paused', () => {
-		const { api, scope, pause } = setup();
-		const fn = vi.fn();
-		api.every(1000, fn);
-		pause.set(true);
-		vi.advanceTimersByTime(5000);
-		expect(fn).not.toHaveBeenCalled();
-		scope.dispose();
-	});
-});
-
-describe('after', () => {
-	it('runs once after the delay', () => {
-		const { api } = setup();
-		const fn = vi.fn();
-		api.after(300, fn);
-		vi.advanceTimersByTime(299);
-		expect(fn).not.toHaveBeenCalled();
-		vi.advanceTimersByTime(5000);
-		expect(fn).toHaveBeenCalledOnce();
-	});
-
-	it('does not run once cancelled', () => {
-		const { api } = setup();
-		const fn = vi.fn();
-		api.after(300, fn)();
-		vi.advanceTimersByTime(5000);
-		expect(fn).not.toHaveBeenCalled();
-	});
-
-	it('waits while its page is paused', () => {
-		const { api, pause } = setup();
-		const fn = vi.fn();
-		api.after(300, fn);
-		pause.set(true);
-		vi.advanceTimersByTime(5000);
-		expect(fn).not.toHaveBeenCalled();
-		pause.set(false);
-		vi.advanceTimersByTime(0);
-		expect(fn).toHaveBeenCalledOnce();
-	});
-
-	it('does not run after unmount', () => {
-		const { api, scope } = setup();
-		const fn = vi.fn();
-		api.after(300, fn);
-		scope.dispose();
-		vi.advanceTimersByTime(5000);
-		expect(fn).not.toHaveBeenCalled();
-	});
-
-	it('routes errors to fail', () => {
-		const { api, fail } = setup();
-		api.after(300, () => {
-			throw new Error('boom');
-		});
-		vi.advanceTimersByTime(300);
-		expect(fail).toHaveBeenCalledWith(new Error('boom'));
-	});
-
-	it('leaves nothing to clean up once it has run', () => {
-		const { api, scope } = setup();
-		api.after(300, vi.fn());
-		vi.advanceTimersByTime(300);
-		const clear = vi.spyOn(globalThis, 'clearTimeout');
-		scope.dispose();
-		expect(clear).not.toHaveBeenCalled();
 	});
 });

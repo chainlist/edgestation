@@ -3,15 +3,17 @@ use std::io;
 use std::path::{Path, PathBuf};
 
 use serde_json::Value;
-use tauri::async_runtime::{self, Mutex};
+use tauri::async_runtime::Mutex;
 use tauri::{AppHandle, Runtime};
 use tauri_plugin_http::reqwest::Client;
 
 use super::changed;
-use super::fetch::{client, get, release_url};
+use super::fetch::release_url;
 use super::registry::{Entry, registry, release_manifest, unavailable, valid_id};
 use super::unpack::{check_widget, unpack};
 use super::version::compatibility;
+use crate::blocking;
+use crate::http::{client, get};
 use crate::widgets::roots::{marketplace_dir, user_dir};
 
 /// The largest `widget.zip` to download, and the largest size it can unpack to.
@@ -25,7 +27,7 @@ static BUSY: Mutex<()> = Mutex::const_new(());
 /// Installs the latest release of marketplace widget `id`, or replaces the installed copy with it.
 #[tauri::command]
 pub async fn marketplace_install<R: Runtime>(app: AppHandle<R>, id: String) -> Result<(), String> {
-    let client = client(&app)?;
+    let client = client()?;
     let entry = registry(&client)
         .await?
         .into_iter()
@@ -49,13 +51,19 @@ pub async fn marketplace_uninstall<R: Runtime>(
     }
     let _busy = BUSY.lock().await;
     let root = marketplace_dir(&app).map_err(|e| e.to_string())?;
-    let trash = work_dir(&root).join("trash").join(&id);
-    // Move the folder out first. Then a file that Windows holds open cannot leave half a widget
-    // in place.
-    let _ = fs::remove_dir_all(&trash);
-    fs::create_dir_all(work_dir(&root).join("trash")).map_err(|e| e.to_string())?;
-    fs::rename(root.join(&id), &trash).map_err(|e| format!("Couldn't remove \"{id}\": {e}"))?;
-    let _ = fs::remove_dir_all(&trash);
+    let target = id.clone();
+    blocking::run(move || {
+        let trash = work_dir(&root).join("trash").join(&target);
+        // Move the folder out first. Then a file that Windows holds open cannot leave half a
+        // widget in place.
+        let _ = fs::remove_dir_all(&trash);
+        fs::create_dir_all(work_dir(&root).join("trash")).map_err(|e| e.to_string())?;
+        fs::rename(root.join(&target), &trash)
+            .map_err(|e| format!("Couldn't remove \"{target}\": {e}"))?;
+        let _ = fs::remove_dir_all(&trash);
+        Ok(())
+    })
+    .await?;
     changed(&app, &[id]);
     Ok(())
 }
@@ -86,7 +94,7 @@ pub(super) async fn install<R: Runtime>(
     let root = marketplace_dir(app).map_err(|e| e.to_string())?;
     let id = id.clone();
     let repo = entry.repo.clone();
-    async_runtime::spawn_blocking(move || {
+    blocking::run(move || {
         let staged = work_dir(&root).join("staging").join(&id);
         let _ = fs::remove_dir_all(&staged);
         let result = unpack(&zip, &staged, MAX_UNPACKED)
@@ -97,7 +105,6 @@ pub(super) async fn install<R: Runtime>(
         result
     })
     .await
-    .map_err(|e| e.to_string())?
 }
 
 /// Puts `staged` at `root/<id>`. It first moves the installed copy out of the way, and moves it

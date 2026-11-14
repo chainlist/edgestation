@@ -30,7 +30,22 @@ body:
     attributes:
       label: EdgeStation version
       description: '**Settings → General** shows it under Updates.'
-      placeholder: '0.6.0'
+      placeholder: '0.7.0' # x-release-please-version
+    validations:
+      required: true
+
+  - type: dropdown
+    id: package
+    attributes:
+      label: Installed from
+      description: The file that you installed EdgeStation from. Updates come as the same kind of file.
+      options:
+        - Windows setup (.exe)
+        - Windows installer (.msi)
+        - Debian or Ubuntu package (.deb)
+        - RPM package (.rpm)
+        - AppImage
+        - Built from source
     validations:
       required: true
 

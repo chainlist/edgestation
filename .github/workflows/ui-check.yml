@@ -27,8 +27,6 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
-        with:
-          version: 12
       # Nothing from this cache gets into an installer or a package. The release builds do not
       # use it.
       - uses: actions/setup-node@v5

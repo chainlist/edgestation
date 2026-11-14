@@ -2,7 +2,7 @@
 //! the default devices, the sessions of the output or the device list change. The Edge window
 //! then gets `audio:changed`, and widgets read the mixer again.
 
-mod changes;
+mod events;
 mod wiring;
 
 use std::sync::PoisonError;

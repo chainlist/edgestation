@@ -4,7 +4,7 @@ import type { ShortcutAction, ShortcutChanges } from '#lib/shortcuts/actions.ts'
 import { DEFAULT_THEME } from '#lib/theme/presets.ts';
 import type { ThemeSettings } from '#lib/theme/types.ts';
 import type { ListingSort } from '#lib/widgets/marketplace/listing.ts';
-import { persisted } from './persisted.svelte';
+import { allRead, persisted } from './persisted.svelte';
 
 export interface DisplaySettings {
 	/**
@@ -67,18 +67,5 @@ export const shortcutsFailed = persisted<ShortcutAction[]>('shortcutsFailed', []
 /** The order of Settings > Widgets > Browse. */
 export const browseSort = persisted<ListingSort>('browseSort', 'downloads');
 
-export const settingsReady = Promise.all([
-	theme.ready,
-	backgroundImage.ready,
-	backgroundBlur.ready,
-	widgetOpacity.ready,
-	widgetBlur.ready,
-	pages.ready,
-	pageDirection.ready,
-	pageTransition.ready,
-	display.ready,
-	freezeOnFullscreen.ready,
-	profiles.ready,
-	shortcuts.ready,
-	shortcutsFailed.ready
-]);
+// Keep this after the last `persisted()` of the file, so that it waits for all of them.
+export const settingsReady = allRead();

@@ -32,8 +32,8 @@ export interface SystemInfo {
 export interface ProgramUsage {
 	/**
 	 * The name that Task Manager shows. This is the description of its executable (`THE FINALS`,
-	 * `Google Chrome`), else the executable file name (`crashpad_handler.exe`). On Linux, it is
-	 * the name of its app in the app menu, else the executable file name.
+	 * `Google Chrome`), else the executable file name without `.exe` (`crashpad_handler`). On
+	 * Linux, it is the name of its app in the app menu, else the executable file name.
 	 */
 	name: string;
 	/** The percent of all logical processors, as in Task Manager. */

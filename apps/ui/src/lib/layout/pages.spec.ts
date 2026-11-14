@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import {
 	findPages,
 	leaveProfile,
-	moveIn,
 	movePlacements,
 	newPlacement,
 	placeWaiting,
@@ -19,16 +18,6 @@ const page = (): Page => ({
 	cols: 4,
 	rows: 2,
 	items: [{ id: 'a', widget: 'clock', x: 2, y: 0, w: 2, h: 1 }]
-});
-
-describe('moveIn', () => {
-	const list = [{ id: 'a' }, { id: 'b' }, { id: 'c' }];
-	it('moves an item by delta', () => {
-		expect(moveIn(list, 'a', 2).map((i) => i.id)).toEqual(['b', 'c', 'a']);
-	});
-	it('ignores moves past either end', () => {
-		expect(moveIn(list, 'a', -1)).toBe(list);
-	});
 });
 
 it('resizePage keeps existing widgets inside the new grid', () => {

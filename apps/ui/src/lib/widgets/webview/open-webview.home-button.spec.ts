@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
+import { flush } from '#lib/test-helpers.ts';
 import { createHomeButton } from './corner-buttons';
 import { openWebview } from './open-webview';
 import {
 	calls,
-	flush,
 	fullscreen,
 	homeButton,
 	homeHole,

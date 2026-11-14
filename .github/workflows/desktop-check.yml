@@ -48,6 +48,12 @@ jobs:
             echo "$found"
             exit 1
           fi
+      # The style is in rustfmt.toml. One runner is enough for this too.
+      - name: Rust code follows rustfmt.toml
+        if: runner.os == 'Linux'
+        run: |
+          rustup component add rustfmt
+          cargo fmt --check
       # The same packages as the release build: WebKitGTK, the app indicator and PulseAudio.
       - if: runner.os == 'Linux'
         run: |

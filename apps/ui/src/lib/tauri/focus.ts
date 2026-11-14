@@ -1,5 +1,6 @@
 import { invoke } from '@tauri-apps/api/core';
 import { getCurrentWindow } from '@tauri-apps/api/window';
+import { cleanupOf } from './events';
 
 /**
  * Gives the keyboard focus to the page of this window (see apps/desktop/src/focus.rs). Windows
@@ -70,13 +71,15 @@ export function lendFocusToTextFields(): () => void {
 	};
 	// If the user goes to another app, there is nothing to give back. Use the focus event of the
 	// window, becuase the blur event of the page also fires when the host moves the focus.
-	const listening = getCurrentWindow().onFocusChanged(({ payload: focused }) => {
-		if (!focused) lent = false;
-	});
+	const stopListening = cleanupOf(
+		getCurrentWindow().onFocusChanged(({ payload: focused }) => {
+			if (!focused) lent = false;
+		})
+	);
 	document.addEventListener('pointerdown', touched, true);
 	return () => {
 		document.removeEventListener('pointerdown', touched, true);
-		void listening.then((off) => off());
+		stopListening();
 		lent = false;
 	};
 }

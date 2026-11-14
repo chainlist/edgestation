@@ -18,24 +18,32 @@
 
 <script lang="ts">
 	import Icon from './Icon.svelte';
+	import Now from './Now.svelte';
 	import type { Forecast } from './forecast.ts';
-	import { compass, degrees, uvLevel } from './format.ts';
+	import { compass, degrees, unit, uvLevel } from './format.ts';
 	import { ICONS } from './icons.ts';
 	import { condition } from './weather-codes.ts';
 
-	let { forecast, imperial }: { forecast: Forecast; imperial: boolean } = $props();
+	let {
+		forecast,
+		imperial,
+		hourStyle
+	}: {
+		forecast: Forecast;
+		imperial: boolean;
+		/** The hour format of the `hours` setting. */
+		hourStyle: Intl.DateTimeFormatOptions;
+	} = $props();
 
 	const { current, today } = $derived(forecast);
 	const now = $derived(condition(current.code, current.day));
 	const time = $derived(
 		new Intl.DateTimeFormat(undefined, {
-			hour: 'numeric',
+			...hourStyle,
 			minute: '2-digit',
 			timeZone: forecast.timeZone
 		})
 	);
-	const unit = (name: string) =>
-		new Intl.NumberFormat(undefined, { style: 'unit', unit: name, maximumFractionDigits: 0 });
 	// svelte-ignore state_referenced_locally
 	const speed = unit(imperial ? 'mile-per-hour' : 'kilometer-per-hour');
 	const percent = unit('percent');
@@ -87,10 +95,7 @@
 
 <div class="today">
 	<div class="summary">
-		<div class="now">
-			<span class="icon"><Icon {...now} /></span>
-			<span class="temperature">{degrees(current.temperature)}</span>
-		</div>
+		<div class="lead"><Now {current} /></div>
 		<p class="place">{forecast.place}</p>
 		<p class="condition">{now.label}</p>
 	</div>
@@ -117,31 +122,17 @@
 	}
 
 	.summary {
+		--now-gap: 2cqw;
+		--now-icon: min(16cqh, 14cqw);
+		--now-text: min(16cqh, 14cqw);
 		display: grid;
 		grid-template-columns: auto minmax(0, 1fr);
 		column-gap: 4cqw;
 		align-items: center;
 	}
 
-	.now {
-		display: flex;
+	.lead {
 		grid-row: span 2;
-		align-items: center;
-		gap: 2cqw;
-	}
-
-	.icon {
-		flex: none;
-		width: min(16cqh, 14cqw);
-		height: min(16cqh, 14cqw);
-		color: var(--primary);
-	}
-
-	.temperature {
-		font-size: min(16cqh, 14cqw);
-		font-weight: 600;
-		line-height: 1;
-		font-variant-numeric: tabular-nums;
 	}
 
 	p {
@@ -209,23 +200,16 @@
 		}
 
 		.summary {
+			--now-icon: min(26cqh, 10cqw);
+			--now-text: min(26cqh, 10cqw);
 			grid-template-columns: minmax(0, 1fr);
 			align-content: center;
 			row-gap: 2cqh;
 		}
 
-		.now {
+		.lead {
 			grid-row: auto;
 			margin-bottom: 2cqh;
-		}
-
-		.icon {
-			width: min(26cqh, 10cqw);
-			height: min(26cqh, 10cqw);
-		}
-
-		.temperature {
-			font-size: min(26cqh, 10cqw);
 		}
 
 		.place {

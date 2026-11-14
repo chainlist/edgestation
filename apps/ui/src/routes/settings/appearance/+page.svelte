@@ -51,7 +51,7 @@
 			backgroundImage.current = await readBackground(file, screen ?? XENEON_EDGE);
 		} catch (e) {
 			console.error(e);
-			error = `Could not read ${file.name} as an image.`;
+			error = `Couldn't read ${file.name} as an image.`;
 		} finally {
 			reading = false;
 		}

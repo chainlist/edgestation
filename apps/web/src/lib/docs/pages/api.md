@@ -43,7 +43,7 @@ The API is deliberately small for now, and will grow. Set the manifest's [`minAp
 
 ## Released on unmount
 
-Everything a widget registers through the `api` is released when it unmounts: `every` and `after` timers are cleared, web views close, scrollbars are removed and unanswered `fetch` requests are cancelled. Members that return a cleanup function (`every`, `after`, `webview`, `scrollbars`) also let you release one sooner.
+Everything a widget registers through the `api` is released when it unmounts: `every` and `after` timers are cleared, web views close, scrollbars are removed, listeners stop and unanswered `fetch` requests are cancelled. Members that return a cleanup function (`every`, `after`, `webview`, `scrollbars`, `media.onChange`, `audio.onChange`, `audio.onLevels`) also let you release one sooner.
 
 ## Read on demand
 

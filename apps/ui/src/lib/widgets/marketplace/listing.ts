@@ -1,5 +1,4 @@
-import type { Component } from 'svelte';
-import { matchesQuery } from '../search';
+import { clamp } from '#lib/clamp.ts';
 import type { InstalledWidget, ListedWidget } from '../types';
 import { isNewer, versionProblem } from '../version';
 
@@ -41,40 +40,6 @@ export function repoOwner(
  */
 export const verifiedOwner = (owner: string) => VERIFIED_OWNERS.has(owner.toLowerCase());
 
-/** A fact in the line below a widget description. `verified` adds the badge. */
-export interface Fact {
-	text: string;
-	title?: string;
-	verified?: boolean;
-	mono?: boolean;
-	/** A Lucide icon before the text. */
-	icon?: Component<{ class?: string }>;
-}
-
-/**
- * Who publishes `widget`: its author and the GitHub account that owns its repo. The author of a
- * built-in widget is verified, because the widget ships with the app.
- */
-export function publisherFacts(
-	widget: Pick<InstalledWidget, 'id' | 'source' | 'author'>,
-	listing: ListedWidget[] | undefined
-): Fact[] {
-	const owner = repoOwner(widget, listing);
-	const facts: Fact[] = [];
-	if (widget.author) facts.push({ text: widget.author, verified: widget.source === 'builtin' });
-	if (owner) {
-		const title = 'Owner of its GitHub repository';
-		facts.push({ text: `@${owner}`, title, verified: verifiedOwner(owner) });
-	}
-	return facts;
-}
-
-export const filterListing = (widgets: ListedWidget[], query: string) =>
-	widgets.filter((widget) => {
-		const { name, description, author } = widget.manifest ?? {};
-		return matchesQuery(query, [widget.id, name, description, author]);
-	});
-
 /**
  * Sorts `widgets` with the most downloads or the latest release first, or by name. Widgets wich
  * the stats do not have yet come after the others. Ties go by name.
@@ -94,7 +59,7 @@ export function sortListing(widgets: ListedWidget[], by: ListingSort): ListedWid
 }
 
 /** One page of a list. `index` is 0-based. `first` and `last` are 1-based item positions. */
-export interface Page<T> {
+export interface Paged<T> {
 	items: T[];
 	index: number;
 	count: number;
@@ -107,18 +72,12 @@ export interface Page<T> {
  * page gives the last page. Then a list that gets shorter, for example after a search, still
  * shows items.
  */
-export function paginate<T>(items: T[], index: number, size: number): Page<T> {
+export function paginate<T>(items: T[], index: number, size: number): Paged<T> {
 	const count = Math.max(1, Math.ceil(items.length / size));
-	const page = Math.min(Math.max(0, index), count - 1);
+	const page = clamp(index, 0, count - 1);
 	const start = page * size;
 	const pageItems = items.slice(start, start + size);
 	return { items: pageItems, index: page, count, first: start + 1, last: start + pageItems.length };
-}
-
-/** `1234` → "1.2K downloads". */
-export function downloadsLabel(count: number): string {
-	const number = new Intl.NumberFormat('en', { notation: 'compact' }).format(count);
-	return `${number} ${count === 1 ? 'download' : 'downloads'}`;
 }
 
 /** What the Install button of a marketplace widget can do. */

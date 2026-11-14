@@ -57,10 +57,10 @@ api.every(1000, async () => {
 });
 ```
 
-| Field  | Meaning                                                                                                                                                                                                                                                                       |
-| ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `name` | What Task Manager calls it: the executable's description (`THE FINALS`, `Google Chrome`), else its file name (`crashpad_handler.exe`). On Linux, the name of its app in the app menu, else the executable's file name. All the processes with that name count as one program. |
-| `cpu`  | Percent of all logical processors, like Task Manager.                                                                                                                                                                                                                         |
+| Field  | Meaning                                                                                                                                                                                                                                                                                  |
+| ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name` | What Task Manager calls it: the executable's description (`THE FINALS`, `Google Chrome`), else its file name without `.exe` (`crashpad_handler`). On Linux, the name of its app in the app menu, else the executable's file name. All the processes with that name count as one program. |
+| `cpu`  | Percent of all logical processors, like Task Manager.                                                                                                                                                                                                                                    |
 
 Services and system processes are included, as in Task Manager. On Linux, the processes of every user are included too.
 

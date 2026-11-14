@@ -1,12 +1,13 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { Badge } from '#lib/components/ui/badge/index.ts';
-	import type { Fact } from '#lib/widgets/marketplace/listing.ts';
+	import type { Fact } from './facts.ts';
 	import { shownPermissions } from '#lib/widgets/permissions.ts';
 	import type { InstalledWidget } from '#lib/widgets/types.ts';
 	import FactLine from './FactLine.svelte';
+	import WidgetDescription from './WidgetDescription.svelte';
 	import WidgetFacts from './WidgetFacts.svelte';
 	import WidgetIcon from './WidgetIcon.svelte';
+	import WidgetName from './WidgetName.svelte';
 	import WidgetPermissions from './WidgetPermissions.svelte';
 
 	let {
@@ -45,37 +46,13 @@
 	<div class="flex items-start gap-3">
 		<WidgetIcon {widget} src={icon} />
 		<div class="grid min-w-0 flex-1 gap-1">
-			<p class="flex items-baseline gap-2">
-				{#if href}
-					<a
-						{href}
-						class="truncate font-medium outline-none after:absolute after:inset-0 after:rounded-xl focus-visible:after:ring-3 focus-visible:after:ring-ring/50"
-					>
-						{widget.name}
-					</a>
-				{:else}
-					<span class="truncate font-medium">{widget.name}</span>
-				{/if}
-				{#if widget.version}
-					<span class="text-xs text-muted-foreground tabular-nums">{widget.version}</span>
-				{/if}
-				{#if widget.source === 'local'}
-					<Badge variant="secondary" title="From your widgets folder">Local</Badge>
-				{/if}
-			</p>
+			<WidgetName {widget} {href} />
 			<FactLine>
 				<WidgetFacts {facts} />
 			</FactLine>
 		</div>
 	</div>
-	{#if widget.error}
-		<p class="break-words text-destructive">{widget.error}</p>
-	{:else if widget.description}
-		<p class="line-clamp-3 text-muted-foreground">{widget.description}</p>
-	{/if}
-	{#if problem}
-		<p class="text-destructive">{problem}</p>
-	{/if}
+	<WidgetDescription {widget} {problem} lines={3} />
 	{#if footer}
 		<div class="mt-auto flex min-h-8 flex-wrap items-center justify-between gap-2">
 			<FactLine>

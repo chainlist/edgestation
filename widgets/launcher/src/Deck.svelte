@@ -168,10 +168,10 @@
 		min-width: 0;
 		padding: calc(var(--side) * 0.08);
 		border-radius: min(calc(var(--radius) * 1.5), calc(var(--side) * 0.22));
-		background: var(--secondary);
-		color: var(--secondary-foreground);
+		background: color-mix(in oklch, var(--card-foreground) 8%, transparent);
+		color: var(--card-foreground);
 		box-shadow:
-			inset 0 1px 0 color-mix(in oklab, var(--foreground) 10%, transparent),
+			inset 0 1px 0 color-mix(in oklch, var(--foreground) 10%, transparent),
 			0 1px 3px rgb(0 0 0 / 0.25);
 		transition:
 			transform 0.1s,
@@ -207,7 +207,7 @@
 	}
 
 	.empty {
-		background: color-mix(in oklab, var(--secondary) 40%, transparent);
+		background: color-mix(in oklch, var(--card-foreground) 3%, transparent);
 		box-shadow: none;
 		color: var(--muted-foreground);
 	}

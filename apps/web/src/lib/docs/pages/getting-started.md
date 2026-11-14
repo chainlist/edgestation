@@ -19,7 +19,7 @@ Open the widgets folder: open Settings from the EdgeStation icon in the notifica
 }
 ```
 
-Only `name` is required. `size` is how many grid cells the widget takes when it is added to a page, and `minAppVersion` is the oldest EdgeStation it runs on. `permissions` lists the parts of the `api` the widget uses: `system` lets it call `api.system()`. The [manifest page](/docs/manifest) lists every field.
+Only `name` is required. `size` is how many grid cells the widget takes when it is added to a page, and `minAppVersion` is the oldest EdgeStation it runs on: replace the example's `0.1.0` with the SDK version you build with. `permissions` lists the parts of the `api` the widget uses: `system` lets it call `api.system()`. The [manifest page](/docs/manifest) lists every field.
 
 ### 3. Write the module
 
@@ -52,7 +52,7 @@ export default {
 
 ### 5. Put it on a page
 
-1. In Settings → Widgets, click **Rescan**. CPU shows under **Your widgets**.
+1. In Settings → Widgets, click the Rescan button (the circular arrow). CPU shows under **Installed**.
 2. In Settings → Pages, open a page, choose CPU in its widget list and click **Add**. Drag it to move it, drag a corner to resize it.
 
 The tile shows on the Edge right away. After you edit `main.js` or `styles.css`, click **Reload Edge** at the bottom of the Settings sidebar to load the change.

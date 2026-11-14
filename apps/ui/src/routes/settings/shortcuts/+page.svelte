@@ -1,10 +1,9 @@
 <script lang="ts">
 	import RotateCcw from '@lucide/svelte/icons/rotate-ccw';
 	import PageHeader from '#lib/components/settings/PageHeader.svelte';
-	import SettingsSection from '#lib/components/settings/SettingsSection.svelte';
+	import SettingsGroup from '#lib/components/settings/SettingsGroup.svelte';
 	import ShortcutRow from '#lib/components/settings/ShortcutRow.svelte';
 	import { Button } from '#lib/components/ui/button/index.ts';
-	import * as Card from '#lib/components/ui/card/index.ts';
 	import {
 		ACTIONS,
 		changeShortcut,
@@ -48,25 +47,21 @@
 
 <div class="grid gap-8">
 	{#each GROUPS as { group, actions } (group)}
-		<SettingsSection title={group}>
-			<Card.Root class="gap-0 divide-y py-0">
-				{#each actions as action (action)}
-					{@const { label, description } = SHORTCUT_ACTIONS[action]}
-					<ShortcutRow
-						{label}
-						{description}
-						value={current[action]}
-						fallback={SHORTCUT_ACTIONS[action].default}
-						onchange={(value) =>
-							(shortcuts.current = changeShortcut(shortcuts.current, action, value))}
-						failed={shortcutsFailed.current.includes(action)}
-						check={(shortcut) => taken(action, shortcut)}
-					/>
-				{/each}
-			</Card.Root>
-			{#if NOTES[group]}
-				<p class="px-1 text-sm text-muted-foreground">{NOTES[group]}</p>
-			{/if}
-		</SettingsSection>
+		{#snippet groupNote()}{NOTES[group]}{/snippet}
+		<SettingsGroup title={group} note={NOTES[group] ? groupNote : undefined}>
+			{#each actions as action (action)}
+				{@const { label, description } = SHORTCUT_ACTIONS[action]}
+				<ShortcutRow
+					{label}
+					{description}
+					value={current[action]}
+					fallback={SHORTCUT_ACTIONS[action].default}
+					onchange={(value) =>
+						(shortcuts.current = changeShortcut(shortcuts.current, action, value))}
+					failed={shortcutsFailed.current.includes(action)}
+					check={(shortcut) => taken(action, shortcut)}
+				/>
+			{/each}
+		</SettingsGroup>
 	{/each}
 </div>

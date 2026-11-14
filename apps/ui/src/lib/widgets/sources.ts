@@ -1,5 +1,5 @@
-import { invoke } from '@tauri-apps/api/core';
-import type { AudioMixer, SelectSetting, SettingSource } from './types';
+import { mixer } from './api/audio';
+import type { SelectSetting, SettingSource } from './types';
 
 type Choice = SelectSetting['options'][number];
 
@@ -13,7 +13,7 @@ interface Source {
 const SOURCES: Record<SettingSource, Source> = {
 	audioApps: {
 		async read() {
-			const { apps } = await invoke<AudioMixer>('audio_mixer');
+			const { apps } = await mixer();
 			const seen = new Set<string>();
 			const choices: Choice[] = [];
 			// The list is already in name order. All apps of one program give one choice, for

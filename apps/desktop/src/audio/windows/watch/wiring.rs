@@ -10,7 +10,7 @@ use windows::Win32::Media::Audio::{
 use windows::Win32::System::Com::CLSCTX_ALL;
 use windows::core::{IUnknown, Interface, Result};
 
-use super::changes::Events;
+use super::events::Events;
 use crate::audio::native::{default, enumerator, inputs, volume, with_com};
 use crate::os::windows::com::keep_mta;
 

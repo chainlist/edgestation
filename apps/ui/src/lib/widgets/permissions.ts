@@ -17,7 +17,7 @@ export const PERMISSIONS: Record<
 	},
 	media: {
 		label: 'Media',
-		allows: 'See what is playing, and play, pause or skip it.',
+		allows: 'See what is playing, and play, pause, skip or rewind it.',
 		tried: 'control what is playing'
 	},
 	apps: {

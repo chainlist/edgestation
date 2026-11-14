@@ -1,9 +1,9 @@
 <script lang="ts">
-	import CircleAlert from '@lucide/svelte/icons/circle-alert';
 	import RotateCcw from '@lucide/svelte/icons/rotate-ccw';
 	import X from '@lucide/svelte/icons/x';
 	import { Button } from '#lib/components/ui/button/index.ts';
 	import { keyLabels, record, type Shortcut } from '#lib/shortcuts/keys.ts';
+	import SettingsRow from './SettingsRow.svelte';
 
 	let {
 		label,
@@ -96,76 +96,60 @@
 	{/each}
 {/snippet}
 
-<div class="grid gap-2 px-4 py-3">
-	<div class="flex items-center gap-4">
-		<div class="grid min-w-0 flex-1 gap-0.5">
-			<span class="font-medium">{label}</span>
-			{#if description}
-				<span class="text-muted-foreground">{description}</span>
-			{/if}
-		</div>
+<!-- While it records, the hint takes the place of the description. -->
+<SettingsRow
+	{label}
+	description={message && !message.error ? message.text : description}
+	error={message?.error ? message.text : undefined}
+>
+	<!-- The keys of the shortcut. A click records new keys. -->
+	<button
+		type="button"
+		class={[
+			'flex h-10 w-52 shrink-0 items-center justify-center gap-1 rounded-lg border bg-background px-3 transition-[border-color,box-shadow,background-color] outline-none hover:bg-muted/60 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30 dark:hover:bg-input/50',
+			recording && 'border-primary! ring-3 ring-primary/25!',
+			!recording && failed && value && 'border-destructive/70',
+			!recording && !value && 'border-dashed'
+		]}
+		aria-label="{label}: {value ? keyLabels(value).join(' ') : 'off'}. Change"
+		onclick={() => !recording && start()}
+		onkeydown={keydown}
+		onkeyup={keyup}
+		onblur={stop}
+	>
+		{#if recording}
+			{@render keys(held)}
+			<span class="animate-pulse text-muted-foreground">
+				{held.length ? '…' : 'Press keys…'}
+			</span>
+		{:else if value}
+			{@render keys(keyLabels(value))}
+		{:else}
+			<span class="text-muted-foreground">Off</span>
+		{/if}
+	</button>
 
-		<!-- The keys of the shortcut. A click records new keys. -->
-		<button
-			type="button"
-			class={[
-				'flex h-10 w-52 shrink-0 items-center justify-center gap-1 rounded-lg border bg-background px-3 transition-[border-color,box-shadow,background-color] outline-none hover:bg-muted/60 focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30 dark:hover:bg-input/50',
-				recording && 'border-primary! ring-3 ring-primary/25!',
-				!recording && failed && value && 'border-destructive/70',
-				!recording && !value && 'border-dashed'
-			]}
-			aria-label="{label}: {value ? keyLabels(value).join(' ') : 'off'}. Change"
-			onclick={() => !recording && start()}
-			onkeydown={keydown}
-			onkeyup={keyup}
-			onblur={stop}
+	<!-- The two buttons keep their place when hidden, so the keys of all rows allign. -->
+	<div class="flex shrink-0">
+		<Button
+			variant="ghost"
+			size="icon-sm"
+			title="Restore default"
+			aria-label="Restore default"
+			class={[value === fallback && 'invisible']}
+			onclick={() => onchange(fallback)}
 		>
-			{#if recording}
-				{@render keys(held)}
-				<span class="animate-pulse text-muted-foreground">
-					{held.length ? '…' : 'Press keys…'}
-				</span>
-			{:else if value}
-				{@render keys(keyLabels(value))}
-			{:else}
-				<span class="text-muted-foreground">Off</span>
-			{/if}
-		</button>
-
-		<!-- The two buttons keep their place when hidden, so the keys of all rows allign. -->
-		<div class="flex shrink-0">
-			<Button
-				variant="ghost"
-				size="icon-sm"
-				title="Restore default"
-				aria-label="Restore default"
-				class={[value === fallback && 'invisible']}
-				onclick={() => onchange(fallback)}
-			>
-				<RotateCcw />
-			</Button>
-			<Button
-				variant="ghost"
-				size="icon-sm"
-				title="Turn off"
-				aria-label="Turn off"
-				class={[value === null && 'invisible']}
-				onclick={() => onchange(null)}
-			>
-				<X />
-			</Button>
-		</div>
+			<RotateCcw />
+		</Button>
+		<Button
+			variant="ghost"
+			size="icon-sm"
+			title="Turn off"
+			aria-label="Turn off"
+			class={[value === null && 'invisible']}
+			onclick={() => onchange(null)}
+		>
+			<X />
+		</Button>
 	</div>
-
-	{#if message}
-		<p
-			class={[
-				'flex items-center gap-1.5',
-				message.error ? 'text-destructive' : 'text-muted-foreground'
-			]}
-		>
-			{#if message.error}<CircleAlert class="size-4 shrink-0" />{/if}
-			{message.text}
-		</p>
-	{/if}
-</div>
+</SettingsRow>

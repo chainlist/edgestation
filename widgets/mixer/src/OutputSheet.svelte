@@ -39,16 +39,13 @@
 </div>
 
 <style>
+	/* The sheet takes the place of the faders, so the glass of the card shows through it. */
 	.sheet {
-		position: absolute;
-		inset: 0;
-		z-index: 1;
 		display: flex;
+		flex: 1;
 		flex-direction: column;
 		gap: 0.3em;
-		padding: 0.6em;
-		border-radius: inherit;
-		background: var(--card);
+		min-height: 0;
 		font-size: var(--controls);
 	}
 
@@ -78,6 +75,7 @@
 	ul {
 		margin: 0;
 		padding: 0;
+		overscroll-behavior: contain;
 		list-style: none;
 	}
 

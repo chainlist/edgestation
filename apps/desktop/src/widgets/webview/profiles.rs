@@ -4,6 +4,7 @@ use std::{fs, io};
 use tauri::{AppHandle, Manager, Runtime};
 
 use super::{PREFIX, native, receive};
+use crate::blocking;
 
 /// True if `id` can name a profile folder. Only letters, digits and dashes are allowed.
 fn valid_profile(id: &str) -> bool {
@@ -49,10 +50,11 @@ pub async fn webview_profile_delete<R: Runtime>(
         }
         receive(released).await?;
     }
-    match fs::remove_dir_all(&dir) {
+    blocking::run(move || match fs::remove_dir_all(&dir) {
         Err(e) if e.kind() != io::ErrorKind::NotFound => Err(format!("{}: {e}", dir.display())),
         _ => Ok(()),
-    }
+    })
+    .await
 }
 
 #[cfg(test)]

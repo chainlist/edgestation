@@ -5,10 +5,11 @@ use windows::Win32::Media::Audio::{
     eCommunications, eConsole,
 };
 use windows::Win32::System::Com::StructuredStorage::{PropVariantClear, PropVariantToStringAlloc};
-use windows::Win32::System::Com::{CLSCTX_ALL, CoCreateInstance, CoTaskMemFree, STGM_READ};
-use windows::core::{PWSTR, Result};
+use windows::Win32::System::Com::{CLSCTX_ALL, CoCreateInstance, STGM_READ};
+use windows::core::Result;
 
 use crate::audio::Device;
+use crate::os::windows::com::take;
 
 pub(crate) unsafe fn enumerator() -> Result<IMMDeviceEnumerator> {
     unsafe { CoCreateInstance(&MMDeviceEnumerator, None, CLSCTX_ALL) }
@@ -70,15 +71,3 @@ pub(super) unsafe fn name(device: &IMMDevice) -> Result<String> {
     }
 }
 
-/// Returns the text of a string that the callee allocated, and frees the string. Returns `None`
-/// for a null pointer.
-pub(super) unsafe fn take(text: PWSTR) -> Result<Option<String>> {
-    unsafe {
-        if text.is_null() {
-            return Ok(None);
-        }
-        let result = text.to_string();
-        CoTaskMemFree(Some(text.0 as _));
-        Ok(Some(result?))
-    }
-}

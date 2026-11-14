@@ -1,36 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import {
-	filterListing,
-	listingStatus,
-	paginate,
-	publisherFacts,
-	repoOwner,
-	sortListing,
-	verifiedOwner
-} from './listing';
-import type { InstalledWidget, ListedWidget } from '../types';
-
-const listed = (id: string, more: Partial<ListedWidget> = {}): ListedWidget => ({
-	id,
-	repo: `someone/${id}`,
-	downloads: null,
-	released: null,
-	manifest: { name: id[0].toUpperCase() + id.slice(1), version: '1.0.0' },
-	error: null,
-	icon: null,
-	readme: '',
-	...more
-});
-
-const installed = (id: string, more: Partial<InstalledWidget> = {}): InstalledWidget => ({
-	id,
-	name: id,
-	version: '1.0.0',
-	source: 'marketplace',
-	...more
-});
-
-const ids = (widgets: ListedWidget[]) => widgets.map((widget) => widget.id);
+import { ids, installedWidget as installed, listedWidget as listed } from '#lib/test-helpers.ts';
+import { listingStatus, paginate, repoOwner, sortListing, verifiedOwner } from './listing';
 
 describe('sortListing', () => {
 	const widgets = [
@@ -55,23 +25,6 @@ describe('sortListing', () => {
 	it('leaves its input alone', () => {
 		sortListing(widgets, 'name');
 		expect(ids(widgets)).toEqual(['clock', 'weather', 'new', 'alarm']);
-	});
-});
-
-describe('filterListing', () => {
-	const widgets = [
-		listed('weather', { manifest: { name: 'Weather', description: 'Forecast for your city' } }),
-		listed('clock', { manifest: { name: 'Clock', author: 'Jane' } })
-	];
-
-	it('matches every word against id, name, description and author', () => {
-		expect(ids(filterListing(widgets, 'city forecast'))).toEqual(['weather']);
-		expect(ids(filterListing(widgets, 'JANE'))).toEqual(['clock']);
-		expect(ids(filterListing(widgets, 'clock jane weather'))).toEqual([]);
-	});
-
-	it('keeps everything for an empty query', () => {
-		expect(ids(filterListing(widgets, '  '))).toEqual(['weather', 'clock']);
 	});
 });
 
@@ -164,23 +117,5 @@ describe('verifiedOwner', () => {
 		expect(verifiedOwner('ChainList')).toBe(true);
 		expect(verifiedOwner('someone')).toBe(false);
 		expect(verifiedOwner('constructor')).toBe(false);
-	});
-});
-
-describe('publisherFacts', () => {
-	it('verifies the author of a built-in widget only', () => {
-		expect(publisherFacts({ id: 'clock', source: 'builtin', author: 'EdgeStation' }, [])).toEqual([
-			{ text: 'EdgeStation', verified: true }
-		]);
-		expect(publisherFacts({ id: 'mine', source: 'local', author: 'Me' }, [])).toEqual([
-			{ text: 'Me', verified: false }
-		]);
-	});
-
-	it('adds the GitHub owner of a marketplace widget', () => {
-		const listing = [listed('jira', { repo: 'ChainList/edgestation-jira' })];
-		expect(publisherFacts(installed('jira'), listing)).toEqual([
-			{ text: '@ChainList', title: 'Owner of its GitHub repository', verified: true }
-		]);
 	});
 });

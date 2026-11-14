@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { gridPitch, trackCellDrag } from '#lib/layout/drag.ts';
 	import { dragRect, isFree, swapRects, type DragMode } from '#lib/layout/grid.ts';
-	import { movePlacements, removeIn, removePlacement, updateIn } from '#lib/layout/pages.ts';
+	import { movePlacements, removePlacement } from '#lib/layout/pages.ts';
+	import { removeIn, updateIn } from '#lib/lists.ts';
 	import type { Page, Placement, Rect } from '#lib/layout/types.ts';
 	import { editPage, editWaiting } from '#lib/state/page-actions.ts';
 	import { waiting } from '#lib/state/waiting.svelte.ts';

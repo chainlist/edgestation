@@ -11,7 +11,7 @@ use libpulse_binding::context::subscribe::InterestMaskSet;
 use tauri::AppHandle;
 
 use super::connection::Pulse;
-use crate::audio::changed::changed;
+use crate::audio::changed;
 
 /// The number of the watch that runs, or 0 if none runs.
 static WATCH: AtomicU64 = AtomicU64::new(0);
