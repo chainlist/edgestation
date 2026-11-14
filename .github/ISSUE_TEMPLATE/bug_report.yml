@@ -30,7 +30,7 @@ body:
     attributes:
       label: EdgeStation version
       description: '**Settings → General** shows it under Updates.'
-      placeholder: '0.7.0' # x-release-please-version
+      placeholder: '0.8.0' # x-release-please-version
     validations:
       required: true
 

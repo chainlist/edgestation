@@ -109,4 +109,4 @@ export default {
 
 ## Versions
 
-The SDK and EdgeStation are released together, with the same version number. Set the manifest's `minAppVersion` to the version of the SDK you build with: an older EdgeStation then shows an error card saying which version the widget needs, rather than a broken widget. The current version is 0.7.0. <!-- x-release-please-version -->
+The SDK and EdgeStation are released together, with the same version number. Set the manifest's `minAppVersion` to the version of the SDK you build with: an older EdgeStation then shows an error card saying which version the widget needs, rather than a broken widget. The current version is 0.8.0. <!-- x-release-please-version -->
