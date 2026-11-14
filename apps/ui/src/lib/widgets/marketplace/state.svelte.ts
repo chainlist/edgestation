@@ -68,14 +68,25 @@ export const installWidget = (id: string) => run(id, 'install');
 
 export const uninstallWidget = (id: string) => run(id, 'uninstall');
 
-/** Installs all newer releases of the instaled marketplace widgets. Resolves to the results. */
-export async function updateWidgets(): Promise<{ id: string; error: string | null }[]> {
-	const attempts = await invoke<{ id: string; error: string | null }[]>('marketplace_update');
-	for (const { id, error } of attempts) {
-		if (error) errors[id] = error;
-		else delete errors[id];
+/**
+ * Installs all newer releases of the installed marketplace widgets (Update all). The widgets
+ * `ids` show as busy meanwhile. Each failure shows under its widget. Rejects if the host cannot
+ * look for releases at all.
+ */
+export async function updateWidgets(ids: string[]): Promise<void> {
+	for (const id of ids) {
+		busy[id] = 'install';
+		delete errors[id];
 	}
-	return attempts;
+	try {
+		const attempts = await invoke<{ id: string; error: string | null }[]>('marketplace_update');
+		for (const { id, error } of attempts) {
+			if (error) errors[id] = error;
+			else delete errors[id];
+		}
+	} finally {
+		for (const id of ids) delete busy[id];
+	}
 }
 
 export const openLink = (url: string) => invoke('open_link', { url });

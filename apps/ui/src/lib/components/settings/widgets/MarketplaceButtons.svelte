@@ -18,17 +18,23 @@
 	let {
 		id,
 		removable = false,
-		compact = false
+		compact = false,
+		updatable = false
 	}: {
 		id: string;
 		removable?: boolean;
 		/** Uninstall is an icon button, for a widget row. */
 		compact?: boolean;
+		/** Offers a newer release. Only the Installed cards do, so elswhere it shows as installed. */
+		updatable?: boolean;
 	} = $props();
 
 	const listed = $derived(marketplace.listing?.find((widget) => widget.id === id));
-	const status = $derived(
+	const latest = $derived(
 		listed && listingStatus(listed, installed.current, marketplace.appVersion)
+	);
+	const status = $derived(
+		latest?.kind === 'update' && !updatable ? ({ kind: 'installed' } as const) : latest
 	);
 	const mine = $derived(installed.current.find((w) => w.id === id && w.source === 'marketplace'));
 	const busy = $derived(marketplace.busy(id));

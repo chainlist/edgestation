@@ -86,7 +86,7 @@ Set `version` in the manifest, and `minAppVersion` to the EdgeStation version th
 
 ## Publish to the marketplace
 
-Widgets in the marketplace show in Settings → Widgets → Browse, where a user installs one with a click. EdgeStation then installs each new release on its own, once at launch. The list is `widgets.json` in the [edgestation-widgets](https://github.com/chainlist/edgestation-widgets) repository.
+Widgets in the marketplace show in Settings → Widgets → Browse, where a user installs one with a click. A new release never installs on its own: Settings → Widgets shows it under Installed, and the user installs it with Update or Update all. The list is `widgets.json` in the [edgestation-widgets](https://github.com/chainlist/edgestation-widgets) repository.
 
 1. Keep the widget in a public GitHub repository, with its `manifest.json`, its icon and a `README.md` at the root: Browse shows the icon and the README from your default branch.
 2. Publish each version as a GitHub release with two files attached:

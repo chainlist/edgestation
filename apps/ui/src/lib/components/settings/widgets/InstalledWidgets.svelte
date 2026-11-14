@@ -1,5 +1,7 @@
 <script lang="ts">
+	import Download from '@lucide/svelte/icons/download';
 	import FolderOpen from '@lucide/svelte/icons/folder-open';
+	import LoaderCircle from '@lucide/svelte/icons/loader-circle';
 	import RefreshCw from '@lucide/svelte/icons/refresh-cw';
 	import Search from '@lucide/svelte/icons/search';
 	import Store from '@lucide/svelte/icons/store';
@@ -8,6 +10,8 @@
 	import * as Card from '#lib/components/ui/card/index.ts';
 	import { Input } from '#lib/components/ui/input/index.ts';
 	import { openWidgetsFolder, rescanWidgets } from '#lib/widgets/installed.svelte.ts';
+	import { listingStatus } from '#lib/widgets/marketplace/listing.ts';
+	import { marketplace, updateWidgets } from '#lib/widgets/marketplace/state.svelte.ts';
 	import { filterInstalled } from '#lib/widgets/search.ts';
 	import type { InstalledWidget } from '#lib/widgets/types.ts';
 	import SegmentedControl from '#lib/components/settings/controls/SegmentedControl.svelte';
@@ -35,6 +39,30 @@
 		value === 'all' ? matched : matched.filter((widget) => widget.source === value);
 	const shown = $derived(inFilter(filter));
 
+	/** The ids of the marketplace widgets that have a newer release they can install. */
+	const outdated = $derived(
+		widgets
+			.filter((widget) => {
+				const listed = marketplace.listing?.find((l) => l.id === widget.id);
+				return listed && listingStatus(listed, widgets, marketplace.appVersion).kind === 'update';
+			})
+			.map((widget) => widget.id)
+	);
+	let updating = $state(false);
+	let updateError = $state<string>();
+
+	async function updateAll() {
+		updating = true;
+		updateError = undefined;
+		try {
+			await updateWidgets(outdated);
+		} catch (error) {
+			updateError = `Couldn't update the widgets. ${error}`;
+		} finally {
+			updating = false;
+		}
+	}
+
 	async function rescan() {
 		scanning = true;
 		try {
@@ -46,7 +74,22 @@
 </script>
 
 <section class="grid gap-3">
-	<h2 class="text-sm font-medium">Installed</h2>
+	<div class="flex min-h-8 items-center justify-between gap-2">
+		<h2 class="text-sm font-medium">Installed</h2>
+		{#if outdated.length}
+			<Button
+				size="sm"
+				disabled={updating || outdated.some((id) => marketplace.busy(id))}
+				onclick={updateAll}
+			>
+				{#if updating}<LoaderCircle class="animate-spin" />{:else}<Download />{/if}
+				Update all <Count count={outdated.length} />
+			</Button>
+		{/if}
+	</div>
+	{#if updateError}
+		<p class="px-1 text-sm text-destructive">{updateError}</p>
+	{/if}
 	<div class="flex flex-wrap items-center justify-between gap-2">
 		<SegmentedControl
 			items={FILTERS}
@@ -109,7 +152,7 @@
 				{@render empty(
 					Store,
 					'Nothing from the marketplace yet',
-					'Widgets you install from the marketplace show here, and stay up to date.',
+					'Widgets you install from the marketplace show here, with their updates.',
 					browse
 				)}
 			{:else if filter === 'local'}

@@ -11,7 +11,7 @@
 			</h2>
 			<p class="mt-4 text-muted-foreground">
 				Settings has a marketplace built in: browse the widgets others publish, install one in a
-				click, and it keeps itself up to date.
+				click, and update it when you choose.
 			</p>
 		</div>
 		<div class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

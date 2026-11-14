@@ -100,7 +100,6 @@ pub fn run() {
             if let Some(edge) = app.get_webview_window("edge") {
                 edge.set_background_color(Some(app_windows::page_background(app.handle())))?;
             }
-            widgets::marketplace::update::update_at_launch(app.handle());
             Ok(tray::create(app.handle())?)
         })
         .run(tauri::generate_context!())

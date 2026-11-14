@@ -8,7 +8,7 @@ use tauri::{AppHandle, Manager, Runtime};
 pub enum Source {
     /// The user put it in the widgets folder.
     Local,
-    /// Installed from the marketplace, which also keeps it up to date.
+    /// Installed from the marketplace. Settings updates it when the user asks.
     Marketplace,
     /// Bundled with the app.
     Builtin,

@@ -64,8 +64,6 @@ export const shortcuts = persisted<ShortcutChanges>('shortcuts', {});
  */
 export const shortcutsFailed = persisted<ShortcutAction[]>('shortcutsFailed', []);
 
-/** If true, install newer releases of marketplace widgets at launch. The host also reads it. */
-export const widgetAutoUpdate = persisted<boolean>('widgetAutoUpdate', true);
 /** The order of Settings > Widgets > Browse. */
 export const browseSort = persisted<ListingSort>('browseSort', 'downloads');
 

@@ -38,7 +38,7 @@ In the app, the display it runs on is called **the Edge**: a Corsair Xeneon Edge
 - **Make it yours.** Dark or light, an accent color, the corner radius, a background image and frosted glass cards. Widgets follow the theme too.
 - **Any display.** The first secondary display, or the one you pick. Any size, shape or orientation, with or without touch.
 - **Touch, mouse or keys.** Swipe between pages with two fingers, scroll over the page dots, or use shortcuts from any app: <kbd>Ctrl</kbd> <kbd>Alt</kbd> <kbd>Page Up</kbd> / <kbd>Page Down</kbd> turns pages, <kbd>Ctrl</kbd> <kbd>Alt</kbd> <kbd>G</kbd> goes to a page by name.
-- **A widget marketplace.** Settings → Widgets → Browse installs widgets from other people, and keeps them up to date.
+- **A widget marketplace.** Settings → Widgets → Browse installs widgets from other people. Their updates wait under Installed until you install them.
 
 <details>
 <summary><b>More screenshots</b></summary>

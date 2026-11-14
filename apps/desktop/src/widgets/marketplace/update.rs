@@ -1,11 +1,9 @@
 use serde::Serialize;
 use serde_json::Value;
-use tauri::async_runtime;
 use tauri::{AppHandle, Runtime};
-use tauri_plugin_store::StoreExt;
 
 use super::changed;
-use super::fetch::{client, test_host};
+use super::fetch::client;
 use super::install::install;
 use super::registry::{registry, release_manifest};
 use super::version::{compatibility, is_newer};
@@ -19,42 +17,13 @@ pub struct Attempt {
     error: Option<String>,
 }
 
-/// Installs every newer, compatible release of the installed marketplace widgets. A release
+/// Installs every newer, compatible release of the installed marketplace widgets, for the Update
+/// all button. Nothing else installs updates. The user decides when a widget changes. A release
 /// that asks for more permissions waits for the user, because Settings shows them before that
 /// update (see `adds_permissions`).
 #[tauri::command]
 pub async fn marketplace_update<R: Runtime>(app: AppHandle<R>) -> Result<Vec<Attempt>, String> {
     update_all(&app).await
-}
-
-/// Updates the marketplace widgets once at launch, if Settings allows it. Debug builds skip this
-/// step, like the app updater, unles `EDGESTATION_REGISTRY` points at a test registry.
-pub fn update_at_launch<R: Runtime>(app: &AppHandle<R>) {
-    if cfg!(debug_assertions) && test_host().is_none() {
-        return;
-    }
-    let on = app
-        .store("settings.json")
-        .ok()
-        .and_then(|store| store.get("widgetAutoUpdate"))
-        .and_then(|value| value.as_bool())
-        .unwrap_or(true);
-    if !on {
-        return;
-    }
-    let app = app.clone();
-    async_runtime::spawn(async move {
-        match update_all(&app).await {
-            Ok(attempts) => {
-                for Attempt { id, error } in attempts {
-                    if let Some(error) = error {
-                        eprintln!("failed to update widget {id}: {error}");
-                    }
-                }
-            }
-            Err(error) => eprintln!("failed to update widgets: {error}"),
-        }
-    });
 }
 
 async fn update_all<R: Runtime>(app: &AppHandle<R>) -> Result<Vec<Attempt>, String> {

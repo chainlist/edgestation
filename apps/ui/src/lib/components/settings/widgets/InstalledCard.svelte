@@ -14,7 +14,7 @@
 </script>
 
 <!-- An installed widget in the Installed grid. Only a marketplace widget opens its page and has an
-     Uninstall button. -->
+     Uninstall button, and an Update button when it has a newer release. -->
 <WidgetCard
 	{widget}
 	href={fromMarketplace ? `/settings/widgets/browse/${widget.id}?from=installed` : undefined}
@@ -26,6 +26,6 @@
 {#snippet pagesAndUninstall()}
 	<PageBadges pages={usedOn} />
 	{#if fromMarketplace}
-		<MarketplaceButtons id={widget.id} removable compact />
+		<MarketplaceButtons id={widget.id} removable compact updatable />
 	{/if}
 {/snippet}
