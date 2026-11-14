@@ -30,7 +30,7 @@ pub fn watch(app: &AppHandle, on: bool) -> Result<(), String> {
     let bus = dbus::with(Bus::Session, |bus| Ok(bus.inner().clone()));
     let bus = bus.map_err(|error| error.to_string())?;
     // Subscribe before the command returns, so the widget gets the error.
-    let changes = tauri::async_runtime::block_on(subscribe(&bus));
+    let changes = tauri::async_runtime::block_on(subscribe(bus));
     let mut changes = Box::pin(changes.map_err(|error| error.to_string())?);
     let app = app.clone();
     *watch = Some(tauri::async_runtime::spawn(async move {
@@ -52,8 +52,11 @@ pub fn unwatch() {
 /// so a seek has its own signal. The bus sends `NameOwnerChanged` when a player name comes or
 /// goes. The names of the players are in the namespace of the root interface, such as
 /// `org.mpris.MediaPlayer2.spotify`.
+///
+/// It takes the connection, not a reference. In Rust 2024 the stream type then holds no borrow,
+/// so the task can keep it.
 async fn subscribe(
-    bus: &zbus::Connection,
+    bus: zbus::Connection,
 ) -> zbus::Result<impl Stream<Item = zbus::Result<Message>> + Send> {
     let properties = MatchRule::builder()
         .msg_type(Type::Signal)
@@ -75,8 +78,8 @@ async fn subscribe(
         .member("NameOwnerChanged")?
         .arg0ns(ROOT)?
         .build();
-    let properties = MessageStream::for_match_rule(properties, bus, None).await?;
-    let seeks = MessageStream::for_match_rule(seeks, bus, None).await?;
-    let players = MessageStream::for_match_rule(players, bus, None).await?;
+    let properties = MessageStream::for_match_rule(properties, &bus, None).await?;
+    let seeks = MessageStream::for_match_rule(seeks, &bus, None).await?;
+    let players = MessageStream::for_match_rule(players, &bus, None).await?;
     Ok(select(select(properties, seeks), players))
 }
