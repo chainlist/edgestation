@@ -120,6 +120,9 @@
 				</div>
 				<p class="mt-auto border-t pt-4 text-sm text-muted-foreground">
 					EdgeStation draws its windows with Microsoft Edge WebView2, which comes with Windows 11.
+					The installers have no code signing certificate, so Windows SmartScreen can stop them with
+					"Windows protected your PC". Click <strong>More info</strong>, then
+					<strong>Run anyway</strong>.
 				</p>
 			</div>
 			<div class="flex flex-col rounded-2xl border bg-card p-5">

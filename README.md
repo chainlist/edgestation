@@ -77,7 +77,7 @@ A dashboard runs all day, so EdgeStation keeps its footprint small.
 2. Start EdgeStation. It opens full screen on your first secondary display, with a clock on its Home page.
 3. Click the EdgeStation icon in the notification area to open Settings (on Linux, choose **Settings** in its menu), then build your pages in **Pages**.
 
-**Windows.** EdgeStation draws its windows with Microsoft Edge WebView2, which comes with Windows 11.
+**Windows.** EdgeStation draws its windows with Microsoft Edge WebView2, which comes with Windows 11. The installers have no code signing certificate, so Windows SmartScreen can stop them with "Windows protected your PC". Click **More info**, then **Run anyway**.
 
 **Linux.** EdgeStation runs on X11 desktops, and Wayland sessions run it on XWayland. It draws its windows with WebKitGTK 4.1. The mixer works with PulseAudio, or PipeWire with pipewire-pulse. The Media widget reads players through MPRIS, and the Wi-Fi name comes from NetworkManager. The tray icon needs an app indicator host. On a desktop without one, start EdgeStation again to open Settings. The AppImage needs libfuse2, which recent distributions no longer install by default (on Ubuntu 24.04, `libfuse2t64`).
 
