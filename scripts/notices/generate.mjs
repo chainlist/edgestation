@@ -3,7 +3,7 @@
 // apps/desktop/tauri.conf.json).
 //
 //   pnpm notices           writes the file again
-//   pnpm notices --check   fails if the file is out of date (notices-check.yml runs it)
+//   pnpm notices --check   fails if the file is out of date (ci.yml runs it)
 //
 // It lists three kinds of components:
 // - The Rust crates linked into the program, on each target of the release build

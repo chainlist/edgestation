@@ -1,0 +1,257 @@
+name: CI
+
+# Every check of the repository is in this one workflow, so a push or a pull request makes one run.
+# The first job lists the parts with changed files. Each check job runs only for its part. A manual
+# run checks every part. The release build and the website have their own workflows.
+on:
+  pull_request:
+    paths:
+      - 'apps/desktop/**'
+      - 'apps/ui/**'
+      - 'apps/web/**'
+      - 'packages/sdk/**'
+      - 'widgets/**'
+      - 'scripts/notices/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'THIRD-PARTY-NOTICES.txt'
+      - '.github/workflows/ci.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'apps/desktop/**'
+      - 'apps/ui/**'
+      - 'apps/web/**'
+      - 'packages/sdk/**'
+      - 'widgets/**'
+      - 'scripts/notices/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'THIRD-PARTY-NOTICES.txt'
+      - '.github/workflows/ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A newer push to the same branch replaces the run in progress.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    name: Changed parts
+    runs-on: ubuntu-latest
+    outputs:
+      desktop: ${{ steps.parts.outputs.desktop }}
+      ui: ${{ steps.parts.outputs.ui }}
+      sdk: ${{ steps.parts.outputs.sdk }}
+      web: ${{ steps.parts.outputs.web }}
+      widgets: ${{ steps.parts.outputs.widgets }}
+      notices: ${{ steps.parts.outputs.notices }}
+    steps:
+      - uses: actions/checkout@v5
+      # A push compares with the commit before it, a pull request with its base. Without that
+      # commit (a manual run, a new branch, a force push), every part is checked. A change to this
+      # file also checks every part.
+      - id: parts
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          all=false
+          files=
+          if [ -z "$BASE" ] || ! git fetch --quiet --no-tags --depth=1 origin "$BASE"; then
+            all=true
+          elif ! files=$(git diff --name-only "$BASE" HEAD); then
+            all=true
+          fi
+          part() {
+            if $all || grep -qE "$2|^\.github/workflows/ci\.yml$" <<< "$files"; then
+              echo "$1=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "$1=false" >> "$GITHUB_OUTPUT"
+            fi
+          }
+          part desktop '^apps/desktop/'
+          part ui '^(apps/ui|packages/sdk)/|^pnpm-lock\.yaml$'
+          part sdk '^packages/sdk/|^widgets/[^/]+/manifest\.json$|^pnpm-lock\.yaml$'
+          part web '^apps/web/|^pnpm-lock\.yaml$'
+          part widgets '^(widgets|packages/sdk)/|^(package\.json|pnpm-lock\.yaml)$'
+          part notices '^(apps/ui|widgets|packages/sdk|scripts/notices)/|^apps/desktop/Cargo\.(toml|lock)$|^(package\.json|pnpm-lock\.yaml|THIRD-PARTY-NOTICES\.txt)$'
+          cat "$GITHUB_OUTPUT"
+
+  # Lints and tests the Rust code of the desktop app on Windows and on Linux. Each platform compiles
+  # only its own side of the code, so a change made on one platform can break the other one. This
+  # finds it on the pull request, not at the next release.
+  desktop:
+    name: Desktop (${{ matrix.os }})
+    needs: changes
+    if: needs.changes.outputs.desktop == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        # The same runners as the release build (desktop-release.yml).
+        os: [windows-latest, ubuntu-22.04]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: apps/desktop
+    steps:
+      - uses: actions/checkout@v5
+      # Platform code goes in the windows and linux files of each module (see Platforms in
+      # ARCHITECTURE.md). Only the lines that pick those files name a platform, and lib.rs and
+      # os/mod.rs. One runner is enough for this.
+      - name: Platform code stays in platform files
+        if: runner.os == 'Linux'
+        run: |
+          found=$(grep -rnE 'cfg(_attr)?!?\(.*\b(windows|target_os)\b' src --include='*.rs' \
+            | grep -v 'windows_subsystem' \
+            | grep -vE 'cfg_attr\((windows|target_os = "linux"), path = ' \
+            | grep -vE '^src/(lib|os/mod)\.rs:' || true)
+          if [ -n "$found" ]; then
+            echo "Platform cfg outside a platform selector:"
+            echo "$found"
+            exit 1
+          fi
+      # The style is in rustfmt.toml. One runner is enough for this too.
+      - name: Rust code follows rustfmt.toml
+        if: runner.os == 'Linux'
+        run: |
+          rustup component add rustfmt
+          cargo fmt --check
+      # The same packages as the release build: WebKitGTK, the app indicator and PulseAudio.
+      - if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libxdo-dev libpulse-dev \
+            libayatana-appindicator3-dev librsvg2-dev
+      - run: rustup component add clippy
+      # The Tauri context embeds the built UI. These checks do not need it, so an empty folder
+      # stands in for it.
+      - run: mkdir -p ../ui/build
+      # Nothing from this cache gets into an installer. The release build does not use it.
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/desktop
+      - run: cargo clippy --all-targets --locked -- -D warnings
+      - run: cargo test --locked
+
+  # Type-checks and tests the UI of the app (apps/ui). It also runs when the SDK changes, because the
+  # UI uses its types.
+  ui:
+    name: UI
+    needs: changes
+    if: needs.changes.outputs.ui == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/ui
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      # Nothing from this cache gets into an installer or a package. The release builds do not
+      # use it.
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      # The UI and the workspace packages that it uses, which is the SDK.
+      - run: pnpm install --frozen-lockfile --filter @edgestation/ui...
+      - run: pnpm check
+      - run: pnpm test
+
+  # Type-checks and tests the SDK (packages/sdk). The tests also check the manifest of each built-in
+  # widget against the manifest schema of the SDK. release.yml runs the same check and tests before
+  # it publishes the SDK, but only after the tag exists.
+  sdk:
+    name: SDK
+    needs: changes
+    if: needs.changes.outputs.sdk == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/sdk
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      # Nothing from this cache gets into an installer or a package. The release builds do not
+      # use it.
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      # The SDK only. It uses no other workspace package.
+      - run: pnpm install --frozen-lockfile --filter @edgestation/sdk...
+      - run: pnpm check
+      - run: pnpm test
+
+  # Type-checks the website (apps/web). The website does not use the SDK. The build and the the
+  # deploy are in pages.yml.
+  web:
+    name: Website
+    needs: changes
+    if: needs.changes.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      # Nothing from this cache gets into an installer or a package. The release builds do not
+      # use it.
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      # The website and the workspace packages that it uses.
+      - run: pnpm install --frozen-lockfile --filter @edgestation/web...
+      - run: pnpm check
+
+  # Type-checks the built-in widgets (widgets/). They import the types and adapters of the SDK, and
+  # the root package.json has their dev dependencies.
+  widgets:
+    name: Widgets
+    needs: changes
+    if: needs.changes.outputs.widgets == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      # Nothing from this cache gets into an installer or a package. The release builds do not
+      # use it.
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      # The root package (`edgestation`), which has the tools of the widgets, and the SDK. The
+      # widgets import the SDK from its source files, so the job does not build the SDK.
+      - run: pnpm install --frozen-lockfile --filter edgestation...
+      # The root `pnpm check` also checks each package. This step checks only the widgets.
+      - run: pnpm exec svelte-check --tsconfig widgets/tsconfig.json
+
+  # The installers ship THIRD-PARTY-NOTICES.txt, the license texts of the third-party code in the
+  # app: the Rust crates of the program, and the npm packages in the bundles of the UI and the
+  # built-in widgets. A change to the dependencies, or to the imports of the UI or a widget, can
+  # change that list. This check fails when the file in the commit no longer matches. `pnpm notices`
+  # writes it again.
+  notices:
+    name: Notices
+    needs: changes
+    if: needs.changes.outputs.notices == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      # Nothing from this cache gets into an installer or a package. The release builds do not
+      # use it.
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # The script builds the UI and the widgets to see what they bundle. It reads the crates with
+      # `cargo metadata` (the runner has Rust), which downloads their sources.
+      - run: pnpm notices --check

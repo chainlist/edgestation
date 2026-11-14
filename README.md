@@ -129,7 +129,7 @@ pnpm test          # run the unit tests
 pnpm tauri build   # build the installers
 ```
 
-The Rust side has its own checks, which [desktop-check](.github/workflows/desktop-check.yml) runs too. In `apps/desktop`, run `cargo clippy --all-targets`, `cargo test` and `cargo fmt --check`.
+The Rust side has its own checks, which [CI](.github/workflows/ci.yml) runs too. In `apps/desktop`, run `cargo clippy --all-targets`, `cargo test` and `cargo fmt --check`.
 
 Without a secondary display, the Edge window opens as a normal 1280×360 window on the main screen. In debug builds the built-in widgets are read straight from `widgets/`, and `pnpm tauri dev` rebuilds one whenever its source changes, so editing one only needs a click on Reload Edge at the bottom of the Settings sidebar.
 
