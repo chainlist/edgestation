@@ -12,7 +12,7 @@ use base64::engine::general_purpose::STANDARD;
 use tauri::Url;
 use tauri_plugin_http::reqwest::Client;
 use zbus::blocking::Connection;
-use zbus::zvariant::{OwnedValue, Value};
+use zbus::zvariant::{ObjectPath, OwnedValue, Value};
 
 use super::{Action, Controls, MediaInfo, Session};
 use crate::os::linux::dbus::{self, Bus};
@@ -47,10 +47,13 @@ struct Player {
     artist: String,
     album: String,
     art_url: Option<String>,
+    /// The `mpris:trackid` of the track, if it is an object path.
+    track: Option<String>,
     can_play: bool,
     can_pause: bool,
     can_next: bool,
     can_previous: bool,
+    can_seek: bool,
 }
 
 pub fn read() -> Result<Option<MediaInfo>, String> {
@@ -81,14 +84,7 @@ pub fn read_all() -> Result<Vec<MediaInfo>, String> {
 
 pub fn control(action: Action, id: Option<&str>) -> Result<bool, String> {
     let request = |bus: &Connection| {
-        let mut players = players(bus)?;
-        let index = match id {
-            None => current(bus, &players),
-            Some(id) => players.iter().position(|(name, _)| name == id),
-        };
-        let Some(index) = index else { return Ok(false) };
-        let (name, properties) = players.swap_remove(index);
-        let player = parse(&properties);
+        let Some((name, player)) = find(bus, id)? else { return Ok(false) };
         let (allowed, method) = match action {
             Action::Play => (player.can_play, "Play"),
             Action::Pause => (player.can_pause, "Pause"),
@@ -101,6 +97,37 @@ pub fn control(action: Action, id: Option<&str>) -> Result<bool, String> {
         Ok(allowed)
     };
     dbus::with(Bus::Session, request).map_err(|error| error.to_string())
+}
+
+pub fn seek(position: f64, id: Option<&str>) -> Result<bool, String> {
+    let request = |bus: &Connection| {
+        let Some((name, player)) = find(bus, id)? else { return Ok(false) };
+        let (true, Some(track)) = (player.can_seek, player.track) else { return Ok(false) };
+        let track = ObjectPath::try_from(track.as_str())?;
+        let position = (position * MICROSECONDS) as i64;
+        bus.call_method(
+            Some(name.as_str()),
+            PATH,
+            Some(PLAYER),
+            "SetPosition",
+            &(track, position),
+        )?;
+        Ok(true)
+    };
+    dbus::with(Bus::Session, request).map_err(|error| error.to_string())
+}
+
+/// Player `id`, or the current player, with its bus name. `None` if it is gone.
+fn find(bus: &Connection, id: Option<&str>) -> zbus::Result<Option<(String, Player)>> {
+    let mut players = players(bus)?;
+    let index = match id {
+        None => current(bus, &players),
+        Some(id) => players.iter().position(|(name, _)| name == id),
+    };
+    Ok(index.map(|index| {
+        let (name, properties) = players.swap_remove(index);
+        (name, parse(&properties))
+    }))
 }
 
 /// The players that play or are paused, by bus name, with their properties. A stopped player
@@ -163,6 +190,7 @@ fn session(
             pause: player.can_pause,
             next: player.can_next,
             previous: player.can_previous,
+            seek: player.can_seek,
         },
         title: player.title,
         artist: player.artist,
@@ -197,6 +225,9 @@ fn parse(properties: &Properties) -> Player {
     // A player that cannot be controlled has no actions.
     let control = !matches!(property("CanControl").map(inner), Some(Value::Bool(false)));
     let can = |name: &str| control && matches!(property(name).map(inner), Some(Value::Bool(true)));
+    // Old Spotify versions give a text like `spotify:track:...`, wich is not an object path.
+    let track =
+        text(meta("mpris:trackid")).filter(|track| ObjectPath::try_from(track.as_str()).is_ok());
     Player {
         status: text(property("PlaybackStatus")).unwrap_or_default(),
         rate: number(property("Rate")).filter(|&rate| rate > 0.0).unwrap_or(1.0),
@@ -206,6 +237,9 @@ fn parse(properties: &Properties) -> Player {
         artist: texts(meta("xesam:artist")).join(", "),
         album: text(meta("xesam:album")).unwrap_or_default(),
         art_url: text(meta("mpris:artUrl")).filter(|url| !url.is_empty()),
+        // `SetPosition` needs the track id.
+        can_seek: can("CanSeek") && track.is_some(),
+        track,
         can_play: can("CanPlay"),
         can_pause: can("CanPause"),
         can_next: can("CanGoNext"),
@@ -355,6 +389,7 @@ mod tests {
             ("CanPause".to_owned(), owned(Value::from(true))),
             ("CanGoNext".to_owned(), owned(Value::from(true))),
             ("CanGoPrevious".to_owned(), owned(Value::from(false))),
+            ("CanSeek".to_owned(), owned(Value::from(true))),
             ("CanControl".to_owned(), owned(Value::from(true))),
         ])
     }
@@ -373,13 +408,25 @@ mod tests {
                 artist: "One, Two".into(),
                 album: "Album".into(),
                 art_url: Some("https://i.scdn.co/image/ab67".into()),
+                track: Some("/com/spotify/track/1".into()),
                 can_play: true,
                 can_pause: true,
                 can_next: true,
                 can_previous: false,
+                can_seek: true,
             }
         );
         assert_eq!(timeline(&player), Some((30.5, 215.0)));
+    }
+
+    #[test]
+    fn seeks_only_with_a_track_id_that_is_a_path() {
+        let mut properties = spotify();
+        let metadata = HashMap::from([("mpris:trackid", Value::from("spotify:track:1"))]);
+        properties.insert("Metadata".into(), owned(Value::from(metadata)));
+        let player = parse(&properties);
+        assert_eq!(player.track, None);
+        assert!(!player.can_seek);
     }
 
     #[test]

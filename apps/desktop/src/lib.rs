@@ -80,6 +80,7 @@ pub fn run() {
             media::media_sessions,
             media::media_art,
             media::media_control,
+            media::media_seek,
             media::media_watch,
             monitors::monitor_names,
             system::system_info,

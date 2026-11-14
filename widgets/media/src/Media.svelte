@@ -72,9 +72,10 @@
 
 	// Apps need a short time to aply a command. Look again soon, so the button shows it.
 	let cancelSoon: (() => void) | undefined;
-	const send = api.guard(async (action: MediaAction) => {
+	const send = api.guard(async (action: MediaAction | 'restart') => {
 		if (!now) return;
-		await api.media.control(action, now.id);
+		if (action === 'restart') await api.media.seek(0, now.id);
+		else await api.media.control(action, now.id);
 		cancelSoon?.();
 		cancelSoon = api.after(300, refresh);
 	});
@@ -83,7 +84,13 @@
 <!-- `el` is the size container, so its padding cannot use cqh or cqw. Put the layout in it. -->
 {#if now !== undefined}
 	<div class="body" class:idle={!now}>
-		<Cover {art} count={sessions?.length ?? 0} {index} onstep={step} />
+		<Cover
+			{art}
+			count={sessions?.length ?? 0}
+			{index}
+			onstep={step}
+			onrestart={now?.can.seek ? () => send('restart') : undefined}
+		/>
 		<div class="info">
 			<p class="title">{now ? now.title || 'Unknown title' : 'Nothing playing'}</p>
 			{#if now?.artist}<p class="artist">{now.artist}</p>{/if}

@@ -2,7 +2,7 @@
 	"$schema": "../../packages/sdk/manifest.schema.json",
 	"name": "Media",
 	"version": "1.0.0",
-	"description": "What is playing (Spotify, YouTube, ...) with its album art, progress and play, pause and skip buttons.",
+	"description": "What is playing (Spotify, YouTube, ...) with its album art, progress and buttons to restart, play, pause and skip.",
 	"author": "EdgeStation",
 	"main": "dist/main.js",
 	"icon": "icon.svg",

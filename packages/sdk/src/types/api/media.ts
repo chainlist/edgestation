@@ -23,6 +23,12 @@ export interface MediaApi {
 	 */
 	control(action: MediaAction, id?: string): Promise<boolean>;
 	/**
+	 * Asks the app of session `id`, or of the current session, to go to `position` seconds in the
+	 * track. `seek(0)` plays the track from the start. Resolves `false` if it refused or the
+	 * session is gone. `can.seek` tells if the app accepts it now.
+	 */
+	seek(position: number, id?: string): Promise<boolean>;
+	/**
 	 * Calls `fn` when a session opens, closes or becomes current, or when its track, playback
 	 * state or timeline changes. `fn` gets no arguments, and it does not tell what changed or in
 	 * which session: read `sessions()` or `current()` in it. The system tells the app about
@@ -74,6 +80,6 @@ export interface MediaInfo {
 	duration: number | null;
 	/** Changes each time the album art changes. Then call `art()`. `null` if there is no art. */
 	art: number | null;
-	/** The `control()` actions that the app accepts now. */
-	can: Record<MediaAction, boolean>;
+	/** The `control()` actions that the app accepts now, and `seek` if it accepts `seek()`. */
+	can: Record<MediaAction | 'seek', boolean>;
 }

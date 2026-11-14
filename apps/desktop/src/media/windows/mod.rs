@@ -60,14 +60,7 @@ pub fn read_all() -> Result<Vec<MediaInfo>, String> {
 
 pub fn control(action: Action, id: Option<&str>) -> Result<bool, String> {
     let request = || {
-        let manager = manager()?;
-        let session = match id {
-            None => manager.GetCurrentSession().ok(),
-            Some(id) => {
-                list(&manager)?.into_iter().find(|each| each.id == id).map(|each| each.session)
-            }
-        };
-        let Some(session) = session else { return Ok(false) };
+        let Some(session) = find(id)? else { return Ok(false) };
         match action {
             Action::Play => session.TryPlayAsync()?,
             Action::Pause => session.TryPauseAsync()?,
@@ -79,8 +72,28 @@ pub fn control(action: Action, id: Option<&str>) -> Result<bool, String> {
     request().map_err(|error: windows::core::Error| error.to_string())
 }
 
+pub fn seek(position: f64, id: Option<&str>) -> Result<bool, String> {
+    let request = || {
+        let Some(session) = find(id)? else { return Ok(false) };
+        // The timeline of the app can start at an other time than 0.
+        let start = session.GetTimelineProperties()?.StartTime()?.Duration;
+        let ticks = start + (position * TICKS_PER_SECOND) as i64;
+        session.TryChangePlaybackPositionAsync(ticks)?.join()
+    };
+    request().map_err(|error: windows::core::Error| error.to_string())
+}
+
 fn manager() -> windows::core::Result<Manager> {
     Manager::RequestAsync()?.join()
+}
+
+/// Session `id`, or the current session. `None` if it is gone.
+fn find(id: Option<&str>) -> windows::core::Result<Option<WinSession>> {
+    let manager = manager()?;
+    Ok(match id {
+        None => manager.GetCurrentSession().ok(),
+        Some(id) => list(&manager)?.into_iter().find(|each| each.id == id).map(|each| each.session),
+    })
 }
 
 /// All sessions with their ids, in the order of Windows.
@@ -158,6 +171,7 @@ fn info(listed: Listed, current: bool) -> windows::core::Result<MediaInfo> {
             pause: controls.IsPauseEnabled()?,
             next: controls.IsNextEnabled()?,
             previous: controls.IsPreviousEnabled()?,
+            seek: controls.IsPlaybackPositionEnabled()?,
         },
     };
     Ok(found.info(|| thumbnail(&properties)))

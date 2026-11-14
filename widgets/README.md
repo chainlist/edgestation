@@ -194,6 +194,7 @@ api.media.onChange(show);
 | `current()`       | Promise of the session below, or `null` when nothing is playing.                                                                     |
 | `art()`           | Promise of the album art from the latest `current()` call, as a data URL (`null` without art).                                       |
 | `control(action)` | Asks the app to `'play'`, `'pause'`, skip to `'next'` or go to `'previous'`. Resolves `false` if it declined.                        |
+| `seek(position)`  | Asks the app to go to `position` seconds in the track: `seek(0)` plays it from the start. Resolves `false` if it declined.           |
 | `onChange(fn)`    | Calls `fn` when a session opens, closes or becomes current, or its track, playback state or timeline changes: read `current()` then. |
 
 | Field                      | Meaning                                                                                                    |
@@ -204,7 +205,7 @@ api.media.onChange(show);
 | `rate`                     | Playback speed, `1` at normal speed: while playing, `position` moves on by `rate` seconds per second.      |
 | `position`, `duration`     | Seconds, `position` as of the call. `null` when the app reports no timeline (see below).                   |
 | `art`                      | A number that changes when the art does, or `null`. Call `art()` only when it changes: the image is large. |
-| `can`                      | `{ play, pause, next, previous }`: which actions the app accepts right now.                                |
+| `can`                      | `{ play, pause, next, previous, seek }`: which actions the app accepts right now.                          |
 
 `fn` gets no arguments: it doesn't say what changed or in which session, so read the sessions again. A burst of changes (a new track often sends several) calls it at most every 100 ms. It only listens while the widget's page shows and the Edge isn't frozen, and calls `fn` once when the widget shows again. The position of a playing track moves on without a call: advance it yourself from the last read, by `rate` seconds per second, with `api.every`, which asks the system nothing.
 

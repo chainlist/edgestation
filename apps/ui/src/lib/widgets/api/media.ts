@@ -7,7 +7,8 @@ const readers = Object.freeze({
 	current: () => invoke<MediaInfo | null>('media_info'),
 	sessions: () => invoke<MediaInfo[]>('media_sessions'),
 	art: (id?: string) => invoke<string | null>('media_art', { id }),
-	control: (action: MediaAction, id?: string) => invoke<boolean>('media_control', { action, id })
+	control: (action: MediaAction, id?: string) => invoke<boolean>('media_control', { action, id }),
+	seek: (position: number, id?: string) => invoke<boolean>('media_seek', { position, id })
 });
 
 /** The host sends this when a session opens, closes or changes, while a widget listens. */

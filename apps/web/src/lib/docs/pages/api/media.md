@@ -13,13 +13,14 @@ api.media.onChange(show);
 
 ## Members
 
-| Member                 | What it does                                                                                                                                                  |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `current()`            | Promise of the current session below, or `null` when nothing is playing.                                                                                      |
-| `sessions()`           | Promise of every session, in the system's order. Empty when nothing is playing. See [several sessions](#several-sessions).                                    |
-| `art(id?)`             | Promise of the album art of session `id` from the latest `current()` or `sessions()` call, as a data URL (`null` without art). Without `id`, the current one. |
-| `control(action, id?)` | Asks the app of session `id`, or of the current one, to `'play'`, `'pause'`, skip to `'next'` or go to `'previous'`. Resolves `false` if it declined.         |
-| `onChange(fn)`         | Calls `fn` when something changes: see [Changes](#changes). Returns a function that stops it.                                                                 |
+| Member                 | What it does                                                                                                                                                       |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `current()`            | Promise of the current session below, or `null` when nothing is playing.                                                                                           |
+| `sessions()`           | Promise of every session, in the system's order. Empty when nothing is playing. See [several sessions](#several-sessions).                                         |
+| `art(id?)`             | Promise of the album art of session `id` from the latest `current()` or `sessions()` call, as a data URL (`null` without art). Without `id`, the current one.      |
+| `control(action, id?)` | Asks the app of session `id`, or of the current one, to `'play'`, `'pause'`, skip to `'next'` or go to `'previous'`. Resolves `false` if it declined.              |
+| `seek(position, id?)`  | Asks the app of session `id`, or of the current one, to go to `position` seconds in the track: `seek(0)` plays it from the start. Resolves `false` if it declined. |
+| `onChange(fn)`         | Calls `fn` when something changes: see [Changes](#changes). Returns a function that stops it.                                                                      |
 
 ## Changes
 
@@ -50,17 +51,17 @@ api.every(1000, () => {
 
 `current()` resolves to a `MediaInfo`, and `sessions()` to an array of them:
 
-| Field                      | Meaning                                                                                                                                                            |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `id`                       | Names the session in `art()` and `control()`. On Windows, the app id, with `#2`, `#3`, ... when one app has more sessions. On Linux, the player's name on the bus. |
-| `current`                  | `true` for the session the media keys control.                                                                                                                     |
-| `title`, `artist`, `album` | As the app reports them; empty when it doesn't.                                                                                                                    |
-| `app`                      | Id of the app that owns the session (`Spotify.exe`, `MSEdge`, ...). On Linux, the player's desktop entry (`spotify`, `firefox`, ...), else its name on the bus.    |
-| `playing`                  | `true` while playing, `false` when paused or stopped.                                                                                                              |
-| `rate`                     | Playback speed, `1` at normal speed: while playing, `position` moves on by `rate` seconds per second.                                                              |
-| `position`, `duration`     | Seconds, `position` as of the call. `null` when the app reports no timeline (see below).                                                                           |
-| `art`                      | A number that changes when the art does, or `null`. Call `art()` only when it changes: the image is large.                                                         |
-| `can`                      | `{ play, pause, next, previous }`: which actions the app accepts right now.                                                                                        |
+| Field                      | Meaning                                                                                                                                                                      |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`                       | Names the session in `art()`, `control()` and `seek()`. On Windows, the app id, with `#2`, `#3`, ... when one app has more sessions. On Linux, the player's name on the bus. |
+| `current`                  | `true` for the session the media keys control.                                                                                                                               |
+| `title`, `artist`, `album` | As the app reports them; empty when it doesn't.                                                                                                                              |
+| `app`                      | Id of the app that owns the session (`Spotify.exe`, `MSEdge`, ...). On Linux, the player's desktop entry (`spotify`, `firefox`, ...), else its name on the bus.              |
+| `playing`                  | `true` while playing, `false` when paused or stopped.                                                                                                                        |
+| `rate`                     | Playback speed, `1` at normal speed: while playing, `position` moves on by `rate` seconds per second.                                                                        |
+| `position`, `duration`     | Seconds, `position` as of the call. `null` when the app reports no timeline (see below).                                                                                     |
+| `art`                      | A number that changes when the art does, or `null`. Call `art()` only when it changes: the image is large.                                                                   |
+| `can`                      | `{ play, pause, next, previous, seek }`: which actions the app accepts right now.                                                                                            |
 
 ## Album art
 
@@ -92,13 +93,17 @@ playButton.addEventListener(
 		if (now) await api.media.control(now.playing ? 'pause' : 'play');
 	})
 );
+restartButton.addEventListener(
+	'click',
+	api.guard(() => api.media.seek(0))
+);
 ```
 
 Disable the buttons whose action `can` says the app doesn't accept right now.
 
 ## Several sessions
 
-Spotify and a browser can both have a session at the same time. `sessions()` lists them all, with `current` set on the one `current()` would give. Pass a session's `id` to `art()` and `control()` to act on that one instead of the current one:
+Spotify and a browser can both have a session at the same time. `sessions()` lists them all, with `current` set on the one `current()` would give. Pass a session's `id` to `art()`, `control()` and `seek()` to act on that one instead of the current one:
 
 ```js
 let sessions = [];

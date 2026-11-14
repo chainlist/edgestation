@@ -64,6 +64,8 @@ struct Controls {
     pause: bool,
     next: bool,
     previous: bool,
+    /// True if the app accepts `media_seek`.
+    seek: bool,
 }
 
 #[derive(Clone, Copy, Deserialize)]
@@ -145,6 +147,16 @@ pub async fn media_control(action: Action, id: Option<String>) -> Result<bool, S
     blocking::run(move || control(action, id.as_deref())).await
 }
 
+/// Asks the app of session `id`, or of the current session, to go to `position` seconds in the
+/// track. Returns `false` if the app refuses or the session is gone.
+#[tauri::command]
+pub async fn media_seek(position: f64, id: Option<String>) -> Result<bool, String> {
+    if position < 0.0 {
+        return Err(format!("Position {position} is negative"));
+    }
+    blocking::run(move || seek(position, id.as_deref())).await
+}
+
 /// While `on` is true, sends `media:changed` to the Edge window when a session opens, closes or
 /// becomes current, or when its track, playback state or timeline changes.
 #[tauri::command]
@@ -168,4 +180,4 @@ pub fn stop_on_reload<R: Runtime>(page: &Webview<R>, payload: &PageLoadPayload<'
     }
 }
 
-use native::{control, read, read_all};
+use native::{control, read, read_all, seek};
