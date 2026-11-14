@@ -1,6 +1,6 @@
 {
 	"name": "@edgestation/sdk",
-	"version": "0.7.0",
+	"version": "0.8.0",
 	"description": "Types and build helpers to write widgets for EdgeStation, the secondary display dashboard made for the Corsair Xeneon Edge, in plain JavaScript, Svelte, React or Vue.",
 	"keywords": [
 		"edgestation",
