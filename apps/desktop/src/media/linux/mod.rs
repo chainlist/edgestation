@@ -1,6 +1,8 @@
 //! The Linux side: the MPRIS players on the session bus, the media players, browsers and other apps that the
 //! media keys and the media controls of Linux desktops control.
 
+mod watch;
+
 use std::collections::HashMap;
 use std::sync::{Mutex, OnceLock, PoisonError};
 use std::time::Duration;
@@ -14,6 +16,8 @@ use zbus::zvariant::{OwnedValue, Value};
 
 use super::{Action, Controls, MediaInfo, Session};
 use crate::os::linux::dbus::{self, Bus};
+
+pub use watch::{unwatch, watch};
 
 const PREFIX: &str = "org.mpris.MediaPlayer2.";
 /// The playerctl daemon. It follows the player that the user used last.

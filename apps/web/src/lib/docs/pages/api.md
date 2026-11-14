@@ -47,7 +47,7 @@ Everything a widget registers through the `api` is released when it unmounts: `e
 
 ## Read on demand
 
-`system()`, `topPrograms()`, `media.current()`, `apps.list()` and `audio.mixer()` read the machine when called. Nothing monitors in between, so a widget pays for what it shows, when it shows it. Poll them with `api.every`, which stops while the widget's page is off screen. The audio mixer is the exception: the system tells the app when it changes, so read it again from `audio.onChange` instead of polling.
+`system()`, `topPrograms()`, `media.current()`, `apps.list()` and `audio.mixer()` read the machine when called. Nothing monitors in between, so a widget pays for what it shows, when it shows it. Poll them with `api.every`, which stops while the widget's page is off screen. The audio mixer and the media sessions are the exception: the system tells the app when they change, so read them again from `audio.onChange` and `media.onChange` instead of polling.
 
 ## instanceId
 

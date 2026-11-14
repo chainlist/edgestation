@@ -6,9 +6,6 @@ import type {
 	AppInfo,
 	AppsApi,
 	Cleanup,
-	MediaAction,
-	MediaApi,
-	MediaInfo,
 	ProgramUsage,
 	SystemInfo,
 	WebviewOptions,
@@ -22,15 +19,9 @@ import { appIconUrl, widgetUrl } from '../url';
 import { openWebview } from '../webview/open-webview';
 import { createAudioApi } from './audio';
 import { createLoading, type LoadingLook } from './loading';
+import { createMediaApi } from './media';
 import { createStorageApi } from './storage';
 import { interval, timeout, type Pause } from './timers';
-
-const media: MediaApi = Object.freeze({
-	current: () => invoke<MediaInfo | null>('media_info'),
-	sessions: () => invoke<MediaInfo[]>('media_sessions'),
-	art: (id?: string) => invoke<string | null>('media_art', { id }),
-	control: (action: MediaAction, id?: string) => invoke<boolean>('media_control', { action, id })
-});
 
 const apps: AppsApi = Object.freeze({
 	list: () => invoke<AppInfo[]>('apps_list'),
@@ -96,7 +87,7 @@ export function createWidgetApi(
 		topPrograms: gate('system', (count: number) =>
 			invoke<ProgramUsage[]>('top_programs', { count })
 		),
-		media: gate('media', media),
+		media: gate('media', createMediaApi(pause, scope.guard, track)),
 		apps: gate('apps', apps),
 		audio: gate('audio', createAudioApi(pause, scope.guard, track)),
 		fetch: gate('fetch', (input: RequestInfo | URL, init: RequestInit = {}) => {

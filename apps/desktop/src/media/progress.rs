@@ -6,6 +6,8 @@ use std::time::{Duration, Instant};
 
 /// Continue only from a request that is this recent. In a longer gap, the user can pause or
 /// seek. The app reports this at that time, but can then replace it with an empty timeline.
+/// While the host watches the sessions, a pause or a seek makes the widgets read again, so the
+/// limit does not apply to a request after the watch started.
 const CARRY: Duration = Duration::from_secs(5);
 
 /// The position of the track of a session at the latest request that knew it.
@@ -20,13 +22,26 @@ struct Seen {
     at: Instant,
 }
 
+/// True if a position that a request saw at `seen` can carry on at `at`. `watched` is the start
+/// of the watch that runs.
+fn fresh(watched: Option<Instant>, seen: Instant, at: Instant) -> bool {
+    at.saturating_duration_since(seen) < CARRY || watched.is_some_and(|start| start <= seen)
+}
+
 pub struct Progress {
     seen: Vec<Seen>,
+    /// The start of the watch that runs, `None` while no widget listens to changes.
+    watched: Option<Instant>,
 }
 
 impl Progress {
     pub const fn new() -> Self {
-        Self { seen: Vec::new() }
+        Self { seen: Vec::new(), watched: None }
+    }
+
+    /// Tells when the watch of the sessions started, or `None` when it stopped.
+    pub fn watching(&mut self, since: Option<Instant>) {
+        self.watched = since;
     }
 
     /// Returns the position and the lenght in seconds, as the app of `session` reports them. If
@@ -40,12 +55,14 @@ impl Progress {
         playing: bool,
         rate: f64,
     ) -> Option<(f64, f64)> {
-        // A session that no request saw for `CARRY` cannot carry on. This also forgets closed sessions.
-        self.seen.retain(|seen| at.saturating_duration_since(seen.at) < CARRY);
+        // A session that cannot carry on is forgotten. This also forgets closed sessions.
+        let watched = self.watched;
+        self.seen.retain(|seen| fresh(watched, seen.at, at));
         let index = self.seen.iter().position(|seen| seen.session == session);
         let carried = || {
             let seen = index.map(|index| &self.seen[index]).filter(|seen| seen.track == track)?;
-            let since = at.checked_duration_since(seen.at).filter(|&since| since < CARRY)?;
+            let since =
+                at.checked_duration_since(seen.at).filter(|_| fresh(watched, seen.at, at))?;
             let played = if seen.playing { since.as_secs_f64() * seen.rate } else { 0.0 };
             Some(((seen.position + played).min(seen.duration), seen.duration))
         };
@@ -156,6 +173,36 @@ mod tests {
         assert_eq!(progress.update(start + CARRY, "a", "track", None, true, 1.0), None);
         // And not later, because the host forgot the track.
         assert_eq!(progress.update(start + CARRY + SECOND, "a", "track", None, true, 1.0), None);
+    }
+
+    #[test]
+    fn long_gap_carries_on_while_watched() {
+        let start = Instant::now();
+        let mut progress = Progress::new();
+        progress.watching(Some(start));
+        progress.update(start, "a", "track", Some((60.0, 300.0)), true, 1.0);
+        assert_eq!(
+            progress.update(start + 4 * CARRY, "a", "track", None, true, 1.0),
+            Some((80.0, 300.0))
+        );
+    }
+
+    #[test]
+    fn watch_that_starts_later_does_not_carry_an_old_read() {
+        let start = Instant::now();
+        let mut progress = seen(start, true);
+        progress.watching(Some(start + SECOND));
+        assert_eq!(progress.update(start + CARRY, "a", "track", None, true, 1.0), None);
+    }
+
+    #[test]
+    fn stopped_watch_limits_the_gap_again() {
+        let start = Instant::now();
+        let mut progress = Progress::new();
+        progress.watching(Some(start));
+        progress.update(start, "a", "track", Some((60.0, 300.0)), true, 1.0);
+        progress.watching(None);
+        assert_eq!(progress.update(start + CARRY, "a", "track", None, true, 1.0), None);
     }
 
     #[test]

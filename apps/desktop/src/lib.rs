@@ -7,6 +7,7 @@ mod app_windows;
 mod apps;
 mod audio;
 mod blocking;
+mod changes;
 mod focus;
 mod fullscreen;
 mod identify;
@@ -54,6 +55,7 @@ pub fn run() {
         .on_page_load(|page, payload| {
             widgets::webview::control::close_on_reload(page, payload);
             audio::stop_on_reload(page, payload);
+            media::stop_on_reload(page, payload);
         })
         .invoke_handler(tauri::generate_handler![
             apps::apps_list,
@@ -78,6 +80,7 @@ pub fn run() {
             media::media_sessions,
             media::media_art,
             media::media_control,
+            media::media_watch,
             monitors::monitor_names,
             system::system_info,
             system::top_programs,

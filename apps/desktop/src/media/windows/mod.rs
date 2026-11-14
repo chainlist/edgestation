@@ -1,6 +1,8 @@
 //! The Windows side: the global media transport controls, the sessions that apps publish for their
 //! media keys.
 
+mod watch;
+
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use base64::Engine;
@@ -16,6 +18,8 @@ use windows::Storage::Streams::DataReader;
 use windows::core::HSTRING;
 
 use super::{Action, Controls, MediaInfo, Session};
+
+pub use watch::{unwatch, watch};
 
 /// Windows times are in ticks of 100 ns.
 const TICKS_PER_SECOND: f64 = 10_000_000.0;

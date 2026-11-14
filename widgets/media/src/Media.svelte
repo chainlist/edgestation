@@ -40,14 +40,27 @@
 		if (shownArt === artId) art = url;
 	}
 
+	/** The time of the last read and the time now, in ms. The track plays on between reads. */
+	let readAt = $state(0);
+	let tick = $state(0);
+	const position = $derived.by(() => {
+		if (now?.position == null) return 0;
+		const played = now.playing ? ((tick - readAt) / 1000) * now.rate : 0;
+		return Math.min(now.position + played, now.duration ?? Infinity);
+	});
+
 	const refresh = api.guard(async () => {
 		const read = await api.media.sessions();
 		const kept = read.find((session) => session.id === chosen);
 		if (!kept || kept.current) chosen = null;
 		sessions = read;
+		readAt = tick = performance.now();
 		await loadArt();
 	});
-	api.every(1000, refresh);
+	// The host tells when something changes. The position moves on with no event, so a timer
+	// moves it here, and it asks the host nothing.
+	api.media.onChange(refresh);
+	api.every(1000, () => (tick = performance.now()));
 	refresh();
 
 	const step = api.guard(async () => {
@@ -57,7 +70,7 @@
 		await loadArt();
 	});
 
-	// Apps need a short time to aply a command. Look again soon, not at the next tick.
+	// Apps need a short time to aply a command. Look again soon, so the button shows it.
 	let cancelSoon: (() => void) | undefined;
 	const send = api.guard(async (action: MediaAction) => {
 		if (!now) return;
@@ -75,7 +88,7 @@
 			<p class="title">{now ? now.title || 'Unknown title' : 'Nothing playing'}</p>
 			{#if now?.artist}<p class="artist">{now.artist}</p>{/if}
 			{#if now?.duration != null}
-				<Progress position={now.position ?? 0} duration={now.duration} />
+				<Progress {position} duration={now.duration} />
 			{/if}
 			<Controls {now} {playing} {send} />
 		</div>

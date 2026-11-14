@@ -178,31 +178,37 @@ Services and system processes are included, as in Task Manager.
 
 ### `api.media`
 
-The media session Windows considers current: the one the volume flyout shows and the media keys control. Spotify, browsers (YouTube, ...) and most players publish one. Like `api.system()`, it is read when called and nothing listens in between, so poll it:
+The media session Windows considers current: the one the volume flyout shows and the media keys control. Spotify, browsers (YouTube, ...) and most players publish one. Read it once, then again when the system says it changed, so nothing polls:
 
 ```js
-api.every(1000, async () => {
+const show = api.guard(async () => {
 	const now = await api.media.current();
 	el.textContent = now ? `${now.title} · ${now.artist}` : 'Nothing playing';
 });
+show();
+api.media.onChange(show);
 ```
 
-| Member            | What it does                                                                                                  |
-| ----------------- | ------------------------------------------------------------------------------------------------------------- |
-| `current()`       | Promise of the session below, or `null` when nothing is playing.                                              |
-| `art()`           | Promise of the album art from the latest `current()` call, as a data URL (`null` without art).                |
-| `control(action)` | Asks the app to `'play'`, `'pause'`, skip to `'next'` or go to `'previous'`. Resolves `false` if it declined. |
+| Member            | What it does                                                                                                                         |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `current()`       | Promise of the session below, or `null` when nothing is playing.                                                                     |
+| `art()`           | Promise of the album art from the latest `current()` call, as a data URL (`null` without art).                                       |
+| `control(action)` | Asks the app to `'play'`, `'pause'`, skip to `'next'` or go to `'previous'`. Resolves `false` if it declined.                        |
+| `onChange(fn)`    | Calls `fn` when a session opens, closes or becomes current, or its track, playback state or timeline changes: read `current()` then. |
 
 | Field                      | Meaning                                                                                                    |
 | -------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | `title`, `artist`, `album` | As the app reports them; empty when it doesn't.                                                            |
 | `app`                      | Id of the app that owns the session (`Spotify.exe`, `MSEdge`, ...).                                        |
 | `playing`                  | `true` while playing, `false` when paused or stopped.                                                      |
+| `rate`                     | Playback speed, `1` at normal speed: while playing, `position` moves on by `rate` seconds per second.      |
 | `position`, `duration`     | Seconds, `position` as of the call. `null` when the app reports no timeline (see below).                   |
 | `art`                      | A number that changes when the art does, or `null`. Call `art()` only when it changes: the image is large. |
 | `can`                      | `{ play, pause, next, previous }`: which actions the app accepts right now.                                |
 
-Zen and Firefox report the timeline only on play, pause and seek, and blank it out about once a minute. While widgets keep calling `current()` (at least every 5 seconds), the position carries on from the last one reported. After a longer gap it stays `null` until the next play, pause or seek, rather than guessing across a pause or seek the widget didn't see.
+`fn` gets no arguments: it doesn't say what changed or in which session, so read the sessions again. A burst of changes (a new track often sends several) calls it at most every 100 ms. It only listens while the widget's page shows and the Edge isn't frozen, and calls `fn` once when the widget shows again. The position of a playing track moves on without a call: advance it yourself from the last read, by `rate` seconds per second, with `api.every`, which asks the system nothing.
+
+Zen and Firefox report the timeline only on play, pause and seek, and blank it out about once a minute. While a widget listens with `onChange`, or widgets keep calling `current()` at least every 5 seconds, the position carries on from the last one reported. After a longer gap it stays `null` until the next play, pause or seek, rather than guessing across a pause or seek the widget didn't see.
 
 ### `api.apps`
 

@@ -1,10 +1,11 @@
 //! What plays on the machine, from the media sessions that apps publish to Windows, or the MPRIS
 //! players on Linux. The volume flyout of Windows and the media controls of Linux desktops show
-//! the same sessions. The host reads them when a widget asks, and nothing listens between the
-//! requests.
+//! the same sessions. The host reads them when a widget asks. While a widget listens, the system
+//! tells the app when they change, and the Edge window gets `media:changed`. Nothing runs at other
+//! times.
 
-#[cfg_attr(windows, path = "windows.rs")]
-#[cfg_attr(target_os = "linux", path = "linux.rs")]
+#[cfg_attr(windows, path = "windows/mod.rs")]
+#[cfg_attr(target_os = "linux", path = "linux/mod.rs")]
 mod native;
 
 mod art;
@@ -14,11 +15,20 @@ use std::sync::{Mutex, PoisonError};
 use std::time::Instant;
 
 use serde::{Deserialize, Serialize};
+use tauri::webview::PageLoadPayload;
+use tauri::{AppHandle, Runtime, Webview};
 
 use crate::blocking;
+use crate::changes::{self, Throttled};
 use progress::Progress;
 
 static PROGRESS: Mutex<Progress> = Mutex::new(Progress::new());
+static CHANGED: Throttled = Throttled::new("media:changed");
+
+/// Tells the Edge window that a session opened, closed or changed.
+fn changed(app: &AppHandle) {
+    CHANGED.send(app);
+}
 
 #[derive(Serialize)]
 pub struct MediaInfo {
@@ -34,6 +44,9 @@ pub struct MediaInfo {
     artist: String,
     album: String,
     playing: bool,
+    /// The playback speed, 1 at normal speed. While the track plays, the position moves on by
+    /// this many seconds per second, and no event tells about it.
+    rate: f64,
     /// The position in the track in seconds, at the time of the call. `None` if the app reports
     /// no timeline. When the app clears the timeline, the host carries the last position foward
     /// (see `progress`).
@@ -96,6 +109,7 @@ impl Session {
             artist: self.artist,
             album: self.album,
             playing: self.playing,
+            rate: self.rate,
             position,
             duration,
             art,
@@ -129,6 +143,29 @@ pub async fn media_art(id: Option<String>) -> Result<Option<String>, String> {
 #[tauri::command]
 pub async fn media_control(action: Action, id: Option<String>) -> Result<bool, String> {
     blocking::run(move || control(action, id.as_deref())).await
+}
+
+/// While `on` is true, sends `media:changed` to the Edge window when a session opens, closes or
+/// becomes current, or when its track, playback state or timeline changes.
+#[tauri::command]
+pub async fn media_watch(app: AppHandle, on: bool) -> Result<(), String> {
+    blocking::run(move || {
+        native::watch(&app, on)?;
+        let mut progress = PROGRESS.lock().unwrap_or_else(PoisonError::into_inner);
+        progress.watching(on.then(Instant::now));
+        Ok(())
+    })
+    .await
+}
+
+/// Stops the watch when the Edge page starts to load. The widgets that listened are gone then.
+pub fn stop_on_reload<R: Runtime>(page: &Webview<R>, payload: &PageLoadPayload<'_>) {
+    if changes::edge_reloads(page, payload) {
+        tauri::async_runtime::spawn_blocking(|| {
+            native::unwatch();
+            PROGRESS.lock().unwrap_or_else(PoisonError::into_inner).watching(None);
+        });
+    }
 }
 
 use native::{control, read, read_all};

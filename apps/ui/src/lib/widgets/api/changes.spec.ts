@@ -2,8 +2,10 @@ import { invoke } from '@tauri-apps/api/core';
 import { listen, type EventCallback } from '@tauri-apps/api/event';
 import { beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 import { flush } from '#lib/test-helpers.ts';
-import { createAudioApi, stream } from './audio';
-import { createPause } from './timers';
+import { createAudioApi } from './audio';
+import { stream } from './changes';
+import { createMediaApi } from './media';
+import { createPause, type Pause } from './timers';
 
 vi.mock('@tauri-apps/api/core', () => ({ invoke: vi.fn(async () => true) }));
 vi.mock('@tauri-apps/api/event', () => ({ listen: vi.fn() }));
@@ -54,24 +56,27 @@ describe('stream', () => {
 	});
 });
 
-describe('onChange', () => {
-	const guard =
-		<A extends unknown[]>(fn: (...args: A) => unknown) =>
-		(...args: A) =>
-			void fn(...args);
+const guard =
+	<A extends unknown[]>(fn: (...args: A) => unknown) =>
+	(...args: A) =>
+		void fn(...args);
 
+describe.each([
+	['audio', 'audio_watch', (pause: Pause) => createAudioApi(pause, guard, (stop) => stop)],
+	['media', 'media_watch', (pause: Pause) => createMediaApi(pause, guard, (stop) => stop)]
+])('%s.onChange', (_, command, create) => {
 	it('listens only while its page shows, and catches up when it shows again', async () => {
 		const pause = createPause(false);
 		const fn = vi.fn();
-		createAudioApi(pause, guard, (stop) => stop).onChange(fn);
+		create(pause).onChange(fn);
 		await flush();
-		expect(invoke).toHaveBeenLastCalledWith('audio_watch', { on: true });
+		expect(invoke).toHaveBeenLastCalledWith(command, { on: true });
 		message(null);
-		expect(fn).toHaveBeenCalledOnce();
+		expect(fn).toHaveBeenCalledExactlyOnceWith();
 
 		pause.set(true);
 		await flush();
-		expect(invoke).toHaveBeenLastCalledWith('audio_watch', { on: false });
+		expect(invoke).toHaveBeenLastCalledWith(command, { on: false });
 
 		pause.set(false);
 		expect(fn).toHaveBeenCalledTimes(2);

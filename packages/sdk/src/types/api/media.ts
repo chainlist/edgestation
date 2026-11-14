@@ -1,3 +1,5 @@
+import type { Cleanup } from '../cleanup.js';
+
 export interface MediaApi {
 	/**
 	 * The session that Windows thinks is current, which the media keys control. On Linux, the
@@ -20,6 +22,17 @@ export interface MediaApi {
 	 * `false` if it refused or the session is gone.
 	 */
 	control(action: MediaAction, id?: string): Promise<boolean>;
+	/**
+	 * Calls `fn` when a session opens, closes or becomes current, or when its track, playback
+	 * state or timeline changes. `fn` gets no arguments, and it does not tell what changed or in
+	 * which session: read `sessions()` or `current()` in it. The system tells the app about
+	 * changes, so nothing polls. A burst of changes calls `fn` at most every 100 ms. The position
+	 * of a playing track moves on without a call, so advance it yourself between reads. While the
+	 * page of the widget is off screen or the Edge is frozen, it waits and calls `fn` once when the
+	 * widget shows again, also if nothing changed. It stops on unmount, and the returned function
+	 * stops it earlier.
+	 */
+	onChange(fn: () => unknown): Cleanup;
 }
 
 export type MediaAction = 'play' | 'pause' | 'next' | 'previous';
@@ -47,9 +60,15 @@ export interface MediaInfo {
 	album: string;
 	playing: boolean;
 	/**
+	 * The playback speed, 1 at normal speed. While `playing`, the position moves on by `rate`
+	 * seconds per second. Neither `onChange` nor the system tells about this, so compute it.
+	 */
+	rate: number;
+	/**
 	 * The position in the track at the time of the call, in seconds. `null` if the app gives no
 	 * timeline. Some apps clear it, for example Zen and Firefox about once a minute. Then it
-	 * continues from the last position, if calls come at least every 5 seconds.
+	 * continues from the last position, while a widget listens with `onChange` or calls come at
+	 * least every 5 seconds.
 	 */
 	position: number | null;
 	duration: number | null;

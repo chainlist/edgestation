@@ -16,13 +16,11 @@ mod sampler;
 use std::collections::HashMap;
 
 use serde::Serialize;
-use tauri::webview::{PageLoadEvent, PageLoadPayload};
+use tauri::webview::PageLoadPayload;
 use tauri::{AppHandle, Runtime, Webview};
 
 use crate::blocking;
-
-/// The window that gets the audio events.
-const EDGE: &str = "edge";
+use crate::changes::{self, EDGE};
 
 #[derive(Serialize)]
 pub struct Mixer {
@@ -171,7 +169,7 @@ pub fn audio_meters(app: AppHandle, on: bool) {
 /// Stops the change callbacks and the meters when the Edge page starts to load. The widget that
 /// listened are gone then.
 pub fn stop_on_reload<R: Runtime>(page: &Webview<R>, payload: &PageLoadPayload<'_>) {
-    if payload.event() == PageLoadEvent::Started && page.label() == "edge" {
+    if changes::edge_reloads(page, payload) {
         tauri::async_runtime::spawn_blocking(stop);
     }
 }

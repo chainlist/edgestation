@@ -1,5 +1,4 @@
 import { invoke } from '@tauri-apps/api/core';
-import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import type {
 	AudioApi,
 	AudioLevels,
@@ -9,6 +8,7 @@ import type {
 	Cleanup
 } from '../types';
 import { fileIconUrl } from '../url';
+import { stream, watchChanges } from './changes';
 import { whileShown, type Pause } from './timers';
 
 /**
@@ -30,37 +30,6 @@ export function shared<T>(read: () => Promise<T>, ms: number) {
 		return last.result;
 	};
 	return Object.assign(get, { forget: () => void (last = undefined) });
-}
-
-/**
- * Keeps the listeners of a stream that the app sends (`event`). `command` turns the stream on
- * with the first listener and off with the last. So the app listens to Windows only while a
- * widget listens. `each` runs on each message, before the listeners.
- */
-export function stream<T>(event: string, command: string, each?: (payload: T) => void) {
-	const listeners = new Set<(payload: T) => void>();
-	let unlisten: Promise<UnlistenFn> | undefined;
-	return (listener: (payload: T) => void): Cleanup => {
-		listeners.add(listener);
-		if (listeners.size === 1) {
-			const listening = listen<T>(event, ({ payload }) => {
-				each?.(payload);
-				for (const fn of [...listeners]) fn(payload);
-			});
-			unlisten = listening;
-			// Listen first, becuase then no message gets lost. Turn the stream on only if the
-			// listeners did not leave in the meantime.
-			void listening.then(() => {
-				if (unlisten === listening) void invoke(command, { on: true });
-			});
-		}
-		return () => {
-			if (!listeners.delete(listener) || listeners.size) return;
-			void invoke(command, { on: false });
-			void unlisten?.then((stop) => stop());
-			unlisten = undefined;
-		};
-	};
 }
 
 /** Mixer reads closer than this share one, because all mixer widgets read after a change. */
@@ -102,16 +71,7 @@ export function createAudioApi(
 ): AudioApi {
 	return Object.freeze({
 		...readers,
-		onChange(fn: () => unknown) {
-			const run = guard(fn);
-			return track(
-				whileShown(pause, (resumed) => {
-					// Show the changes that came while it wated.
-					if (resumed) run();
-					return changes(run);
-				})
-			);
-		},
+		onChange: watchChanges(changes, pause, guard, track),
 		onLevels(fn: (levels: AudioLevels) => unknown) {
 			const run = guard(fn);
 			return track(whileShown(pause, () => levelStream(run)));
