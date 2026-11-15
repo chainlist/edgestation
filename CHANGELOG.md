@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.9.0](https://github.com/chainlist/edgestation/compare/v0.8.0...v0.9.0) (2026-11-15)
+
+
+### Features
+
+* add memory usage to api.system() and a Memory usage metric to the performance widget ([67ba110](https://github.com/chainlist/edgestation/commit/67ba110ed0ed1e756557ef82ea5e233f7fc4569c))
+* add widgets from an animated, searchable sheet in the page editor ([59ef5b0](https://github.com/chainlist/edgestation/commit/59ef5b0df3acc642356e29608195884affdcbb0d))
+* remove widgets the registry bans, with their tiles and data, and show why on the Edge ([23e7ae5](https://github.com/chainlist/edgestation/commit/23e7ae5501239cb33e5a7535d4c31126aaca66b4))
+* split Widgets settings into Marketplace and Installed, with the marketplace off until the user turns it on ([231b153](https://github.com/chainlist/edgestation/commit/231b153e2ea9ca7f0d7b175e32c10bfde53bb3c5))
+
 ## [0.8.0](https://github.com/chainlist/edgestation/compare/v0.7.0...v0.8.0) (2026-11-14)
 
 
