@@ -4,7 +4,7 @@ This page writes one widget twice: a tile that shows the CPU load, first by hand
 
 ### 1. Create the folder
 
-Open the widgets folder: open Settings from the EdgeStation icon in the notification area (click it on Windows, choose **Settings** in its menu on Linux), then **Widgets → Open folder**. Starting EdgeStation again also opens Settings. The folder is `%APPDATA%\com.edgestation.dashboard\widgets\` on Windows and `~/.local/share/com.edgestation.dashboard/widgets/` on Linux. Create a folder named `cpu` in it: that name is the widget's id.
+Open the widgets folder: open Settings from the EdgeStation icon in the notification area (click it on Windows, choose **Settings** in its menu on Linux), then **Widgets → Installed → Open folder**. Starting EdgeStation again also opens Settings. The folder is `%APPDATA%\com.edgestation.dashboard\widgets\` on Windows and `~/.local/share/com.edgestation.dashboard/widgets/` on Linux. Create a folder named `cpu` in it: that name is the widget's id.
 
 ### 2. Write the manifest
 
@@ -52,7 +52,7 @@ export default {
 
 ### 5. Put it on a page
 
-1. In Settings → Widgets, click the Rescan button (the circular arrow). CPU shows under **Installed**.
+1. In Settings → Widgets → Installed, click the Rescan button (the circular arrow). CPU shows under **Installed**.
 2. In Settings → Pages, open a page, choose CPU in its widget list and click **Add**. Drag it to move it, drag a corner to resize it.
 
 The tile shows on the Edge right away. After you edit `main.js` or `styles.css`, click **Reload Edge** at the bottom of the Settings sidebar to load the change.
@@ -133,7 +133,7 @@ On Linux, from a terminal:
 ln -s /path/to/cpu ~/.local/share/com.edgestation.dashboard/widgets/cpu
 ```
 
-Then click **Rescan** in Settings → Widgets and add the widget to a page, as above.
+Then click **Rescan** in Settings → Widgets → Installed and add the widget to a page, as above.
 
 ### 5. Work on it
 

@@ -2,6 +2,8 @@ use serde::Serialize;
 use std::path::{Component, Path, PathBuf};
 use tauri::{AppHandle, Manager, Runtime};
 
+use super::marketplace::switch::is_on;
+
 /// Where a widget folder comes from. `widgets_list` gives it to Settings as `source`.
 #[derive(Clone, Copy, Serialize)]
 #[serde(rename_all = "lowercase")]
@@ -42,12 +44,21 @@ fn bundled_dir<R: Runtime>(app: &AppHandle<R>) -> Option<PathBuf> {
     app.path().resource_dir().ok().map(|dir| dir.join("widgets"))
 }
 
+fn marketplace_root<R: Runtime>(app: &AppHandle<R>) -> Option<Root> {
+    marketplace_dir(app).ok().map(|dir| Root { dir, source: Source::Marketplace })
+}
+
+/// The marketplace root while the marketplace is off. The widget protocol uses it to tell why a
+/// widget does not run.
+pub fn idle_marketplace<R: Runtime>(app: &AppHandle<R>) -> Option<Root> {
+    marketplace_root(app).filter(|_| !is_on(app))
+}
+
 /// Returns the roots in search order. A user widget hides a marketplace widget with the same id,
-/// and both hide an bundled one.
+/// and both hide an bundled one. While the marketplace is off, its widgets are not in the roots.
 pub fn roots<R: Runtime>(app: &AppHandle<R>) -> Vec<Root> {
     let user = user_dir(app).ok().map(|dir| Root { dir, source: Source::Local });
-    let marketplace =
-        marketplace_dir(app).ok().map(|dir| Root { dir, source: Source::Marketplace });
+    let marketplace = marketplace_root(app).filter(|_| is_on(app));
     let bundled = bundled_dir(app).map(|dir| Root { dir, source: Source::Builtin });
     user.into_iter().chain(marketplace).chain(bundled).collect()
 }

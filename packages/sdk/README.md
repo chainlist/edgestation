@@ -193,7 +193,7 @@ Pass `widget({ entry: 'src/other.ts' })` for another entry. For TypeScript to ac
 
 ## Try it in EdgeStation
 
-EdgeStation loads every folder of its widgets folder that has a `manifest.json`: `%APPDATA%\com.edgestation.dashboard\widgets\` on Windows, `~/.local/share/com.edgestation.dashboard/widgets/` on Linux (Settings → Widgets → Open folder). The folder name is the widget's id. Rather than copying your project there, link it once. On Windows, from a Command Prompt:
+EdgeStation loads every folder of its widgets folder that has a `manifest.json`: `%APPDATA%\com.edgestation.dashboard\widgets\` on Windows, `~/.local/share/com.edgestation.dashboard/widgets/` on Linux (Settings → Widgets → Installed → Open folder). The folder name is the widget's id. Rather than copying your project there, link it once. On Windows, from a Command Prompt:
 
 ```bat
 mklink /J "%APPDATA%\com.edgestation.dashboard\widgets\my-widget" C:\path\to\my-widget

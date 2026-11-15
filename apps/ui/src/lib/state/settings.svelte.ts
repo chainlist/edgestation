@@ -64,8 +64,14 @@ export const shortcuts = persisted<ShortcutChanges>('shortcuts', {});
  */
 export const shortcutsFailed = persisted<ShortcutAction[]>('shortcutsFailed', []);
 
-/** The order of Settings > Widgets > Browse. */
+/** The order of Settings > Widgets > Marketplace. */
 export const browseSort = persisted<ListingSort>('browseSort', 'downloads');
+/**
+ * If true, the user turned the marketplace on and accepted its warning. The host reads it too.
+ * While it is false, marketplace widgets do not run and the app does not contact the registry.
+ * Only `switchMarketplace` changes it, so the host can restart the widgets in every window.
+ */
+export const marketplaceOn = persisted<boolean>('marketplace', false);
 
 // Keep this after the last `persisted()` of the file, so that it waits for all of them.
 export const settingsReady = allRead();

@@ -3,9 +3,9 @@
 	import FolderOpen from '@lucide/svelte/icons/folder-open';
 	import LoaderCircle from '@lucide/svelte/icons/loader-circle';
 	import Store from '@lucide/svelte/icons/store';
-	import type { Snippet } from 'svelte';
 	import { Button } from '#lib/components/ui/button/index.ts';
 	import * as Card from '#lib/components/ui/card/index.ts';
+	import { marketplaceOn } from '#lib/state/settings.svelte.ts';
 	import { installed, openWidgetsFolder, rescanWidgets } from '#lib/widgets/installed.svelte.ts';
 	import { listingStatus } from '#lib/widgets/marketplace/listing.ts';
 	import { marketplace, updateWidgets } from '#lib/widgets/marketplace/state.svelte.ts';
@@ -14,7 +14,8 @@
 	import RefreshButton from '#lib/components/settings/controls/RefreshButton.svelte';
 	import SearchField from '#lib/components/settings/controls/SearchField.svelte';
 	import SegmentedControl from '#lib/components/settings/controls/SegmentedControl.svelte';
-	import SettingsSection from '#lib/components/settings/SettingsSection.svelte';
+	import EmptyState from '#lib/components/settings/EmptyState.svelte';
+	import PageHeader from '#lib/components/settings/PageHeader.svelte';
 	import CardGrid from './CardGrid.svelte';
 	import Count from './Count.svelte';
 	import InstalledCard from './InstalledCard.svelte';
@@ -29,6 +30,11 @@
 	];
 
 	let { widgets }: { widgets: InstalledWidget[] } = $props();
+
+	// While the marketplace is off, its widgets are not in the list.
+	const filters = $derived(
+		marketplaceOn.current ? FILTERS : FILTERS.filter(({ value }) => value !== 'marketplace')
+	);
 
 	let query = $state('');
 	let filter = $state<Filter>('all');
@@ -73,7 +79,7 @@
 	}
 </script>
 
-<SettingsSection title="Installed">
+<PageHeader title="Installed" description="Everything you can place on the Edge pages.">
 	{#snippet actions()}
 		{#if outdated.length}
 			<Button
@@ -86,6 +92,9 @@
 			</Button>
 		{/if}
 	{/snippet}
+</PageHeader>
+
+<div class="grid gap-3">
 	{#if updateError}
 		<p class="px-1 text-sm text-destructive">{updateError}</p>
 	{/if}
@@ -95,7 +104,7 @@
 	{/if}
 	<div class="flex flex-wrap items-center justify-between gap-2">
 		<SegmentedControl
-			items={FILTERS}
+			items={filters}
 			selected={({ value }) => value === filter}
 			onpick={({ value }) => (filter = value)}
 			name="Source"
@@ -132,19 +141,25 @@
 			{#if query.trim()}
 				<p class="px-4 py-3.5 text-muted-foreground">No installed widget matches your search.</p>
 			{:else if filter === 'marketplace'}
-				{@render empty(
-					Store,
-					'Nothing from the marketplace yet',
-					'Widgets you install from the marketplace show here, with their updates.',
-					browse
-				)}
+				<EmptyState
+					icon={Store}
+					title="Nothing from the marketplace yet"
+					text="Widgets you install from the marketplace show here, with their updates."
+				>
+					<Button variant="outline" size="sm" href="/settings/widgets/marketplace"
+						><Store />Browse widgets</Button
+					>
+				</EmptyState>
 			{:else if filter === 'local'}
-				{@render empty(
-					FolderOpen,
-					'No widgets of your own yet',
-					'A widget is a folder holding a manifest.json and a main.js. Drop one into the widgets folder, then rescan.',
-					openFolder
-				)}
+				<EmptyState
+					icon={FolderOpen}
+					title="No widgets of your own yet"
+					text="A widget is a folder holding a manifest.json and a main.js. Drop one into the widgets folder, then rescan."
+				>
+					<Button variant="outline" size="sm" onclick={openWidgetsFolder}
+						><FolderOpen />Open folder</Button
+					>
+				</EmptyState>
 			{:else}
 				<p class="px-4 py-3.5 text-muted-foreground">No widgets found.</p>
 			{/if}
@@ -157,29 +172,4 @@
 			>, replaces it.
 		</p>
 	{/if}
-</SettingsSection>
-
-{#snippet empty(Icon: typeof Store, title: string, text: string, action: Snippet)}
-	<div class="grid justify-items-center gap-3 px-6 py-10 text-center">
-		<span
-			class="flex size-10 items-center justify-center rounded-lg bg-muted text-muted-foreground"
-		>
-			<Icon class="size-5" />
-		</span>
-		<div class="grid gap-1">
-			<p class="font-medium">{title}</p>
-			<p class="max-w-sm text-muted-foreground">{text}</p>
-		</div>
-		{@render action()}
-	</div>
-{/snippet}
-
-{#snippet browse()}
-	<Button variant="outline" size="sm" href="/settings/widgets/browse"
-		><Store />Browse widgets</Button
-	>
-{/snippet}
-
-{#snippet openFolder()}
-	<Button variant="outline" size="sm" onclick={openWidgetsFolder}><FolderOpen />Open folder</Button>
-{/snippet}
+</div>

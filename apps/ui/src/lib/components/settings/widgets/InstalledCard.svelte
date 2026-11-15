@@ -17,7 +17,7 @@
      Uninstall button, and an Update button when it has a newer release. -->
 <WidgetCard
 	{widget}
-	href={fromMarketplace ? `/settings/widgets/browse/${widget.id}?from=installed` : undefined}
+	href={fromMarketplace ? `/settings/widgets/installed/${widget.id}` : undefined}
 	facts={installedFacts(widget, marketplace.listing)}
 	problem={fromMarketplace ? marketplace.problemOf(widget.id) : undefined}
 	actions={fromMarketplace || usedOn.length ? pagesAndUninstall : undefined}

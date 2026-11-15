@@ -15,11 +15,11 @@
 	]);
 </script>
 
-<!-- A marketplace widget in the Browse grid. The card opens the widget page. -->
+<!-- A marketplace widget in the Marketplace grid. The card opens the widget page. -->
 <WidgetCard
 	{widget}
 	icon={listed.icon}
-	href="/settings/widgets/browse/{listed.id}"
+	href="/settings/widgets/marketplace/{listed.id}"
 	{facts}
 	problem={marketplace.errorOf(listed.id)}
 >

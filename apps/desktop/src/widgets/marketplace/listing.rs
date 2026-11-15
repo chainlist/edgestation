@@ -7,6 +7,7 @@ use tauri_plugin_opener::OpenerExt;
 use super::ban::remove_and_announce;
 use super::fetch::{get_json, raw_url, stats_url};
 use super::registry::{Registry, registry, release_manifest};
+use super::switch::require_on;
 use crate::http::client;
 
 /// The number of release manifests to fetch at the same time for the list. This is fast, but it
@@ -36,6 +37,7 @@ pub struct Listed {
 /// download count. It also removes the banned widgets.
 #[tauri::command]
 pub async fn marketplace_list<R: Runtime>(app: AppHandle<R>) -> Result<Vec<Listed>, String> {
+    require_on(&app)?;
     let client = client()?;
     let Registry { listed: registry, banned } = registry(&client).await?;
     remove_and_announce(&app, &banned).await;

@@ -2,7 +2,7 @@ import { clamp } from '#lib/clamp.ts';
 import type { InstalledWidget, ListedWidget } from '../types';
 import { isNewer, versionProblem } from '../version';
 
-/** The sort orders in Settings > Widgets > Browse. */
+/** The sort orders in Settings > Widgets > Marketplace. */
 export type ListingSort = 'downloads' | 'released' | 'name';
 
 export const listedName = (widget: ListedWidget) => widget.manifest?.name ?? widget.id;

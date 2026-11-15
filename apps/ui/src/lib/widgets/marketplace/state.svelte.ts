@@ -90,3 +90,14 @@ export async function updateWidgets(ids: string[]): Promise<void> {
 }
 
 export const openLink = (url: string) => invoke('marketplace_open_link', { url });
+
+/**
+ * Turns the marketplace on or off (see `marketplaceOn`). On, it reads the list again, which also
+ * removes the widgets that the registry banned while it was off. Off, it forgets the list.
+ */
+export async function switchMarketplace(on: boolean) {
+	await invoke('marketplace_switch', { on });
+	if (on) return loadListing(true);
+	listing = undefined;
+	loading = undefined;
+}

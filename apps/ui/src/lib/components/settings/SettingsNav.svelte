@@ -2,13 +2,23 @@
 	import Keyboard from '@lucide/svelte/icons/keyboard';
 	import LayoutGrid from '@lucide/svelte/icons/layout-grid';
 	import Monitor from '@lucide/svelte/icons/monitor';
+	import Package from '@lucide/svelte/icons/package';
 	import Palette from '@lucide/svelte/icons/palette';
 	import Puzzle from '@lucide/svelte/icons/puzzle';
 	import Settings from '@lucide/svelte/icons/settings';
+	import Store from '@lucide/svelte/icons/store';
 	import Users from '@lucide/svelte/icons/users';
 
+	interface NavItem {
+		label: string;
+		icon: typeof Settings;
+		/** Without it, the item is a heading for the `nested` items that follow it. */
+		href?: string;
+		nested?: boolean;
+	}
+
 	/** The sidebar groups. Browser profiles are in Dashboard because web view widgets use them. */
-	const GROUPS = [
+	const GROUPS: { label: string; sections: NavItem[] }[] = [
 		{
 			label: 'App',
 			sections: [
@@ -20,7 +30,9 @@
 			label: 'Dashboard',
 			sections: [
 				{ href: '/settings/pages', label: 'Pages', icon: LayoutGrid },
-				{ href: '/settings/widgets', label: 'Widgets', icon: Puzzle },
+				{ label: 'Widgets', icon: Puzzle },
+				{ href: '/settings/widgets/marketplace', label: 'Marketplace', icon: Store, nested: true },
+				{ href: '/settings/widgets/installed', label: 'Installed', icon: Package, nested: true },
 				{ href: '/settings/profiles', label: 'Browser profiles', icon: Users }
 			]
 		},
@@ -34,7 +46,9 @@
 	];
 
 	/** The settings sections, in sidebar order. */
-	export const SECTIONS = GROUPS.flatMap((group) => group.sections);
+	export const SECTIONS = GROUPS.flatMap((group) => group.sections).filter(
+		(item): item is NavItem & { href: string } => item.href !== undefined
+	);
 </script>
 
 <script lang="ts">
@@ -71,23 +85,33 @@
 		{#each GROUPS as group (group.label)}
 			<div class="grid gap-1">
 				<p class="px-2.5 pb-1 text-xs font-medium text-muted-foreground">{group.label}</p>
-				{#each group.sections as { href, label, icon: Icon } (href)}
-					<!-- The hover is a lighter tint of the accent. The current section has the
-					     highlight below it, so it gets no hover of its own. -->
-					<Button
-						bind:ref={links[href]}
-						{href}
-						variant="ghost"
-						aria-current={href === active?.href ? 'page' : undefined}
-						class={[
-							'relative justify-start',
-							href === active?.href
-								? 'text-primary hover:bg-transparent hover:text-primary dark:hover:bg-transparent'
-								: 'hover:bg-primary/10 dark:hover:bg-primary/10'
-						]}
-					>
-						<Icon />{label}
-					</Button>
+				{#each group.sections as { href, label, icon: Icon, nested } (href ?? label)}
+					{#if href}
+						<!-- The hover is a lighter tint of the accent. The current section has the
+						     highlight below it, so it gets no hover of its own. A nested icon lines
+						     up with the label of its heading. -->
+						<Button
+							bind:ref={links[href]}
+							{href}
+							variant="ghost"
+							aria-current={href === active?.href ? 'page' : undefined}
+							class={[
+								'relative justify-start',
+								nested && 'pl-8',
+								href === active?.href
+									? 'text-primary hover:bg-transparent hover:text-primary dark:hover:bg-transparent'
+									: 'hover:bg-primary/10 dark:hover:bg-primary/10'
+							]}
+						>
+							<Icon />{label}
+						</Button>
+					{:else}
+						<p
+							class="flex h-9 items-center gap-1.5 px-2.5 text-sm font-medium select-none [&_svg]:size-4"
+						>
+							<Icon />{label}
+						</p>
+					{/if}
 				{/each}
 			</div>
 		{/each}

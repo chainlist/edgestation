@@ -9,6 +9,7 @@ use tauri_plugin_store::StoreExt;
 use super::changed;
 use super::install::remove;
 use super::registry::{Ban, registry};
+use super::switch::is_on;
 use crate::http::client;
 use crate::widgets::installed::read_manifest;
 use crate::widgets::roots::{marketplace_dir, user_dir};
@@ -25,10 +26,14 @@ pub struct Removed {
 }
 
 /// Removes the banned widgets. The Edge calls this when it opens, and shows what it removed.
+/// While the marketplace is off, its widgets do not run, so nothing needs the registry.
 #[tauri::command]
 pub async fn marketplace_remove_banned<R: Runtime>(
     app: AppHandle<R>,
 ) -> Result<Vec<Removed>, String> {
+    if !is_on(&app) {
+        return Ok(Vec::new());
+    }
     let registry = registry(&client()?).await?;
     Ok(remove_banned(&app, &registry.banned).await)
 }
