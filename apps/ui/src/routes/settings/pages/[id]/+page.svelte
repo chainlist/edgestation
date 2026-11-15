@@ -50,9 +50,9 @@
 {#if page}
 	<PageHeader title={page.name} back="/settings/pages">
 		{#snippet heading()}<PageForm {page} />{/snippet}
+		{#snippet actions()}<AddWidget {page} />{/snippet}
 	</PageHeader>
 	<div class="grid gap-3">
-		<AddWidget {page} />
 		<GridEditor {page} selected={editing?.id} onselect={toggle} ondragstart={close} />
 		<p class="text-xs text-muted-foreground">
 			Changes show on the Edge right away. Click a widget to change its settings, when it has some.
