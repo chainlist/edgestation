@@ -30,6 +30,7 @@ pub async fn marketplace_install<R: Runtime>(app: AppHandle<R>, id: String) -> R
     let client = client()?;
     let entry = registry(&client)
         .await?
+        .listed
         .into_iter()
         .find(|entry| entry.id == id)
         .ok_or_else(|| format!("\"{id}\" is not in the marketplace"))?;
@@ -49,9 +50,16 @@ pub async fn marketplace_uninstall<R: Runtime>(
     if !valid_id(&id) {
         return Err(format!("\"{id}\" is not a widget id"));
     }
+    remove(&app, &id).await?;
+    changed(&app, &[id]);
+    Ok(())
+}
+
+/// Deletes the folder of marketplace widget `id`. The caller checks the id.
+pub(super) async fn remove<R: Runtime>(app: &AppHandle<R>, id: &str) -> Result<(), String> {
     let _busy = BUSY.lock().await;
-    let root = marketplace_dir(&app).map_err(|e| e.to_string())?;
-    let target = id.clone();
+    let root = marketplace_dir(app).map_err(|e| e.to_string())?;
+    let target = id.to_owned();
     blocking::run(move || {
         let trash = work_dir(&root).join("trash").join(&target);
         // Move the folder out first. Then a file that Windows holds open cannot leave half a
@@ -63,9 +71,7 @@ pub async fn marketplace_uninstall<R: Runtime>(
         let _ = fs::remove_dir_all(&trash);
         Ok(())
     })
-    .await?;
-    changed(&app, &[id]);
-    Ok(())
+    .await
 }
 
 /// Downloads the `widget.zip` of `entry`, from the release that has `manifest`. It then replaces

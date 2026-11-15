@@ -2,6 +2,7 @@
 //! Each repo releases its widget as two assets, `manifest.json` and `widget.zip`. The release
 //! manifest tells if there is an update. The app downloads the zip only to install it.
 
+pub(crate) mod ban;
 mod fetch;
 pub(crate) mod install;
 pub(crate) mod listing;

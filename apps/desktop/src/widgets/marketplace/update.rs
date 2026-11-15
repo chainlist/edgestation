@@ -34,7 +34,7 @@ async fn update_all<R: Runtime>(app: &AppHandle<R>) -> Result<Vec<Attempt>, Stri
 
     let mut attempts = Vec::new();
     // Only listed widgets get updates. A widget that leaves the registry gets no more updates.
-    for entry in registry(&client).await? {
+    for entry in registry(&client).await?.listed {
         let Ok(installed) = read_manifest(&root.join(&entry.id)) else {
             continue;
         };

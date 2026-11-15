@@ -85,6 +85,7 @@ pub fn run() {
             widgets::marketplace::install::marketplace_install,
             widgets::marketplace::install::marketplace_uninstall,
             widgets::marketplace::update::marketplace_update,
+            widgets::marketplace::ban::marketplace_remove_banned,
             widgets::marketplace::listing::marketplace_open_link,
             widgets::webview::open::webview_open,
             widgets::webview::control::webview_place,

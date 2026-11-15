@@ -1,23 +1,11 @@
 name: CI
 
-# Every check of the repository is in this one workflow, so a push or a pull request makes one run.
-# The first job lists the parts with changed files. Each check job runs only for its part. A manual
-# run checks every part. The release build and the website have their own workflows.
+# Every check of the repository is in this one workflow, so a pull request makes one run. The first
+# job lists the parts with changed files. Each check job runs only for its part. A manual run checks
+# every part. A push to main starts no run. The release PR changes the version files of every part,
+# so its run checks all of them before a release.
 on:
   pull_request:
-    paths:
-      - 'apps/desktop/**'
-      - 'apps/ui/**'
-      - 'apps/web/**'
-      - 'packages/sdk/**'
-      - 'widgets/**'
-      - 'scripts/notices/**'
-      - 'package.json'
-      - 'pnpm-lock.yaml'
-      - 'THIRD-PARTY-NOTICES.txt'
-      - '.github/workflows/ci.yml'
-  push:
-    branches: [main]
     paths:
       - 'apps/desktop/**'
       - 'apps/ui/**'
@@ -52,12 +40,11 @@ jobs:
       notices: ${{ steps.parts.outputs.notices }}
     steps:
       - uses: actions/checkout@v5
-      # A push compares with the commit before it, a pull request with its base. Without that
-      # commit (a manual run, a new branch, a force push), every part is checked. A change to this
-      # file also checks every part.
+      # A pull request compares with its base. A manual run has no base, so every part is checked.
+      # A change to this file also checks every part.
       - id: parts
         env:
-          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          BASE: ${{ github.event.pull_request.base.sha }}
         run: |
           all=false
           files=

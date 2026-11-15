@@ -4,8 +4,9 @@ use serde_json::Value;
 use tauri::{AppHandle, Runtime};
 use tauri_plugin_opener::OpenerExt;
 
+use super::ban::remove_and_announce;
 use super::fetch::{get_json, raw_url, stats_url};
-use super::registry::{registry, release_manifest};
+use super::registry::{Registry, registry, release_manifest};
 use crate::http::client;
 
 /// The number of release manifests to fetch at the same time for the list. This is fast, but it
@@ -32,11 +33,12 @@ pub struct Listed {
 }
 
 /// Lists every widget of the marketplace, with the manifest of its latest release and its
-/// download count.
+/// download count. It also removes the banned widgets.
 #[tauri::command]
-pub async fn marketplace_list() -> Result<Vec<Listed>, String> {
+pub async fn marketplace_list<R: Runtime>(app: AppHandle<R>) -> Result<Vec<Listed>, String> {
     let client = client()?;
-    let registry = registry(&client).await?;
+    let Registry { listed: registry, banned } = registry(&client).await?;
+    remove_and_announce(&app, &banned).await;
     // If there are no stats yet, or a GitHub error occured, only the counts are missing.
     let stats = get_json(&client, &stats_url()).await.unwrap_or_default();
 

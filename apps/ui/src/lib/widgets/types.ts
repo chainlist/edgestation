@@ -12,6 +12,15 @@ export interface InstalledWidget extends WidgetManifest {
 	error?: string;
 }
 
+/** A marketplace widget that the registry banned and the host removed, with its pages and data. */
+export interface BannedWidget {
+	id: string;
+	/** The name from it's manifest, or its id if the host could not read it. */
+	name: string;
+	/** Why the registry banned it. Can be empty. */
+	reason: string;
+}
+
 /** A widget of the marketplace, as the host lists it (`marketplace_list`). */
 export interface ListedWidget {
 	id: string;

@@ -10,6 +10,18 @@ pub(super) struct Entry {
     pub(super) repo: String,
 }
 
+/// A widget that the registry bans. The app removes it and does not offer it again.
+pub(super) struct Ban {
+    pub(super) id: String,
+    pub(super) reason: String,
+}
+
+/// The valid entries of the registry, sorted into listed and banned widgets.
+pub(super) struct Registry {
+    pub(super) listed: Vec<Entry>,
+    pub(super) banned: Vec<Ban>,
+}
+
 /// True if the marketplace can create a folder with this name. Only lowercase letters, digits
 /// and dashes are allowed.
 pub(super) fn valid_id(id: &str) -> bool {
@@ -29,20 +41,31 @@ fn valid_repo(repo: &str) -> bool {
     matches!(repo.split_once('/'), Some((owner, name)) if part(owner) && part(name))
 }
 
-/// Gets the widgets of the registry. It skipps each entry that does not have a valid id and repo.
-pub(super) async fn registry(client: &Client) -> Result<Vec<Entry>, String> {
+/// Gets the widgets of the registry.
+pub(super) async fn registry(client: &Client) -> Result<Registry, String> {
     let list = get_json(client, &registry_url()).await.map_err(marketplace_unavailable)?;
     let entries = list
         .as_array()
         .ok_or_else(|| marketplace_unavailable("its list is not an array".into()))?;
-    Ok(entries
-        .iter()
-        .filter_map(|entry| {
-            let id = entry["id"].as_str()?;
-            let repo = entry["repo"].as_str()?;
-            (valid_id(id) && valid_repo(repo)).then(|| Entry { id: id.into(), repo: repo.into() })
-        })
-        .collect())
+    Ok(sort(entries))
+}
+
+/// Sorts the entries into listed and banned widgets, and skips each entry that is not valid. An
+/// entry with `banned` needs only a valid id. Thus a ban can drop the `repo`, and older app
+/// versions, wich do not know `banned`, skip the entry too.
+fn sort(entries: &[Value]) -> Registry {
+    let mut registry = Registry { listed: Vec::new(), banned: Vec::new() };
+    for entry in entries {
+        let Some(id) = entry["id"].as_str().filter(|id| valid_id(id)) else { continue };
+        let ban = &entry["banned"];
+        if !ban.is_null() {
+            let reason = ban["reason"].as_str().unwrap_or_default();
+            registry.banned.push(Ban { id: id.into(), reason: reason.into() });
+        } else if let Some(repo) = entry["repo"].as_str().filter(|repo| valid_repo(repo)) {
+            registry.listed.push(Entry { id: id.into(), repo: repo.into() });
+        }
+    }
+    registry
 }
 
 /// Gets the `manifest.json` of the latest release of `repo`.
@@ -71,6 +94,7 @@ pub(super) fn unavailable(repo: &str, cause: String) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serde_json::json;
 
     #[test]
     fn ids_and_repos() {
@@ -83,6 +107,22 @@ mod tests {
         assert!(!valid_repo("jane"));
         assert!(!valid_repo("jane/a/b"));
         assert!(!valid_repo("../x"));
+    }
+
+    #[test]
+    fn a_ban_needs_only_a_valid_id() {
+        let registry = sort(&[
+            json!({ "id": "weather", "repo": "jane/weather" }),
+            json!({ "id": "rogue", "repo": "joe/rogue", "banned": { "reason": "Steals tokens" } }),
+            json!({ "id": "gone", "banned": { "reason": "Mines coins", "version": "1.2.0" } }),
+            json!({ "id": "Bad", "banned": { "reason": "x" } }),
+            json!({ "id": "norepo" }),
+        ]);
+        let listed: Vec<_> = registry.listed.iter().map(|e| e.id.as_str()).collect();
+        assert_eq!(listed, ["weather"]);
+        let banned: Vec<_> =
+            registry.banned.iter().map(|b| (b.id.as_str(), b.reason.as_str())).collect();
+        assert_eq!(banned, [("rogue", "Steals tokens"), ("gone", "Mines coins")]);
     }
 
     #[test]
