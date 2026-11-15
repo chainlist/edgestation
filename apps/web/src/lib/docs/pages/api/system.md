@@ -1,4 +1,4 @@
-Two calls read how hard the machine is working: `api.system()` for CPU, GPU, network and Wi-Fi, and `api.topPrograms()` for the programs behind the CPU load. Both read the machine when called; nothing monitors it in between. Both need `"permissions": ["system"]` in the [manifest](/docs/manifest#permissions).
+Two calls read how hard the machine is working: `api.system()` for CPU, memory, GPU, network and Wi-Fi, and `api.topPrograms()` for the programs behind the CPU load. Both read the machine when called; nothing monitors it in between. Both need `"permissions": ["system"]` in the [manifest](/docs/manifest#permissions).
 
 ## `api.system()`
 
@@ -20,6 +20,7 @@ CPU load and network speeds are differences between two reads, so they cover the
 | `hostname`                       | The machine's name.                                                                                                                                      |
 | `wifi`                           | The connected Wi-Fi network, or `null`: the name of its Windows profile, or of its NetworkManager connection on Linux. Both are the SSID unless renamed. |
 | `cpu.load`                       | Load of all cores, in percent.                                                                                                                           |
+| `memory.used`, `memory.total`    | RAM in bytes: in use (the total minus the available memory, as in Task Manager), and usable in total.                                                    |
 | `gpu.load`, `gpu.temperature`    | The first NVIDIA GPU: percent and °C. `gpu` is `null` without one or without its driver.                                                                 |
 | `net.down`, `net.up`             | Internet traffic since the previous call, in bytes per second.                                                                                           |
 | `net.avg1m`, `.avg5m`, `.avg15m` | `{ down, up }` averaged over the calls of the last 1, 5 or 15 minutes.                                                                                   |

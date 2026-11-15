@@ -23,7 +23,7 @@ export const builtInWidgets = [
 	{
 		icon: Gauge,
 		name: 'Performance',
-		text: 'CPU or GPU load, GPU temperature, internet usage with averages, the top programs, the Wi-Fi network or the machine name.'
+		text: 'CPU or GPU load, memory usage, GPU temperature, internet usage with averages, the top programs, the Wi-Fi network or the machine name.'
 	},
 	{
 		icon: EighthNotes,

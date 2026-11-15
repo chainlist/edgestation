@@ -47,6 +47,13 @@ export function numeric({
 				series: [{ read: (r) => r.cpu.load }],
 				top: Number(top)
 			};
+		case 'memory':
+			return {
+				label: 'Memory usage',
+				format: percent.format,
+				max: 100,
+				series: [{ read: (r) => (r.memory.used / r.memory.total) * 100 }]
+			};
 		case 'gpuLoad':
 			return {
 				label: 'GPU load',

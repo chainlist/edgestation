@@ -50,18 +50,18 @@ In the app, the display it runs on is called **the Edge**: a Corsair Xeneon Edge
 
 ### Built-in widgets
 
-| Widget            | What it shows                                                                                                            |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| **Clock**         | The time and date, in 12 or 24 hours and the date format you like.                                                       |
-| **Weather**       | The next 24 hours as a temperature curve over the chance of rain, the temperature now, or today in detail.               |
-| **Performance**   | CPU or GPU load, GPU temperature, internet usage with averages, the top programs, the Wi-Fi network or the machine name. |
-| **Media**         | What's playing (Spotify, YouTube, ...) with album art, progress and controls.                                            |
-| **Mixer**         | Volume faders with level meters, or mute buttons only: every channel, or one per placement.                              |
-| **Launcher**      | Keys that open apps from the Start menu or the app menu on your main screen, like a Stream Deck.                         |
-| **To-do**         | A to-do list: type a task, tap it to check it off, clear the done ones.                                                  |
-| **Logs timeline** | Type what you are doing and it joins a timeline of your day. Browse earlier days.                                        |
-| **URL**           | Any web page, in a real browser view. Sign-ins last across restarts.                                                     |
-| **YouTube**       | YouTube, opening on your Subscriptions. Sign in once inside it.                                                          |
+| Widget            | What it shows                                                                                                                          |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| **Clock**         | The time and date, in 12 or 24 hours and the date format you like.                                                                     |
+| **Weather**       | The next 24 hours as a temperature curve over the chance of rain, the temperature now, or today in detail.                             |
+| **Performance**   | CPU or GPU load, memory usage, GPU temperature, internet usage with averages, the top programs, the Wi-Fi network or the machine name. |
+| **Media**         | What's playing (Spotify, YouTube, ...) with album art, progress and controls.                                                          |
+| **Mixer**         | Volume faders with level meters, or mute buttons only: every channel, or one per placement.                                            |
+| **Launcher**      | Keys that open apps from the Start menu or the app menu on your main screen, like a Stream Deck.                                       |
+| **To-do**         | A to-do list: type a task, tap it to check it off, clear the done ones.                                                                |
+| **Logs timeline** | Type what you are doing and it joins a timeline of your day. Browse earlier days.                                                      |
+| **URL**           | Any web page, in a real browser view. Sign-ins last across restarts.                                                                   |
+| **YouTube**       | YouTube, opening on your Subscriptions. Sign in once inside it.                                                                        |
 
 ### Light by design
 

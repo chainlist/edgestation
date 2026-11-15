@@ -2,7 +2,7 @@
 	"$schema": "../../packages/sdk/manifest.schema.json",
 	"name": "Performance",
 	"version": "1.0.0",
-	"description": "One machine metric per placement: CPU or GPU load, GPU temperature, internet usage, Wi-Fi network or machine name.",
+	"description": "One machine metric per placement: CPU or GPU load, memory usage, GPU temperature, internet usage, Wi-Fi network or machine name.",
 	"author": "EdgeStation",
 	"main": "dist/main.js",
 	"icon": "icon.svg",
@@ -16,6 +16,7 @@
 			"default": "cpuLoad",
 			"options": [
 				{ "value": "cpuLoad", "label": "CPU load" },
+				{ "value": "memory", "label": "Memory usage" },
 				{ "value": "gpuLoad", "label": "GPU load" },
 				{ "value": "gpuTemp", "label": "GPU temperature" },
 				{ "value": "net", "label": "Internet usage" },
