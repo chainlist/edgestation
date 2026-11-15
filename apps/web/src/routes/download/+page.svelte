@@ -11,6 +11,7 @@
 	import DownloadButton from '#lib/components/DownloadButton.svelte';
 	import GithubIcon from '#lib/components/GithubIcon.svelte';
 	import InstallerLink from '#lib/components/InstallerLink.svelte';
+	import PageHead from '#lib/components/PageHead.svelte';
 	import { detectPlatform, linux, windows, type Platform } from '#lib/downloads.ts';
 	import { RELEASE_URL, REPO_URL, VERSION } from '#lib/site.ts';
 	import icon from '#lib/assets/app-icon.svg';
@@ -58,13 +59,10 @@
 	];
 </script>
 
-<svelte:head>
-	<title>Download EdgeStation</title>
-	<meta
-		name="description"
-		content="Download EdgeStation for Windows and Linux: a widget dashboard for your secondary display."
-	/>
-</svelte:head>
+<PageHead
+	title="Download EdgeStation"
+	description="Download EdgeStation for Windows and Linux: a widget dashboard for your secondary display."
+/>
 
 <section class="relative overflow-hidden">
 	<div

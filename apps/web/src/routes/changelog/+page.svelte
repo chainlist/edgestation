@@ -1,14 +1,15 @@
 <script lang="ts">
 	import '../docs/docs.css';
+	import PageHead from '#lib/components/PageHead.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 </script>
 
-<svelte:head>
-	<title>EdgeStation changelog</title>
-	<meta name="description" content="What changed in each release of EdgeStation and its SDK." />
-</svelte:head>
+<PageHead
+	title="EdgeStation changelog"
+	description="What changed in each release of EdgeStation and its SDK."
+/>
 
 <article class="mx-auto max-w-3xl px-4 py-14 sm:px-6 sm:py-20">
 	<header class="border-b pb-8">

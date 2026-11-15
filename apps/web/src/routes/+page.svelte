@@ -10,15 +10,13 @@
 	import WebPages from '#lib/components/home/features/WebPages.svelte';
 	import Hero from '#lib/components/home/Hero.svelte';
 	import LightByDesign from '#lib/components/home/LightByDesign.svelte';
+	import PageHead from '#lib/components/PageHead.svelte';
 </script>
 
-<svelte:head>
-	<title>EdgeStation: widgets for your secondary display</title>
-	<meta
-		name="description"
-		content="EdgeStation turns a secondary display into a dashboard of swipeable widget pages. Made for the Corsair Xeneon Edge, works on any display."
-	/>
-</svelte:head>
+<PageHead
+	title="EdgeStation: widgets for your secondary display"
+	description="EdgeStation turns a secondary display into a dashboard of swipeable widget pages. Made for the Corsair Xeneon Edge, works on any display."
+/>
 
 <Hero />
 <Basics />

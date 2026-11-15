@@ -16,7 +16,11 @@ export default defineConfig({
 			adapter: adapter(),
 			// GitHub Pages serves a project site under /<repository>.
 			// The deploy workflow sets the the path.
-			paths: { base: (process.env.BASE_PATH ?? '') as '' | `/${string}` }
+			// Link previews need absolute URLs, and the prerendered pages take theirs from origin.
+			paths: {
+				base: (process.env.BASE_PATH ?? '') as '' | `/${string}`,
+				origin: 'https://chainlist.github.io'
+			}
 		})
 	]
 });

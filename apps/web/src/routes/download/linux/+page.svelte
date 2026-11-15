@@ -5,6 +5,7 @@
 	import { resolve } from '$app/paths';
 	import Command from '#lib/components/Command.svelte';
 	import DownloadButton from '#lib/components/DownloadButton.svelte';
+	import PageHead from '#lib/components/PageHead.svelte';
 	import { linux, type Installer } from '#lib/downloads.ts';
 	import { RELEASE_URL, VERSION } from '#lib/site.ts';
 	import icon from '#lib/assets/app-icon.svg';
@@ -72,13 +73,10 @@
 	];
 </script>
 
-<svelte:head>
-	<title>Download EdgeStation for Linux</title>
-	<meta
-		name="description"
-		content="Download EdgeStation for Linux as a .deb, an .rpm or an AppImage, and install it."
-	/>
-</svelte:head>
+<PageHead
+	title="Download EdgeStation for Linux"
+	description="Download EdgeStation for Linux as a .deb, an .rpm or an AppImage, and install it."
+/>
 
 <section class="relative overflow-hidden">
 	<div
