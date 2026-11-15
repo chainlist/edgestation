@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Snowflake from '@lucide/svelte/icons/snowflake';
+	import BanNotice from '#lib/components/edge/BanNotice.svelte';
 	import EdgeBackground from '#lib/components/edge/EdgeBackground.svelte';
 	import PageCarousel from '#lib/components/edge/PageCarousel.svelte';
 	import UpdatePrompt from '#lib/components/edge/UpdatePrompt.svelte';
@@ -137,4 +138,5 @@
 		</div>
 	{/if}
 	<UpdatePrompt />
+	<BanNotice />
 </main>

@@ -1,5 +1,6 @@
 import { emitTo, listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { getCurrentWebviewWindow } from '@tauri-apps/api/webviewWindow';
+import type { BannedWidget } from '#lib/widgets/types.ts';
 
 const EDGE = 'edge';
 const RELOAD = 'edge:reload';
@@ -34,3 +35,10 @@ export const onShowPageRequest = (fn: (id: string) => void) =>
  */
 export const onWidgetsChanged = (fn: (ids: string[]) => void) =>
 	cleanupOf(listen<string[]>('widgets:changed', (event) => fn(event.payload)));
+
+/**
+ * Calls `fn` with the banned widgets that a marketplace read in Settings removed. Returns the
+ * function that stops the listener.
+ */
+export const onWidgetsBanned = (fn: (widgets: BannedWidget[]) => void) =>
+	cleanupOf(listen<BannedWidget[]>('widgets:banned', (event) => fn(event.payload)));

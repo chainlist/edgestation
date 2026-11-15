@@ -122,7 +122,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
 ```
 
-A widget is checked once, when it is added to the list, not at each release: every release you publish is offered to its users as an update, which they install from Installed. A widget taken off the list stops getting updates.
+A widget is checked once, when it is added to the list, not at each release: every release you publish is offered to its users as an update, which they install from Installed. A widget taken off the list stops getting updates. A widget whose author turns against its users is banned instead: EdgeStation then deletes it from every machine, with its tiles and saved data, and tells the user why.
 
 Settings shows each marketplace widget with the permissions it asks for and the GitHub account that owns its repository. A verified badge marks trusted accounts. The badge never comes from `author` in the manifest, because any widget can set that.
 
