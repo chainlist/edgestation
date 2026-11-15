@@ -4,19 +4,12 @@ name: CI
 # job lists the parts with changed files. Each check job runs only for its part. A manual run checks
 # every part. A push to main starts no run. The release PR changes the version files of every part,
 # so its run checks all of them before a release.
+#
+# The ruleset of main requires only the last job, "CI passed". GitHub counts a skipped job as
+# passed, but it keeps the checks of a skipped workflow pending. So each pull request starts a run,
+# also when it changes no part.
 on:
   pull_request:
-    paths:
-      - 'apps/desktop/**'
-      - 'apps/ui/**'
-      - 'apps/web/**'
-      - 'packages/sdk/**'
-      - 'widgets/**'
-      - 'scripts/notices/**'
-      - 'package.json'
-      - 'pnpm-lock.yaml'
-      - 'THIRD-PARTY-NOTICES.txt'
-      - '.github/workflows/ci.yml'
   workflow_dispatch:
 
 permissions:
@@ -242,3 +235,14 @@ jobs:
       # The script builds the UI and the widgets to see what they bundle. It reads the crates with
       # `cargo metadata` (the runner has Rust), which downloads their sources.
       - run: pnpm notices --check
+
+  # The ruleset of main requires this check. Without always(), a failed check skips this job, and
+  # GitHub counts a skipped job as passed.
+  passed:
+    name: CI passed
+    needs: [changes, desktop, ui, sdk, web, widgets, notices]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1
