@@ -10,6 +10,7 @@ use tauri_plugin_http::reqwest::Client;
 use super::changed;
 use super::fetch::release_url;
 use super::registry::{Entry, registry, release_manifest, unavailable, valid_id};
+use super::switch::require_on;
 use super::unpack::{check_widget, unpack};
 use super::version::compatibility;
 use crate::blocking;
@@ -27,6 +28,7 @@ static BUSY: Mutex<()> = Mutex::const_new(());
 /// Installs the latest release of marketplace widget `id`, or replaces the installed copy with it.
 #[tauri::command]
 pub async fn marketplace_install<R: Runtime>(app: AppHandle<R>, id: String) -> Result<(), String> {
+    require_on(&app)?;
     let client = client()?;
     let entry = registry(&client)
         .await?

@@ -7,6 +7,7 @@ mod fetch;
 pub(crate) mod install;
 pub(crate) mod listing;
 mod registry;
+pub(crate) mod switch;
 mod unpack;
 pub(crate) mod update;
 mod version;
@@ -24,7 +25,7 @@ fn changed<R: Runtime>(app: &AppHandle<R>, ids: &[String]) {
 
 /// Makes a new, empty folder for the test `name`.
 #[cfg(test)]
-fn temp_dir(name: &str) -> std::path::PathBuf {
+pub(crate) fn temp_dir(name: &str) -> std::path::PathBuf {
     let dir = std::env::temp_dir().join(format!("edgestation-test-{name}-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&dir);
     std::fs::create_dir_all(&dir).unwrap();

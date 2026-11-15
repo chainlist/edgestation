@@ -1,33 +1,27 @@
 <script lang="ts">
 	import ExternalLink from '@lucide/svelte/icons/external-link';
 	import { on } from 'svelte/events';
-	import { page } from '$app/state';
 	import PageHeader from '#lib/components/settings/PageHeader.svelte';
-	import MarketplaceButtons from '#lib/components/settings/widgets/MarketplaceButtons.svelte';
-	import WidgetRow from '#lib/components/settings/widgets/WidgetRow.svelte';
-	import { downloadFacts } from '#lib/components/settings/widgets/facts.ts';
 	import { Button } from '#lib/components/ui/button/index.ts';
 	import * as Card from '#lib/components/ui/card/index.ts';
 	import { installed } from '#lib/widgets/installed.svelte.ts';
 	import { listedAsWidget } from '#lib/widgets/marketplace/listing.ts';
 	import { renderReadme } from '#lib/widgets/marketplace/readme.ts';
 	import { loadListing, marketplace, openLink } from '#lib/widgets/marketplace/state.svelte.ts';
-	import type { PageProps } from './$types';
+	import { downloadFacts } from './facts.ts';
+	import MarketplaceButtons from './MarketplaceButtons.svelte';
+	import WidgetRow from './WidgetRow.svelte';
 
-	let { params }: PageProps = $props();
+	/** The page of marketplace widget `id`. `back` is the list that opened it. */
+	let { id, back }: { id: string; back: string } = $props();
 
+	// While the marketplace is off, this fails, and the page shows why.
 	void loadListing();
 
-	// Go back to the list that opened this page: `?from=installed` from Installed, else Browse.
-	const back =
-		page.url.searchParams.get('from') === 'installed'
-			? '/settings/widgets'
-			: '/settings/widgets/browse';
-
-	const listed = $derived(marketplace.listing?.find((widget) => widget.id === params.id));
+	const listed = $derived(marketplace.listing?.find((widget) => widget.id === id));
 	// A widget that is no longer in the marketplace still shows from its folder while instaled.
 	const mine = $derived(
-		installed.current.find((widget) => widget.id === params.id && widget.source === 'marketplace')
+		installed.current.find((widget) => widget.id === id && widget.source === 'marketplace')
 	);
 	const widget = $derived(listed ? listedAsWidget(listed) : mine);
 
@@ -59,7 +53,7 @@
 		});
 </script>
 
-<PageHeader title={widget?.name ?? params.id} {back} />
+<PageHeader title={widget?.name ?? id} {back} />
 
 {#if widget}
 	<div class="grid gap-3">
@@ -68,10 +62,10 @@
 				{widget}
 				icon={listed?.icon}
 				more={downloadFacts(listed?.downloads)}
-				problem={marketplace.problemOf(params.id)}
+				problem={marketplace.problemOf(id)}
 			>
 				{#snippet actions()}
-					<MarketplaceButtons id={params.id} removable />
+					<MarketplaceButtons {id} removable />
 				{/snippet}
 			</WidgetRow>
 		</Card.Root>

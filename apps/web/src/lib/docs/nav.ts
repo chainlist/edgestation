@@ -85,7 +85,7 @@ export const sections: DocSection[] = [
 				slug: 'api/system',
 				title: 'System and programs',
 				description:
-					'CPU, GPU, network and Wi-Fi with api.system(), and the busiest programs with api.topPrograms().'
+					'CPU, memory, GPU, network and Wi-Fi with api.system(), and the busiest programs with api.topPrograms().'
 			},
 			{
 				slug: 'api/media',

@@ -16,7 +16,9 @@ use std::time::{Duration, Instant};
 use nvml_wrapper::Nvml;
 use nvml_wrapper::enum_wrappers::device::TemperatureSensor;
 use serde::Serialize;
-use sysinfo::{CpuRefreshKind, MINIMUM_CPU_UPDATE_INTERVAL, Networks, RefreshKind, System};
+use sysinfo::{
+    CpuRefreshKind, MINIMUM_CPU_UPDATE_INTERVAL, MemoryRefreshKind, Networks, RefreshKind, System,
+};
 
 use crate::blocking;
 
@@ -34,6 +36,15 @@ const STALE: Duration = Duration::from_secs(3);
 struct Cpu {
     /// Percent of all cores.
     load: f32,
+}
+
+/// In bytes.
+#[derive(Clone, Serialize)]
+struct Memory {
+    /// The total minus the available memory, as in Task Manager.
+    used: u64,
+    /// The physical memory that the system can use. This is a bit less then the installed memory.
+    total: u64,
 }
 
 #[derive(Clone, Serialize)]
@@ -59,6 +70,7 @@ pub struct SystemInfo {
     hostname: String,
     wifi: Option<String>,
     cpu: Cpu,
+    memory: Memory,
     /// The first NVIDIA GPU. `None` if their is no NVIDIA GPU or no driver for it.
     gpu: Option<Gpu>,
     net: Net,
@@ -67,7 +79,7 @@ pub struct SystemInfo {
 /// The first request makes the reader. It keeps the values that the next request compares
 /// with.
 struct Reader {
-    cpu: System,
+    system: System,
     networks: Networks,
     nvml: Option<Nvml>,
     traffic: Traffic,
@@ -105,7 +117,7 @@ pub async fn system_top_programs(count: usize) -> Result<Vec<Program>, String> {
 impl Reader {
     fn new() -> Self {
         Self {
-            cpu: System::new_with_specifics(
+            system: System::new_with_specifics(
                 RefreshKind::nothing().with_cpu(CpuRefreshKind::nothing().with_cpu_usage()),
             ),
             networks: Networks::new_with_refreshed_list(),
@@ -130,11 +142,14 @@ impl Reader {
         }
         let at = self.measure();
 
+        // Memory is a value at one time, not a difference. One read is sufficient.
+        self.system.refresh_memory_specifics(MemoryRefreshKind::nothing().with_ram());
         let latest = self.traffic.latest();
         let info = SystemInfo {
             hostname: System::host_name().unwrap_or_default(),
             wifi: native::wifi_name(),
-            cpu: Cpu { load: self.cpu.global_cpu_usage() },
+            cpu: Cpu { load: self.system.global_cpu_usage() },
+            memory: Memory { used: self.system.used_memory(), total: self.system.total_memory() },
             gpu: self.nvml.as_ref().and_then(read_gpu),
             net: Net {
                 down: latest.down,
@@ -151,7 +166,7 @@ impl Reader {
     /// Refreshes the CPU and network counters, records the traffic, and returns the time of the
     /// measure.
     fn measure(&mut self) -> Instant {
-        self.cpu.refresh_cpu_usage();
+        self.system.refresh_cpu_usage();
         // `received` and `transmitted` count from the previous refresh. Thus a new adapter, for
         // example a VPN that connects, does not add its lifetime total as a spike.
         self.networks.refresh(true);

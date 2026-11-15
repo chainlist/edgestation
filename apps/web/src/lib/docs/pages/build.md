@@ -51,7 +51,7 @@ Scripts in `package.json` save typing:
 
 ## Load it while you work
 
-EdgeStation loads every folder of its widgets folder that has a `manifest.json`: `%APPDATA%\com.edgestation.dashboard\widgets\` on Windows, `~/.local/share/com.edgestation.dashboard/widgets/` on Linux (Settings → Widgets → Open folder). Rather than copying your project there, link it once. On Windows, from a Command Prompt:
+EdgeStation loads every folder of its widgets folder that has a `manifest.json`: `%APPDATA%\com.edgestation.dashboard\widgets\` on Windows, `~/.local/share/com.edgestation.dashboard/widgets/` on Linux (Settings → Widgets → Installed → Open folder). Rather than copying your project there, link it once. On Windows, from a Command Prompt:
 
 ```bat
 mklink /J "%APPDATA%\com.edgestation.dashboard\widgets\my-widget" C:\path\to\my-widget
@@ -65,7 +65,7 @@ ln -s /path/to/my-widget ~/.local/share/com.edgestation.dashboard/widgets/my-wid
 
 The link's name, `my-widget`, is the widget's id. Then:
 
-1. In Settings → Widgets, click the Rescan button (the circular arrow): the widget shows under **Installed**.
+1. In Settings → Widgets → Installed, click the Rescan button (the circular arrow): the widget shows under **Installed**.
 2. Add it to a page in Settings → Pages.
 3. Run `npx vite build --watch`, which rebuilds on every change.
 4. After each build, click **Reload Edge** at the bottom of the Settings sidebar to load it.
@@ -80,13 +80,13 @@ To share a widget, ship its folder with:
 - `dist/` (or `main.js` and `styles.css` for a widget written by hand),
 - the icon, and any file the widget reads with `api.asset()`.
 
-Leave out `node_modules`, `src` and the build configuration: EdgeStation doesn't use them. A zip of those files is enough. To install it, a user extracts the folder into their widgets folder (Settings → Widgets → Open folder), clicks **Rescan**, and adds the widget to a page.
+Leave out `node_modules`, `src` and the build configuration: EdgeStation doesn't use them. A zip of those files is enough. To install it, a user extracts the folder into their widgets folder (Settings → Widgets → Installed → Open folder), clicks **Rescan**, and adds the widget to a page.
 
 Set `version` in the manifest, and `minAppVersion` to the EdgeStation version the widget needs.
 
 ## Publish to the marketplace
 
-Widgets in the marketplace show in Settings → Widgets → Browse, where a user installs one with a click. A new release never installs on its own: Settings → Widgets shows it under Installed, and the user installs it with Update or Update all. The list is `widgets.json` in the [edgestation-widgets](https://github.com/chainlist/edgestation-widgets) repository.
+Widgets in the marketplace show in Settings → Widgets → Marketplace, where a user installs one with a click. The marketplace is off until the user turns it on and accepts a warning; while it is off, marketplace widgets do not run. A new release never installs on its own: Settings → Widgets → Installed shows it, and the user installs it with Update or Update all. The list is `widgets.json` in the [edgestation-widgets](https://github.com/chainlist/edgestation-widgets) repository.
 
 1. Keep the widget in a public GitHub repository, with its `manifest.json`, its icon and a `README.md` at the root: Browse shows the icon and the README from your default branch.
 2. Publish each version as a GitHub release with two files attached:

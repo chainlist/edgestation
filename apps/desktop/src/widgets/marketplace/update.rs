@@ -5,6 +5,7 @@ use tauri::{AppHandle, Runtime};
 use super::changed;
 use super::install::install;
 use super::registry::{registry, release_manifest};
+use super::switch::require_on;
 use super::version::{compatibility, is_newer};
 use crate::http::client;
 use crate::widgets::installed::read_manifest;
@@ -23,6 +24,7 @@ pub struct Attempt {
 /// update (see `adds_permissions`).
 #[tauri::command]
 pub async fn marketplace_update<R: Runtime>(app: AppHandle<R>) -> Result<Vec<Attempt>, String> {
+    require_on(&app)?;
     update_all(&app).await
 }
 

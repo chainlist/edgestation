@@ -18,6 +18,11 @@ export interface SystemInfo {
 	wifi: string | null;
 	/** The load of all CPU cores, in percent. */
 	cpu: { load: number };
+	/**
+	 * The physical memory (RAM), in bytes. `used` is `total` minus the available memory, as in
+	 * Task Manager.
+	 */
+	memory: { used: number; total: number };
 	/** The first NVIDIA GPU (load in percent, temperature in °C). `null` if there is none. */
 	gpu: { load: number; temperature: number } | null;
 	/**

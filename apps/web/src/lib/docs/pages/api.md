@@ -21,7 +21,7 @@ The API is deliberately small for now, and will grow. Set the manifest's [`minAp
 | `instanceId`                 | Id of this placement. Two copies of a widget get different ids.                                                 |
 | `manifest`                   | The widget's [manifest](/docs/manifest), with `id` set to its folder name.                                      |
 | `settings`                   | This placement's [setting values](/docs/settings#read-them), by key.                                            |
-| `system()`                   | The machine's CPU, GPU, network and Wi-Fi. [System and programs](/docs/api/system)                              |
+| `system()`                   | The machine's CPU, memory, GPU, network and Wi-Fi. [System and programs](/docs/api/system)                      |
 | `topPrograms(n)`             | The `n` programs using the most CPU. [System and programs](/docs/api/system#api-topprograms)                    |
 | `media`                      | What is playing, and its playback controls. [Media](/docs/api/media)                                            |
 | `apps`                       | The apps of the Start menu or the app menu: list them, start them, show their icons. [Apps](/docs/api/apps)     |

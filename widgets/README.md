@@ -4,8 +4,8 @@ A widget is a folder with a manifest and an ES module. Here, "the Edge" is the d
 
 EdgeStation looks for widgets in three places:
 
-- `widgets/<id>/` in EdgeStation's data folder (`%APPDATA%\com.edgestation.dashboard` on Windows, `~/.local/share/com.edgestation.dashboard` on Linux): your own widgets (Settings → Widgets → Open folder).
-- `marketplace/<id>/` in the same folder: widgets installed from the marketplace (Settings → Widgets → Browse). A new release installs when the user clicks Update or Update all under Installed.
+- `widgets/<id>/` in EdgeStation's data folder (`%APPDATA%\com.edgestation.dashboard` on Windows, `~/.local/share/com.edgestation.dashboard` on Linux): your own widgets (Settings → Widgets → Installed → Open folder).
+- `marketplace/<id>/` in the same folder: widgets installed from the marketplace (Settings → Widgets → Marketplace). The marketplace is off until the user turns it on, and its widgets do not run while it is off. A new release installs when the user clicks Update or Update all under Installed.
 - This folder (`widgets/` in the repo): the built-in examples, bundled with the app.
 
 The folder name is the widget id. A user widget replaces a marketplace or built-in one with the same id. To list yours in the marketplace, see [Publish to the marketplace](../apps/web/src/lib/docs/pages/build.md#publish-to-the-marketplace).

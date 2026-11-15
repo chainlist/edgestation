@@ -28,6 +28,10 @@ export const forgetWidget = (id: string) => void cache.delete(id);
 
 async function load(id: string): Promise<LoadedWidget> {
 	const response = await fetch(widgetUrl(id, 'manifest.json'), { cache: 'no-store' });
+	// The host answers 403 for a marketplace widget while the marketplace is off.
+	if (response.status === 403) {
+		throw new Error(`The marketplace is off. Turn it on in Settings to run "${id}".`);
+	}
 	if (!response.ok) throw new Error(`Widget "${id}" is not installed`);
 	const manifest: WidgetManifest = { ...(await response.json()), id };
 	if (manifest.minAppVersion !== undefined) {

@@ -39,11 +39,11 @@ The [Quick start](/docs/getting-started) writes the same widget both ways.
 
 EdgeStation looks for widgets in three places. `<data>` is EdgeStation's data folder: `%APPDATA%\com.edgestation.dashboard` on Windows, and `~/.local/share/com.edgestation.dashboard` on Linux (under `$XDG_DATA_HOME` when it is set).
 
-| Folder                     | What is there                                                                                                                                            |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `<data>/widgets/<id>/`     | Your own widgets. Settings → Widgets → Open folder opens it.                                                                                             |
-| `<data>/marketplace/<id>/` | Widgets installed from Settings → Widgets → Browse. EdgeStation keeps this folder: it updates them, and deletes a widget's folder when you uninstall it. |
-| Bundled with the app       | The built-in widgets, whose sources are in the repository.                                                                                               |
+| Folder                     | What is there                                                                                                                                                 |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `<data>/widgets/<id>/`     | Your own widgets. Settings → Widgets → Installed → Open folder opens it.                                                                                      |
+| `<data>/marketplace/<id>/` | Widgets installed from Settings → Widgets → Marketplace. EdgeStation keeps this folder: it updates them, and deletes a widget's folder when you uninstall it. |
+| Bundled with the app       | The built-in widgets, whose sources are in the repository.                                                                                                    |
 
 The folder name is the widget's id. A widget of yours replaces a marketplace or built-in widget with the same id, so you can start from a built-in widget's source and change it.
 

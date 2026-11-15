@@ -38,7 +38,7 @@ In the app, the display it runs on is called **the Edge**: a Corsair Xeneon Edge
 - **Make it yours.** Dark or light, an accent color, the corner radius, a background image and frosted glass cards. Widgets follow the theme too.
 - **Any display.** The first secondary display, or the one you pick. Any size, shape or orientation, with or without touch.
 - **Touch, mouse or keys.** Swipe between pages with two fingers, scroll over the page dots, or use shortcuts from any app: <kbd>Ctrl</kbd> <kbd>Alt</kbd> <kbd>Page Up</kbd> / <kbd>Page Down</kbd> turns pages, <kbd>Ctrl</kbd> <kbd>Alt</kbd> <kbd>G</kbd> goes to a page by name.
-- **A widget marketplace.** Settings → Widgets → Browse installs widgets from other people. Their updates wait under Installed until you install them.
+- **A widget marketplace.** Turn it on in Settings → Widgets → Marketplace to install widgets from other people. Their updates wait under Installed until you install them.
 
 <details>
 <summary><b>More screenshots</b></summary>
@@ -50,18 +50,18 @@ In the app, the display it runs on is called **the Edge**: a Corsair Xeneon Edge
 
 ### Built-in widgets
 
-| Widget            | What it shows                                                                                                            |
-| ----------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| **Clock**         | The time and date, in 12 or 24 hours and the date format you like.                                                       |
-| **Weather**       | The next 24 hours as a temperature curve over the chance of rain, the temperature now, or today in detail.               |
-| **Performance**   | CPU or GPU load, GPU temperature, internet usage with averages, the top programs, the Wi-Fi network or the machine name. |
-| **Media**         | What's playing (Spotify, YouTube, ...) with album art, progress and controls.                                            |
-| **Mixer**         | Volume faders with level meters, or mute buttons only: every channel, or one per placement.                              |
-| **Launcher**      | Keys that open apps from the Start menu or the app menu on your main screen, like a Stream Deck.                         |
-| **To-do**         | A to-do list: type a task, tap it to check it off, clear the done ones.                                                  |
-| **Logs timeline** | Type what you are doing and it joins a timeline of your day. Browse earlier days.                                        |
-| **URL**           | Any web page, in a real browser view. Sign-ins last across restarts.                                                     |
-| **YouTube**       | YouTube, opening on your Subscriptions. Sign in once inside it.                                                          |
+| Widget            | What it shows                                                                                                                          |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| **Clock**         | The time and date, in 12 or 24 hours and the date format you like.                                                                     |
+| **Weather**       | The next 24 hours as a temperature curve over the chance of rain, the temperature now, or today in detail.                             |
+| **Performance**   | CPU or GPU load, memory usage, GPU temperature, internet usage with averages, the top programs, the Wi-Fi network or the machine name. |
+| **Media**         | What's playing (Spotify, YouTube, ...) with album art, progress and controls.                                                          |
+| **Mixer**         | Volume faders with level meters, or mute buttons only: every channel, or one per placement.                                            |
+| **Launcher**      | Keys that open apps from the Start menu or the app menu on your main screen, like a Stream Deck.                                       |
+| **To-do**         | A to-do list: type a task, tap it to check it off, clear the done ones.                                                                |
+| **Logs timeline** | Type what you are doing and it joins a timeline of your day. Browse earlier days.                                                      |
+| **URL**           | Any web page, in a real browser view. Sign-ins last across restarts.                                                                   |
+| **YouTube**       | YouTube, opening on your Subscriptions. Sign in once inside it.                                                                        |
 
 ### Light by design
 
