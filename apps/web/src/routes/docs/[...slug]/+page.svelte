@@ -3,6 +3,7 @@
 	import ArrowRight from '@lucide/svelte/icons/arrow-right';
 	import SquarePen from '@lucide/svelte/icons/square-pen';
 	import { resolve } from '$app/paths';
+	import PageHead from '#lib/components/PageHead.svelte';
 	import { pages, sections } from '#lib/docs/nav.ts';
 	import { REPO_URL } from '#lib/site.ts';
 	import type { PageProps } from './$types';
@@ -21,10 +22,10 @@
 	const outline = $derived(data.headings.filter((h) => h.depth <= 3));
 </script>
 
-<svelte:head>
-	<title>{doc.slug ? `${doc.title} · EdgeStation docs` : 'EdgeStation docs'}</title>
-	<meta name="description" content={doc.description} />
-</svelte:head>
+<PageHead
+	title={doc.slug ? `${doc.title} · EdgeStation docs` : 'EdgeStation docs'}
+	description={doc.description}
+/>
 
 <div class="flex gap-10">
 	<article class="min-w-0 flex-1 py-10 lg:py-14">
