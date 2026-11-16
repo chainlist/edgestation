@@ -61,7 +61,7 @@ jobs:
           part notices '^(apps/ui|widgets|packages/sdk|scripts/notices)/|^apps/desktop/Cargo\.(toml|lock)$|^(package\.json|pnpm-lock\.yaml|THIRD-PARTY-NOTICES\.txt)$'
           cat "$GITHUB_OUTPUT"
 
-  # Lints and tests the Rust code of the desktop app on Windows and on Linux. Each platform compiles
+  # Lints and tests the Rust code of the desktop app on Windows, Linux and macOS. Each platform compiles
   # only its own side of the code, so a change made on one platform can break the other one. This
   # finds it on the pull request, not at the next release.
   desktop:
@@ -71,8 +71,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # The same runners as the release build (desktop-release.yml).
-        os: [windows-latest, ubuntu-22.04]
+        # The same runners as the release build (desktop-release.yml). The release has no macOS
+        # build yet.
+        os: [windows-latest, ubuntu-22.04, macos-latest]
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -80,7 +81,7 @@ jobs:
         working-directory: apps/desktop
     steps:
       - uses: actions/checkout@v5
-      # Platform code goes in the windows and linux files of each module (see Platforms in
+      # Platform code goes in the windows, linux and macos files of each module (see Platforms in
       # ARCHITECTURE.md). Only the lines that pick those files name a platform, and lib.rs and
       # os/mod.rs. One runner is enough for this.
       - name: Platform code stays in platform files
@@ -88,7 +89,7 @@ jobs:
         run: |
           found=$(grep -rnE 'cfg(_attr)?!?\(.*\b(windows|target_os)\b' src --include='*.rs' \
             | grep -v 'windows_subsystem' \
-            | grep -vE 'cfg_attr\((windows|target_os = "linux"), path = ' \
+            | grep -vE 'cfg_attr\((windows|target_os = "(linux|macos)"), path = ' \
             | grep -vE '^src/(lib|os/mod)\.rs:' || true)
           if [ -n "$found" ]; then
             echo "Platform cfg outside a platform selector:"

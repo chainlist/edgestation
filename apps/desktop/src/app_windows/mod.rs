@@ -1,5 +1,6 @@
 #[cfg_attr(windows, path = "windows.rs")]
 #[cfg_attr(target_os = "linux", path = "linux.rs")]
+#[cfg_attr(target_os = "macos", path = "macos.rs")]
 mod native;
 
 use std::sync::atomic::{AtomicBool, Ordering};
