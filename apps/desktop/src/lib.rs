@@ -1,7 +1,11 @@
+// Most macOS sides are stubs, so shared code that only they would call is not used there.
+// Remove this line when they are done.
+#![cfg_attr(target_os = "macos", allow(dead_code))]
+
 // Each module that calls the system has a side for each platform (see Platforms in
 // ARCHITECTURE.md). Another platform needs its own side in each of them.
-#[cfg(not(any(windows, target_os = "linux")))]
-compile_error!("EdgeStation builds for Windows and Linux only");
+#[cfg(not(any(windows, target_os = "linux", target_os = "macos")))]
+compile_error!("EdgeStation builds for Windows, Linux and macOS only");
 
 mod app_windows;
 mod apps;

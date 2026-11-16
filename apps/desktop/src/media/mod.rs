@@ -6,6 +6,7 @@
 
 #[cfg_attr(windows, path = "windows/mod.rs")]
 #[cfg_attr(target_os = "linux", path = "linux/mod.rs")]
+#[cfg_attr(target_os = "macos", path = "macos.rs")]
 mod native;
 
 mod art;
