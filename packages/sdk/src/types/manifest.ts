@@ -4,7 +4,8 @@ import type { WidgetSetting } from './settings.js';
  * A part of `api` that a widget must ask for in `permissions`. `system` also gives
  * `topPrograms`. The other members of `api` need no permission.
  */
-export type WidgetPermission = 'system' | 'media' | 'apps' | 'audio' | 'fetch' | 'webview';
+export type WidgetPermission =
+	'system' | 'media' | 'apps' | 'audio' | 'fetch' | 'webview' | 'links';
 
 /**
  * The contents of the `manifest.json` of a widget, as the host gives it to the widget in

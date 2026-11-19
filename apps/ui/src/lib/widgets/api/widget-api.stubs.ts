@@ -5,7 +5,7 @@ import { createPause } from './timers';
 import type { WidgetPermission } from '../types';
 import { openWebview } from '../webview/open-webview';
 
-const ALL: WidgetPermission[] = ['system', 'media', 'apps', 'audio', 'fetch', 'webview'];
+const ALL: WidgetPermission[] = ['system', 'media', 'apps', 'audio', 'fetch', 'webview', 'links'];
 
 /** `permissions` is the list in the manifest. */
 export const setup = ({

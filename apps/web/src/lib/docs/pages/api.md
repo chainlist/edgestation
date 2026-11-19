@@ -29,6 +29,7 @@ The API is deliberately small for now, and will grow. Set the manifest's [`minAp
 | `fetch(input, init?)`        | The web's `fetch`, without CORS. [Fetch](/docs/api/fetch)                                                       |
 | `storage`                    | Data kept across remounts and restarts. [Storage](/docs/api/storage)                                            |
 | `webview(el, url, options?)` | A web page in a native browser view over `el`. [Web views](/docs/api/webview)                                   |
+| `openUrl(url)`               | A web page in the default browser, outside EdgeStation. [Links](/docs/api/links)                                |
 | `every(ms, fn)`              | A `setInterval` managed for the widget. [Timers and helpers](/docs/api/helpers#api-every)                       |
 | `after(ms, fn)`              | A `setTimeout` managed for the widget. [Timers and helpers](/docs/api/helpers#api-after)                        |
 | `guard(fn)`                  | Wraps a callback so its errors show the error card. [Timers and helpers](/docs/api/helpers#api-guard)           |
@@ -39,7 +40,7 @@ The API is deliberately small for now, and will grow. Set the manifest's [`minAp
 
 ## Permissions
 
-`system()`, `topPrograms()`, `media`, `apps`, `audio`, `fetch` and `webview` work only when the manifest lists their [permission](/docs/manifest#permissions). Otherwise a call shows the widget's error card and throws. The other members need nothing.
+`system()`, `topPrograms()`, `media`, `apps`, `audio`, `fetch`, `webview` and `openUrl()` work only when the manifest lists their [permission](/docs/manifest#permissions). Otherwise a call shows the widget's error card and throws. The other members need nothing.
 
 ## Released on unmount
 

@@ -37,6 +37,19 @@ describe('webview', () => {
 	});
 });
 
+describe('openUrl', () => {
+	it('asks the host to open the link in the browser', () => {
+		void setup({ permissions: ['links'] }).api.openUrl('https://example.com/a');
+		expect(invoke).toHaveBeenLastCalledWith('open_link', { url: 'https://example.com/a' });
+	});
+
+	it('refuses a widget without the links permission', () => {
+		const { api, fail } = setup({ permissions: ['webview'] });
+		expect(() => api.openUrl('https://example.com/')).toThrow('It tried to open a link');
+		expect(fail).toHaveBeenCalledOnce();
+	});
+});
+
 describe('permissions', () => {
 	it('refuses a part that the manifest does not ask for', () => {
 		const { api, fail } = setup({ permissions: ['media'] });

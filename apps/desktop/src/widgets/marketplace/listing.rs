@@ -2,7 +2,6 @@ use futures_util::{StreamExt, stream};
 use serde::Serialize;
 use serde_json::Value;
 use tauri::{AppHandle, Runtime};
-use tauri_plugin_opener::OpenerExt;
 
 use super::ban::remove_and_announce;
 use super::fetch::{get_json, raw_url, stats_url};
@@ -75,13 +74,4 @@ pub async fn marketplace_list<R: Runtime>(app: AppHandle<R>) -> Result<Vec<Liste
         });
     }
     Ok(listed)
-}
-
-/// Opens an `https` link in the default browser, for example the repo or README of a widget.
-#[tauri::command]
-pub fn marketplace_open_link<R: Runtime>(app: AppHandle<R>, url: String) -> Result<(), String> {
-    if !url.starts_with("https://") {
-        return Err(format!("Not an https link: {url}"));
-    }
-    app.opener().open_url(url, None::<&str>).map_err(|e| e.to_string())
 }

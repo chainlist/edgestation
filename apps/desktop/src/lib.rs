@@ -16,6 +16,7 @@ mod focus;
 mod fullscreen;
 mod http;
 mod identify;
+mod links;
 mod media;
 mod monitors;
 mod os;
@@ -74,6 +75,7 @@ pub fn run() {
             identify::identify_prepare,
             identify::identify_screens,
             identify::identify_release,
+            links::open_link,
             media::media_info,
             media::media_sessions,
             media::media_art,
@@ -91,7 +93,6 @@ pub fn run() {
             widgets::marketplace::update::marketplace_update,
             widgets::marketplace::ban::marketplace_remove_banned,
             widgets::marketplace::switch::marketplace_switch,
-            widgets::marketplace::listing::marketplace_open_link,
             widgets::webview::open::webview_open,
             widgets::webview::control::webview_place,
             widgets::webview::control::webview_navigate,
