@@ -5,6 +5,7 @@
 
 #[cfg_attr(windows, path = "windows.rs")]
 #[cfg_attr(target_os = "linux", path = "linux.rs")]
+#[cfg_attr(target_os = "macos", path = "macos.rs")]
 mod native;
 
 use tauri::{AppHandle, Manager, Runtime, Webview};
@@ -34,3 +35,8 @@ pub fn focus_borrow<R: Runtime>(webview: Webview<R>, view: Option<String>) -> ta
 pub fn focus_return<R: Runtime>(app: AppHandle<R>) {
     native::give_back(app.get_window(EDGE));
 }
+
+/// Lets the next app that opens a window come in front, such as the browser of a link. Call it
+/// just before the app starts it. The Edge window never takes the focus, so without this call
+/// Windows keeps that window behind the app in front.
+pub use native::let_next_come_forward;

@@ -39,6 +39,11 @@ export const PERMISSIONS: Record<
 		label: 'Web pages',
 		allows: 'Open web pages with the sign-ins of a browser profile.',
 		tried: 'open a web page'
+	},
+	links: {
+		label: 'Links',
+		allows: 'Open web pages in your default browser.',
+		tried: 'open a link in your browser'
 	}
 };
 

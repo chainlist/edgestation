@@ -45,7 +45,7 @@ With the SDK, set it to the SDK version you build with: the two are released tog
 
 ## `permissions`
 
-Six members of the `api` reach the machine or the web, and a widget must ask for each one it uses:
+Seven members of the `api` reach the machine or the web, and a widget must ask for each one it uses:
 
 | Permission | Gives                                                                             |
 | ---------- | --------------------------------------------------------------------------------- |
@@ -55,6 +55,7 @@ Six members of the `api` reach the machine or the web, and a widget must ask for
 | `audio`    | [`api.audio`](/docs/api/audio)                                                    |
 | `fetch`    | [`api.fetch`](/docs/api/fetch)                                                    |
 | `webview`  | [`api.webview`](/docs/api/webview), and a Profile choice in the widget's settings |
+| `links`    | [`api.openUrl`](/docs/api/links)                                                  |
 
 The other members (`storage`, `every`, `loading`, ...) only touch the widget itself, so they need nothing. A manifest without `permissions` gets none.
 

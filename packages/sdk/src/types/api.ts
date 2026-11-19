@@ -104,6 +104,12 @@ export interface WidgetApi {
 	 */
 	webview(target: HTMLElement, url: string, options?: WebviewOptions): Cleanup;
 	/**
+	 * Opens the web page `url` in the default browser of the machine, outside EdgeStation. Call
+	 * it when the user taps a link, because the browser comes in front of the other apps. Only
+	 * `http` and `https` addresses open. For others, the promise rejects. Needs `links`.
+	 */
+	openUrl(url: string): Promise<void>;
+	/**
 	 * Replaces the native scrollbars of `viewport` with the overlay scrollbars of the app.
 	 * `viewport` is an element of the widget that scrolls, and the overlay scrollbars show while
 	 * it scrolls. The app draws them in the parent of `viewport`, so put `viewport` in an element

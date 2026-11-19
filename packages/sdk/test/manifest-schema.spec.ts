@@ -44,7 +44,7 @@ describe('manifest.schema.json', () => {
 			styles: 'dist/main.css',
 			icon: 'icon.svg',
 			size: { w: 2, h: 1 },
-			permissions: ['system', 'media', 'apps', 'audio', 'fetch', 'webview'],
+			permissions: ['system', 'media', 'apps', 'audio', 'fetch', 'webview', 'links'],
 			settings: [
 				{ ...select, default: 'cpu' },
 				{

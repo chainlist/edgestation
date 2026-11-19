@@ -53,21 +53,22 @@ Memory: there is one webview while the settings window is closed (plus one per `
 
 ## Platforms
 
-Windows and Linux (X11) build from the same crate. Each module that calls the system has the same layout:
+Windows, Linux (X11) and macOS build from the same crate. Most macOS sides are stubs: they build, and their features fail or do nothing. Each module that calls the system has the same layout:
 
 - `mod.rs` holds what the platforms share: the commands, the types, the logic and its tests.
-- `windows.rs` and `linux.rs` hold the code of one platform each, with the same functions. A larger side is a folder, `windows/` or `linux/`, with a `mod.rs`.
+- `windows.rs`, `linux.rs` and `macos.rs` hold the code of one platform each, with the same functions. A larger side is a folder, `windows/` or `linux/`, with a `mod.rs`.
 - `mod.rs` picks the side of the platform once, as `native`, and the shared code calls `native::` functions:
 
 ```rust
 #[cfg_attr(windows, path = "windows.rs")]
 #[cfg_attr(target_os = "linux", path = "linux.rs")]
+#[cfg_attr(target_os = "macos", path = "macos.rs")]
 mod native;
 ```
 
 Shared code has no `#[cfg]` of a platform. When one platform needs a step that the other doesn't, both sides have the function and one of them does nothing, for example `app_windows::place_again_on_map`. `os/` holds the system code that several modules share: COM on Windows (`os/windows/com.rs`), X11 and D-Bus on Linux (`os/linux/`). `process/` gives the executable of a process and the name that people know it by, for `system` and `audio`.
 
-The desktop job of `ci.yml` lints and tests both platforms on each pull request that changes `apps/desktop`, and fails on a platform `#[cfg]` outside the selectors. The only others are in `lib.rs`, which stops the build on other platforms, and in `os/mod.rs`. A macOS side adds a third file next to each pair and a line to each selector; the build names each module that still lacks one.
+The desktop job of `ci.yml` lints and tests the three platforms on each pull request that changes `apps/desktop`, and fails on a platform `#[cfg]` outside the selectors. The only others are in `lib.rs`, which stops the build on other platforms and allows unused code on macOS while its sides are stubs, and in `os/mod.rs`. A stub returns `os::macos::MISSING` as its error.
 
 | Area                           | Windows                                                 | Linux                                                                                                                                                                                       |
 | ------------------------------ | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

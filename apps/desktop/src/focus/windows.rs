@@ -6,7 +6,9 @@ use std::sync::atomic::{AtomicIsize, Ordering};
 
 use tauri::{Runtime, Window};
 use windows::Win32::Foundation::HWND;
-use windows::Win32::UI::WindowsAndMessaging::{GetForegroundWindow, SetForegroundWindow};
+use windows::Win32::UI::WindowsAndMessaging::{
+    ASFW_ANY, AllowSetForegroundWindow, GetForegroundWindow, SetForegroundWindow,
+};
 
 /// The window that had the focus before the last `focus_borrow`.
 static LENDER: AtomicIsize = AtomicIsize::new(0);
@@ -28,4 +30,10 @@ pub fn give_back<R: Runtime>(_own: Option<Window<R>>) {
     if !window.is_invalid() {
         let _ = unsafe { SetForegroundWindow(window) };
     }
+}
+
+/// A touch on the Edge lets this app come in front, but the Edge window does not use that right.
+/// This passes it to the next app that asks. A refusal only leaves that app behind.
+pub fn let_next_come_forward() {
+    let _ = unsafe { AllowSetForegroundWindow(ASFW_ANY) };
 }

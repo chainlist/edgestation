@@ -89,7 +89,7 @@ export async function updateWidgets(ids: string[]): Promise<void> {
 	}
 }
 
-export const openLink = (url: string) => invoke('marketplace_open_link', { url });
+export const openLink = (url: string) => invoke('open_link', { url });
 
 /**
  * Turns the marketplace on or off (see `marketplaceOn`). On, it reads the list again, which also

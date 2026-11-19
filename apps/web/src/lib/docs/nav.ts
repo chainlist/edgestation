@@ -120,6 +120,11 @@ export const sections: DocSection[] = [
 				description: 'Show a whole web page in a native browser view with api.webview().'
 			},
 			{
+				slug: 'api/links',
+				title: 'Links',
+				description: 'Open a web page in the default browser with api.openUrl().'
+			},
+			{
 				slug: 'api/helpers',
 				title: 'Timers and helpers',
 				description:

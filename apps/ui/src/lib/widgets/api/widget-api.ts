@@ -119,6 +119,7 @@ export function createWidgetApi(
 		webview: gate('webview', (target: HTMLElement, url: string, options: WebviewOptions = {}) =>
 			track(openWebview(target, url, options, profile, report, loading))
 		),
+		openUrl: gate('links', (url: string) => invoke<void>('open_link', { url })),
 		scrollbars(viewport: HTMLElement) {
 			return track(overlayScrollbars(viewport));
 		},

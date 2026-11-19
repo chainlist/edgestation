@@ -2,6 +2,7 @@
 	import AppWindow from '@lucide/svelte/icons/app-window';
 	import CirclePlay from '@lucide/svelte/icons/circle-play';
 	import Cpu from '@lucide/svelte/icons/cpu';
+	import ExternalLink from '@lucide/svelte/icons/external-link';
 	import Globe from '@lucide/svelte/icons/globe';
 	import PanelsTopLeft from '@lucide/svelte/icons/panels-top-left';
 	import Volume2 from '@lucide/svelte/icons/volume-2';
@@ -15,7 +16,8 @@
 		apps: AppWindow,
 		audio: Volume2,
 		fetch: Globe,
-		webview: PanelsTopLeft
+		webview: PanelsTopLeft,
+		links: ExternalLink
 	};
 
 	let { widget }: { widget: InstalledWidget } = $props();

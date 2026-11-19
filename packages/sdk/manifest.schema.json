@@ -47,7 +47,7 @@
 			"type": "array",
 			"description": "The parts of api the widget uses. The marketplace shows what each one allows before an install. A call to a part not listed here shows the error card. system also gives api.topPrograms. webview also gives the widget's settings a Profile choice.",
 			"uniqueItems": true,
-			"items": { "enum": ["system", "media", "apps", "audio", "fetch", "webview"] }
+			"items": { "enum": ["system", "media", "apps", "audio", "fetch", "webview", "links"] }
 		},
 		"settings": {
 			"type": "array",

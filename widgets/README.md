@@ -42,7 +42,7 @@ my-widget/
 
 Only `name` is required. `main` defaults to `main.js`. `size` is the default size in grid cells when the widget is added to a page. `icon` is an image (SVG or PNG, square, on a transparent background) shown next to the widget in Settings → Widgets; only its shape counts, as it is drawn in the accent color. Without one, the widget gets a puzzle piece.
 
-`permissions` lists the parts of the `api` the widget uses: `system` (for `api.system()` and `api.topPrograms()`), `media`, `apps`, `audio`, `fetch` and `webview`. Before a marketplace install, a dialog tells the user what each one lets the widget do and asks them to confirm. An update that adds permissions waits for the user too, and its dialog lists only the new ones. A widget that asks for no permissions installs with no dialog. Calling a member without its permission shows the widget's error card and throws. `webview` also gives the widget's settings a Profile choice. Permissions tell the user what a widget means to use; they are not a sandbox, as widgets run inside the Edge page.
+`permissions` lists the parts of the `api` the widget uses: `system` (for `api.system()` and `api.topPrograms()`), `media`, `apps`, `audio`, `fetch`, `webview` and `links` (for `api.openUrl()`). Before a marketplace install, a dialog tells the user what each one lets the widget do and asks them to confirm. An update that adds permissions waits for the user too, and its dialog lists only the new ones. A widget that asks for no permissions installs with no dialog. Calling a member without its permission shows the widget's error card and throws. `webview` also gives the widget's settings a Profile choice. Permissions tell the user what a widget means to use; they are not a sandbox, as widgets run inside the Edge page.
 
 `minAppVersion` is the oldest EdgeStation the widget runs on, as `major.minor.patch`: the version whose `api` it uses. An older app shows the widget's error card, saying which version it needs, instead of loading it. The `0.1.0` above is only an example: with the SDK, use the SDK version you build with. `$schema` is only for editors: with the SDK installed, it points them at its schema, which checks the manifest and completes its fields as you type (EdgeStation ignores it).
 
@@ -131,6 +131,7 @@ The API is intentionally small for now; it will grow.
 | `every(ms, fn)`              | `setInterval` that is cleared on unmount, paused while its page is off screen or the Edge is frozen, and whose errors are caught. Returns a function that stops it.        |
 | `after(ms, fn)`              | `setTimeout` that is cleared on unmount, waits while its page is off screen (not while frozen), and whose errors are caught. Returns a function that cancels it.           |
 | `webview(el, url, options?)` | Shows a web page in a native browser view over element `el`, for sites that refuse iframes (see below). Needs the `webview` permission. Returns a function that closes it. |
+| `openUrl(url)`               | Opens a web page in the default browser, outside EdgeStation (see below). Needs the `links` permission.                                                                    |
 | `scrollbars(el)`             | Gives the scrolling element `el` the app's overlay scrollbars instead of the native ones (see below). Returns a function that removes them.                                |
 | `guard(fn)`                  | Wraps an event handler so an error in it shows the widget's error card.                                                                                                    |
 | `loading(task)`              | Shows that the widget is loading until the promise `task` settles: dots for the first load, a bar along the top of the card after that (see below). Returns `task`.        |
@@ -341,6 +342,19 @@ Pass `{ homeButton: true }` to show a round Home button above the keyboard butto
 ```js
 api.webview(el, 'https://en.wikipedia.org/', { mobile: true, homeButton: true });
 ```
+
+### `api.openUrl(url)`
+
+Opens web page `url` in the default browser of the machine, outside EdgeStation. Only widgets with the `links` permission can call it; any other gets its error card. Only `http` and `https` URLs open; for any other, the promise rejects.
+
+```js
+link.addEventListener('click', (event) => {
+	event.preventDefault();
+	api.openUrl(link.href).catch(console.error);
+});
+```
+
+Call it when the user taps a link: the page opens away from the Edge, so a call they didn't ask for takes them away from what they were doing. A plain link in a widget doesn't do this, since clicking it would load the page in place of the whole Edge.
 
 ### `api.scrollbars(el)`
 

@@ -20,6 +20,7 @@
         "center": true,
         "decorations": false,
         "skipTaskbar": true,
+        "alwaysOnTop": true,
         "focusable": false,
         "dragDropEnabled": false,
         "visible": false
