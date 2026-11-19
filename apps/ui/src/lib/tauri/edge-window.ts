@@ -82,15 +82,17 @@ export async function placeEdgeWindow(monitorName: string | null) {
 }
 
 /**
- * Puts the Edge window above the window of another app that covers it. The Edge window has no
- * taskbar buton, so the settings window and the Bring to front shortcut are the only ways back.
- * The window goes above all windows for a moment, then back to the normal order, on top. This
- * raises the window, but the focus stays with the app in front.
+ * Puts the Edge window above the window of another app that covers it. The Edge window is always
+ * on top, but a window of another app that is also always on top can cover it. The Edge window
+ * has no taskbar buton, so the settings window and the Bring to front shortcut are the only ways
+ * back. Setting always on top to true again does nothing, so the window goes to the normal order
+ * for a moment, then back on top of all windows. This raises the window, but the focus stays with
+ * the app in front.
  */
 export async function bringEdgeToFront() {
 	const edge = await Window.getByLabel('edge');
-	await edge?.setAlwaysOnTop(true);
 	await edge?.setAlwaysOnTop(false);
+	await edge?.setAlwaysOnTop(true);
 }
 
 /**
