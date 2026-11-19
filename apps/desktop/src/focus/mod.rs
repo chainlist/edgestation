@@ -35,3 +35,8 @@ pub fn focus_borrow<R: Runtime>(webview: Webview<R>, view: Option<String>) -> ta
 pub fn focus_return<R: Runtime>(app: AppHandle<R>) {
     native::give_back(app.get_window(EDGE));
 }
+
+/// Lets the next app that opens a window come in front, such as the browser of a link. Call it
+/// just before the app starts it. The Edge window never takes the focus, so without this call
+/// Windows keeps that window behind the app in front.
+pub use native::let_next_come_forward;

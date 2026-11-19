@@ -43,3 +43,6 @@ pub fn give_back<R: Runtime>(own: Option<Window<R>>) {
         let _ = own.set_focusable(false);
     }
 }
+
+/// Only the Windows side needs this.
+pub fn let_next_come_forward() {}

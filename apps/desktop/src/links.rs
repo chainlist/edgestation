@@ -17,14 +17,7 @@ fn web_link(url: &str) -> Result<Url, String> {
 #[tauri::command]
 pub fn open_link<R: Runtime>(app: AppHandle<R>, url: String) -> Result<(), String> {
     let link = web_link(&url)?;
-    // The Edge window never takes the focus, so Windows keeps a browser that it starts behind the
-    // app in front. The touch on the Edge lets this process give its right to come forward.
-    #[cfg(windows)]
-    // SAFETY: a plain call with no pointers. A refusal only leaves the browser behind.
-    unsafe {
-        use windows::Win32::UI::WindowsAndMessaging::{ASFW_ANY, AllowSetForegroundWindow};
-        let _ = AllowSetForegroundWindow(ASFW_ANY);
-    }
+    crate::focus::let_next_come_forward();
     app.opener().open_url(link.as_str(), None::<&str>).map_err(|e| e.to_string())
 }
 
