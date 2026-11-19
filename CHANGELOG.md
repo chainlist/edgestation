@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.10.0](https://github.com/chainlist/edgestation/compare/v0.9.0...v0.10.0) (2026-11-19)
+
+
+### Features
+
+* add Open Graph and Twitter card tags with a share image to every website page ([09c83f1](https://github.com/chainlist/edgestation/commit/09c83f123cee7b86ea85c8f34046d91281a7f156))
+* add Open Graph and Twitter card tags with a share image to every website page ([b7301d4](https://github.com/chainlist/edgestation/commit/b7301d4c983fb393746e60f5cae73293e8da1d9a))
+* build the desktop app for macOS with stub platform sides, and lint and test it in CI ([69e65b5](https://github.com/chainlist/edgestation/commit/69e65b53c4c0cd874d7924089df02e787ef98736))
+* build the desktop app for macOS with stub platform sides, and lint and test it in CI ([3f8eabd](https://github.com/chainlist/edgestation/commit/3f8eabdb9d94d37459897bbd951c4e8698bb1a95))
+* keep the Edge window always on top ([4b5d4c1](https://github.com/chainlist/edgestation/commit/4b5d4c16d6b06c100997009f0ce7e7807dc451eb))
+* let widgets open links in the default browser with api.openUrl and the links permission ([6d5af83](https://github.com/chainlist/edgestation/commit/6d5af83890eca1d9cd75fc809f8401e77dcaa8b0))
+
 ## [0.9.0](https://github.com/chainlist/edgestation/compare/v0.8.0...v0.9.0) (2026-11-15)
 
 
